@@ -6,6 +6,7 @@ use strict;
 use Class::ReturnValue;
 use vars qw($VERSION @ISA %DBIHandle $PrevHandle $DEBUG $TRANSDEPTH);
 
+
 $TRANSDEPTH = 0;
 
 $VERSION = '$Version$';
@@ -57,6 +58,8 @@ sub new  {
     my $class = ref($proto) || $proto;
     my $self  = {};
     bless ($self, $class);
+
+    @{$self->{'StatementLog'}} = ();
     return $self;
 }
 
@@ -76,14 +79,14 @@ sub Insert {
 #  my %seen; #only the *first* value is used - allows drivers to specify default
   while ( my $key = shift @pairs ) {
     my $value = shift @pairs;
-    #$value = $self->dbh->quote($value)  unless ( $value =~ /^\d+$/);
     #    next if $seen{$key}++;
     push @cols, $key;
     push @vals, '?';
-    push @bind, $value;
+    push @bind, $value;  
   }
 
-  my $QueryString = "INSERT INTO $table (". join(", ", @cols). ") VALUES ".
+  my $QueryString =
+    "INSERT INTO $table (". join(", ", @cols). ") VALUES ".
     "(". join(", ", @vals). ")";
 
     my $sth =  $self->SimpleQuery($QueryString, @bind);
@@ -151,7 +154,7 @@ sub Connect  {
 Takes a bunch of parameters:  
 
 Required: Driver, Database,
-Optional: Server Host, Port and RequireSSL
+Optional: Host, Port and RequireSSL
 
 Builds a DSN suitable for a DBI connection
 
@@ -159,29 +162,22 @@ Builds a DSN suitable for a DBI connection
 
 sub BuildDSN {
     my $self = shift;
-    my %args = (
-        Driver     => undef,
-        Database   => undef,
-        Host       => undef,
-        Port       => undef,
-        SID        => undef,
-        Server     => undef,
-        RequireSSL => undef,
-        @_
-    );
+  my %args = ( Driver => undef,
+	       Database => undef,
+	       Host => undef,
+	       Port => undef,
+           SID => undef,
+	       RequireSSL => undef,
+	       @_);
+  
+  
+  my $dsn = "dbi:$args{'Driver'}:dbname=$args{'Database'}";
+  $dsn .= ";sid=$args{'SID'}" if ( defined $args{'SID'} && $args{'SID'});
+  $dsn .= ";host=$args{'Host'}" if (defined$args{'Host'} && $args{'Host'});
+  $dsn .= ";port=$args{'Port'}" if (defined $args{'Port'} && $args{'Port'});
+  $dsn .= ";requiressl=1" if (defined $args{'RequireSSL'} && $args{'RequireSSL'});
 
-    my $dsn = "dbi:$args{'Driver'}:";
-    $dsn .= "dbname=$args{'Database'};"
-      if ( defined $args{'Database'} && $args{'Database'} );
-    $dsn .= "sid=$args{'SID'};"   if ( defined $args{'SID'}  && $args{'SID'} );
-    $dsn .= "host=$args{'Host'};" if ( defined $args{'Host'} && $args{'Host'} );
-    $dsn .= "port=$args{'Port'};" if ( defined $args{'Port'} && $args{'Port'} );
-    $dsn .= "requiressl=1;"
-      if ( defined $args{'RequireSSL'} && $args{'RequireSSL'} );
-    $dsn .= "server=$args{'Server'};"
-      if ( defined $args{'Server'} && $args{'Server'} );
-
-    $self->{'dsn'} = $dsn;
+  $self->{'dsn'}= $dsn;
 }
 
 # }}}
@@ -239,6 +235,67 @@ sub PrintError {
 
 
 # }}}
+
+=head2 LogSQLStatements BOOL
+
+Takes a boolean argument. If the boolean is true, SearchBuilder will log all SQL
+statements, as well as their invocation times and execution times.
+
+Returns whether we're currently logging or not as a boolean
+
+=cut
+
+sub LogSQLStatements {
+    my $self = shift;
+    if (@_) {
+
+        require Time::HiRes;
+    $self->{'_DoLogSQL'} = shift;
+    return ($self->{'_DoLogSQL'});
+    }
+}
+
+=head2 _LogSQLStatement STATEMENT DURATION
+
+add an SQL statement to our query log
+
+=cut
+
+sub _LogSQLStatement {
+    my $self = shift;
+    my $statement = shift;
+    my $duration = shift;
+    push @{$self->{'StatementLog'}} , ([Time::Hires::time(), $statement, $duration]);
+
+}
+
+=head2 ClearSQLStatementLog
+
+Clears out the SQL statement log. 
+
+
+=cut
+
+sub ClearSQLStatementLog {
+    my $self = shift;
+    @{$self->{'StatementLog'}} = ();
+}   
+
+
+=head2 SQLStatementLog
+
+Returns the current SQL statement log as an array of arrays. Each entry is a triple of 
+
+(Time,  Statement, Duration)
+
+=cut
+
+sub SQLStatementLog {
+    my $self = shift;
+    return  (@{$self->{'StatementLog'}});
+
+}
+
 
 # {{{ AutoCommit
 
@@ -317,35 +374,35 @@ string will be inserted into the query directly rather then as a binding.
 
 sub UpdateRecordValue {
     my $self = shift;
-    my %args = (
-        Table         => undef,
-        Column        => undef,
-        IsSQLFunction => undef,
-        PrimaryKeys   => undef,
-        @_
-    );
+    my %args = ( Table         => undef,
+                 Column        => undef,
+                 IsSQLFunction => undef,
+                 PrimaryKeys   => undef,
+                 @_ );
 
     my @bind  = ();
-    my $query = 'UPDATE ' . $args{'Table'} . ' SET ' . $args{'Column'} . ' = ';
+    my $query = 'UPDATE ' . $args{'Table'} . ' ';
+     $query .= 'SET '    . $args{'Column'} . '=';
 
-    ## Look and see if the field is being updated via a SQL function.
-    if ( $args{'IsSQLFunction'} ) {
-        $query .= $args{'Value'} . ' ';
-    }
-    else {
-        $query .= " ? " ; 
-        push @bind, $args{'Value'};
-    }
+  ## Look and see if the field is being updated via a SQL function. 
+  if ($args{'IsSQLFunction'}) {
+     $query .= $args{'Value'} . ' ';
+  }
+  else {
+     $query .= '? ';
+     push (@bind, $args{'Value'});
+  }
 
-    ## Constructs the where clause.
-    my @cols;
-    foreach my $key ( keys %{ $args{'PrimaryKeys'} } ) {
-        push @cols, "$key = ? ";
-        push @bind, { value => $args{PrimaryKeys}{$key}, is_numeric => 1 };
-    }
-
-    $query .= "WHERE " . join( ' AND ', @cols );
-    return ( $self->SimpleQuery( $query, @bind ) );
+  ## Constructs the where clause.
+  my $where  = 'WHERE ';
+  foreach my $key (keys %{$args{'PrimaryKeys'}}) {
+     $where .= $key . "=?" . " AND ";
+     push (@bind, $args{'PrimaryKeys'}{$key});
+  }
+     $where =~ s/AND\s$//;
+  
+  my $query_str = $query . $where;
+  return ($self->SimpleQuery($query_str, @bind));
 }
 
 
@@ -381,100 +438,75 @@ Execute the SQL string specified in QUERY_STRING
 
 =cut
 
-sub SimpleQuery {
-    my $self        = shift;
+sub SimpleQuery  {
+    my $self = shift;
     my $QueryString = shift;
     my @bind_values = (@_);
 
-    ($QueryString, @bind_values) = $self->EmulatePlaceholders($QueryString, @bind_values) if ($QueryString =~ /^\s*(?:INSERT|UPDATE)/i); 
-    use Data::Dumper;
     my $sth = $self->dbh->prepare($QueryString);
     unless ($sth) {
-        Carp::cluck;
-        warn "$self couldn't prepare the query '$QueryString'"
-          . $self->dbh->errstr . "\n";
-        my $rv = Class::ReturnValue->new();
-        $rv->as_error(
-            errno   => '-1',
-            message => "Couldn't prepare the query '$QueryString'."
-              . $self->dbh->errstr,
-            do_backtrace => undef
-        );
-        return $rv->return_value;
+	if ($DEBUG) {
+	    die "$self couldn't prepare the query '$QueryString'" . 
+	      $self->dbh->errstr . "\n";
+	}
+	else {
+	    warn "$self couldn't prepare the query '$QueryString'" . 
+	      $self->dbh->errstr . "\n";
+        my $ret = Class::ReturnValue->new();
+        $ret->as_error( errno => '-1',
+                            message => "Couldn't prepare the query '$QueryString'.". $self->dbh->errstr,
+                            do_backtrace => undef);
+	    return ($ret->return_value);
+	}
     }
 
-
-    # Check @bind_values for HASH refs
-    for ( my $bind_idx = 0 ; $bind_idx < scalar @bind_values ; $bind_idx++ ) {
-        if ( ref( $bind_values[$bind_idx] ) eq "HASH" ) {
+    # Check @bind_values for HASH refs 
+    for (my $bind_idx = 0; $bind_idx < scalar @bind_values; $bind_idx++) {
+        if (ref($bind_values[$bind_idx]) eq "HASH") {
             my $bhash = $bind_values[$bind_idx];
             $bind_values[$bind_idx] = $bhash->{'value'};
             delete $bhash->{'value'};
-            if ($bhash->{sql_type}) {
-                $sth->bind_param( $bind_idx + 1, undef, $bhash->{sql_type} );
-            } else {
-                $sth->bind_param( $bind_idx + 1, undef, $bhash );
-
-            }
+            $sth->bind_param($bind_idx+1, undef, $bhash );
         }
     }
-    unless ( $sth->execute(@bind_values) ) {
-        Carp::cluck("Failed on $QueryString");
-        warn "$self couldn't execute the query '$QueryString'";
 
-        my $rv = Class::ReturnValue->new();
-        $rv->as_error(
-            errno   => '-1',
-            message => "Couldn't execute the query '$QueryString'"
-              . $self->dbh->errstr,
-            do_backtrace => undef
-        );
-        return $rv->return_value;
+    my $basetime;
+    if ($self->LogSQLStatements) {
+        $basetime = Time::HiRes::time(); 
     }
 
-    return ($sth);
+    my $executed =$sth->execute(@bind_values);
 
-}
+    if ($self->LogSQLStatements) {
+            $self->_LogSQLStatement($QueryString ,tv_interval ( $basetime ));
+ 
+    }
 
-# }}}
+    unless($executed ) {
+        if ($DEBUG) {
+            die "$self couldn't execute the query '$QueryString'"
+              . $self->dbh->errstr . "\n";
 
-sub EmulatePlaceholders {
-    use Data::Dumper;
-    my $self        = shift;
-    my $QueryString = shift;
-    my @bind_values = (@_);
-
-    
-    # Replace, starting from the back of the string, so we don't
-    # confuse some chunk of a value with a placeholder
-    my $new_query = "";
-    my @query_chunks = split( /\s*\?\s*/, $QueryString );
-    foreach my $chunk ( @query_chunks ) {
-    my $value;
-        $new_query .= $chunk;
-    if (exists $bind_values[0]) {
-        my $bind_value = shift @bind_values;
-        if (ref $bind_value && $bind_value->{is_numeric}) {
-            $value = $bind_value->{value};
-        }  
-        elsif (ref $bind_value && $bind_value->{is_blob}) {
-            # Sybase tries to quote blobs with 0x, which doesn't work so
-            # well for inline blobs ;)
-            $value = $self->dbh->quote($bind_value->{'value'});
-        }
-        elsif ( ref $bind_value) {
-            $value = $self->dbh->quote( $bind_value->{value},
-                $bind_value->{sql_type} );
         }
         else {
-            $value = $self->dbh->quote($bind_value);
-        }
-        $new_query .= " $value ";
-    }
-    }
-    return ($new_query);
+            warn "$self couldn't execute the query '$QueryString'";
 
-}
+              my $ret = Class::ReturnValue->new();
+            $ret->as_error(
+                         errno   => '-1',
+                         message => "Couldn't execute the query '$QueryString'"
+                           . $self->dbh->errstr,
+                         do_backtrace => undef );
+            return ($ret->return_value);
+        }
+
+    }
+    return ($sth);
+    
+    
+  }
+
+# }}}
 
 # {{{ sub FetchResult
 
@@ -826,10 +858,7 @@ sub Join {
 
         }
 
-        unless ($alias) {
-            return ( $self->_NormalJoin(%args) );
-        }
-        if ( $args{'ALIAS1'} ) {
+        if ( !$alias || $args{'ALIAS1'} ) {
             return ( $self->_NormalJoin(%args) );
         }
 
@@ -910,8 +939,16 @@ sub _BuildJoins {
 
     $seen_aliases{'main'} = 1;
 
+   	# We don't want to get tripped up on a dependency on a simple alias. 
+    	foreach my $alias ( @{ $sb->{'aliases'}} ) {
+          if ( $alias =~ /^(.*?)\s+(.*?)$/ ) {
+              $seen_aliases{$2} = 1;
+          }
+    }
+
     my $join_clause = $sb->{'table'} . " main ";
 
+	
     my @keys = ( keys %{ $sb->{'left_joins'} } );
     my %seen;
 

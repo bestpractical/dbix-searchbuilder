@@ -5,7 +5,7 @@ package DBIx::SearchBuilder;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "1.02_03";
+$VERSION = "1.12_01";
 
 =head1 NAME
 
@@ -44,10 +44,8 @@ sub new {
 
 sub _Init {
     my $self = shift;
-    my %args = (
-        Handle => undef,
-        @_
-    );
+    my %args = ( Handle => undef,
+                 @_ );
     $self->{'DBIxHandle'} = $args{'Handle'};
 
     $self->CleanSlate();
@@ -114,153 +112,63 @@ sub _Handle {
 
 sub _DoSearch {
     my $self = shift;
-    my ( $QueryString, $Order );
 
-    # The initial SELECT or SELECT DISTINCT is decided later
+    my $QueryString = $self->BuildSelectQuery();
 
-    $QueryString = $self->_BuildJoins . " ";
-    $QueryString .= $self->_WhereClause . " "
-      if ( $self->_isLimited > 0 );
-
-    # DISTINCT query only required for multi-table selects
-    if ( $self->_isJoined ) {
-        $self->_DistinctQuery( \$QueryString, $self->{'table'} );
-    }
-    else {
-        $QueryString = "SELECT main.* FROM $QueryString";
-    }
-
-    $QueryString .= $self->_OrderClause;
-
-    $self->_ApplyLimits( \$QueryString );
-
-    print STDERR "DBIx::SearchBuilder->DoSearch Query:  $QueryString\n"
-      if ( $self->DEBUG );
-
-    # {{{ get $self->{'records'} out of the database
-    eval { $self->{'records'} = $self->_Handle->dbh->prepare($QueryString); };
-    if ($@) {
-        warn "$self couldn't prepare '$QueryString' " . $@;
-        return (undef);
-    }
-
-    if ( !$self->{'records'} ) {
-        warn "Error:" . $self->_Handle->dbh->errstr . "\n";
-        return (undef);
-    }
     eval {
-        if ( !$self->{'records'}->execute )
-        {
-            warn "DBIx::SearchBuilder error:"
-              . $self->{'records'}->errstr
-              . "\n\tQuery String is $QueryString\n";
-            return (undef);
+
+        # TODO: finer-grained eval and cheking.
+       my  $records = $self->_Handle->SimpleQuery($QueryString);
+        my $counter;
+        $self->{'rows'} = 0;
+        while ( my $row = $records->fetchrow_hashref() ) {
+            my $item = $self->NewItem();
+            $item->LoadFromHash($row);
+            $self->AddRecord($item);
         }
+
+        $self->{'must_redo_search'} = 0;
     };
-    if ($@) {
-        warn "$self couldn't execute a search: " . $@;
-        return (undef);
-    }
 
-    # }}}
-
-    my $counter = 0;
-
-    # {{{ Iterate through all the rows returned and get child objects
-
-    while ( my $row = $self->{'records'}->fetchrow_hashref() ) {
-
-        $self->{'items'}[$counter] = $self->NewItem();
-        $self->{'items'}[$counter]->LoadFromHash($row);
-
-        print STDERR "ID is " . $self->{'items'}[$counter]->Id() . "\n"
-          if ( $self->DEBUG );
-
-        $counter++;
-    }
-
-    #How many rows did we get out of that?
-    $self->{'rows'} = $counter;
-
-    # TODO: It makes sense keeping and reusing the records statement
-    # handler.  Anyway, I don't see that we need it anymore with the
-    # current design, and the statement handler will not easily be
-    # stored persistantly.
-
-    $self->{records}->finish;
-    delete $self->{records};
-
-    # }}}
-
-    $self->{'must_redo_search'} = 0;
-
-    return ( $self->Count );
+    return ( $self->{'rows'});
 }
 
 # }}}
+
+=head2 AddRecord RECORD
+
+    Adds a record object to this collection
+
+=cut
+
+sub AddRecord {
+    my $self = shift;
+    my $record = shift;
+   push @{$self->{'items'}}, $record;
+   $self->{'rows'}++; 
+}
+
 
 # {{{ sub _DoCount
 
 sub _DoCount {
     my $self = shift;
     my $all  = shift || 0;
-    my ( $QueryString, $Order );
 
-    #TODO refactor DoSearch and DoCount such that we only have
-    # one place where we build most of the querystring
-    $QueryString .= $self->_BuildJoins . " ";
-
-    $QueryString .= $self->_WhereClause . " "
-      if ( $self->_isLimited > 0 );
-
-    # DISTINCT query only required for multi-table selects
-    if ( $self->_isJoined ) {
-        $QueryString = $self->_Handle->DistinctCount( \$QueryString );
-    }
-    else {
-        $QueryString = "SELECT count(main.id) FROM " . $QueryString;
-    }
-
-    print STDERR "DBIx::SearchBuilder->DoSearch Query:  $QueryString\n"
-      if ( $self->DEBUG );
-
-    # {{{ get count out of the database
-    eval { $self->{'records'} = $self->_Handle->dbh->prepare($QueryString); };
-    if ($@) {
-        warn "$self couldn't prepare '$QueryString' " . $@;
-        return (undef);
-    }
-
-    if ( !$self->{'records'} ) {
-        warn "Error:" . $self->_Handle->dbh->errstr . "\n";
-        return (undef);
-    }
+    my $QueryString = $self->BuildSelectCountQuery();
     eval {
-        if ( !$self->{'records'}->execute )
-        {
-            warn "DBIx::SearchBuilder error:"
-              . $self->{'records'}->errstr
-              . "\n\tQuery String is $QueryString\n";
-            return (undef);
-        }
+        # TODO: finer-grained Eval
+        my $records     = $self->_Handle->SimpleQuery($QueryString);
+
+        my @row = $records->fetchrow_array();
+        $self->{ $all ? 'count_all' : 'raw_rows' } = $row[0];
+
+        return ( $row[0] );
     };
-    if ($@) {
-        warn "$self couldn't execute a search: " . $@;
-        return (undef);
-    }
-
-    # }}}
-
-    my @row = $self->{'records'}->fetchrow_array();
-    $self->{ $all ? 'count_all' : 'raw_rows' } = $row[0];
-
-    $self->{records}->finish;
-    delete $self->{records};
-
-    return ( $row[0] );
 }
 
 # }}}
+
 
 =head2 _ApplyLimits STATEMENTREF
 
@@ -271,18 +179,17 @@ starting with $self->FirstRow
 
 =cut
 
+
 sub _ApplyLimits {
     my $self = shift;
     my $statementref = shift;
-    $self->_Handle->ApplyLimits( $statementref, $self->RowsPerPage,
-        $self->FirstRow );
+    $self->_Handle->ApplyLimits($statementref, $self->RowsPerPage, $self->FirstRow);
     $$statementref =~ s/main\.\*/join(', ', @{$self->{columns}})/eg
-      if $self->{columns}
-      and @{ $self->{columns} };
-    if ( my $groupby = $self->_GroupClause ) {
-        $$statementref =~ s/(LIMIT \d+)?$/$groupby $1/;
+	if $self->{columns} and @{$self->{columns}};
+    if (my $groupby = $self->_GroupClause) {
+	$$statementref =~ s/(LIMIT \d+)?$/$groupby $1/;
     }
-
+    
 }
 
 # {{{ sub _DistinctQuery
@@ -301,12 +208,11 @@ sub _DistinctQuery {
     my $table = shift;
 
     # XXX - Postgres gets unhappy with distinct and OrderBy aliases
-    if ( $self->{order_clause} =~ /(?<!main)\./ ) {
-        $self->DEBUG(1);
+    if ($self->{order_clause} =~ /(?<!main)\./) {
         $$statementref = "SELECT main.* FROM $$statementref";
     }
     else {
-        $self->_Handle->DistinctQuery( $statementref, $table );
+	$self->_Handle->DistinctQuery($statementref, $table)
     }
 }
 
@@ -319,6 +225,7 @@ sub _DistinctQuery {
 Build up all of the joins we need to perform this query
 
 =cut
+
 
 sub _BuildJoins {
     my $self = shift;
@@ -338,20 +245,22 @@ Returns true if this Searchbuilder requires joins between tables
 
 sub _isJoined {
     my $self = shift;
-    if ( keys( %{ $self->{'left_joins'} } ) ) {
-        return (1);
-    }
-    else {
-        return ( @{ $self->{'aliases'} } );
+    if (keys(%{$self->{'left_joins'}})) {
+        return(1);
+    } else {
+        return(@{$self->{'aliases'}});
     }
 
 }
 
 # }}}
 
+
 # {{{ sub _LimitClause
 
 # LIMIT clauses are used for restricting ourselves to subsets of the search.
+
+
 
 sub _LimitClause {
     my $self = shift;
@@ -386,6 +295,73 @@ sub _isLimited {
 # }}}
 
 # }}} Private utility methods
+
+# {{{ BuildSelectQuery
+
+=head2 BuildSelectQuery
+
+Builds a query string for a "SELECT rows from Tables" statement for this SB
+object
+
+=cut
+
+sub BuildSelectQuery {
+    my $self = shift;
+
+    # The initial SELECT or SELECT DISTINCT is decided later
+
+    my $QueryString = $self->_BuildJoins . " ";
+    $QueryString .= $self->_WhereClause . " "
+      if ( $self->_isLimited > 0 );
+
+    # DISTINCT query only required for multi-table selects
+    if ($self->_isJoined) {
+        $self->_DistinctQuery(\$QueryString, $self->{'table'});
+    } else {
+        $QueryString = "SELECT main.* FROM $QueryString";
+    }
+
+    $QueryString .= $self->_OrderClause;
+
+    $self->_ApplyLimits(\$QueryString);
+
+    return($QueryString)
+
+}
+
+# }}}
+
+# {{{ BuildSelectCountQuery
+
+=head2 BuildSelectCountQuery
+
+Builds a SELECT statement to find the number of rows this SB object would find.
+
+=cut
+
+sub BuildSelectCountQuery {
+    my $self = shift;
+
+    #TODO refactor DoSearch and DoCount such that we only have
+    # one place where we build most of the querystring
+    my $QueryString = $self->_BuildJoins . " ";
+
+    $QueryString .= $self->_WhereClause . " "
+      if ( $self->_isLimited > 0 );
+
+
+
+    # DISTINCT query only required for multi-table selects
+    if ($self->_isJoined) {
+        $QueryString = $self->_Handle->DistinctCount(\$QueryString);
+    } else {
+        $QueryString = "SELECT count(main.id) FROM " . $QueryString;
+    }
+
+    return ($QueryString);
+}
+
+# }}}
 
 # {{{ Methods dealing traversing rows within the found set
 
@@ -438,6 +414,7 @@ sub GotoFirstItem {
 # }}}
 
 # {{{ sub GotoItem
+
 
 =head2 GotoItem
 
@@ -641,21 +618,31 @@ sub Limit {
             my $tmp = $self->_Handle->dbh->quote( $args{'VALUE'} );
 
             # Accomodate DBI drivers that don't understand UTF8
-            if ( $] >= 5.007 ) {
-                require Encode;
-                Encode::_utf8_on($tmp) if Encode::is_utf8( $args{'VALUE'} );
-
+	    if ($] >= 5.007) {
+	        require Encode;
+	        if( Encode::is_utf8( $args{'VALUE'} ) ) {
+	            Encode::_utf8_on( $tmp );
+	        }
             }
-            $args{'VALUE'} = $tmp;
+	    $args{'VALUE'} = $tmp;
         }
     }
 
     $Alias = $self->_GenericRestriction(%args);
 
+    warn "No table alias set!"
+      unless $Alias;
+
     # We're now limited. people can do searches.
+
     $self->_isLimited(1);
 
+    if ( defined($Alias) ) {
         return ($Alias);
+    }
+    else {
+        return (1);
+    }
 }
 
 # }}}
@@ -702,8 +689,7 @@ sub ImportRestrictions {
 
 sub _GenericRestriction {
     my $self = shift;
-    my %args = (
-        TABLE           => $self->{'table'},
+    my %args = ( TABLE           => $self->{'table'},
                  FIELD           => undef,
                  VALUE           => undef,
                  ALIAS           => undef,
@@ -713,38 +699,62 @@ sub _GenericRestriction {
                  SUBCLAUSE       => undef,
                  CASESENSITIVE   => undef,
                  QUOTEVALUE     => undef,
-        @_
-    );
+                 @_ );
+
+    my ( $Clause, $QualifiedField );
+
+    #TODO: $args{'VALUE'} should take an array of values and generate
+    # the proper where clause.
 
     #If we're performing a left join, we really want the alias to be the
     #left join criterion.
 
     if (    ( defined $args{'LEFTJOIN'} )
-        && ( !defined $args{'ALIAS'} ) )
-    {
+         && ( !defined $args{'ALIAS'} ) ) {
         $args{'ALIAS'} = $args{'LEFTJOIN'};
     }
+
+    # {{{ if there's no alias set, we need to set it
 
     unless ( $args{'ALIAS'} ) {
 
         #if the table we're looking at is the same as the main table
-        # this code assumes no self joins on that table.
         if ( $args{'TABLE'} eq $self->{'table'} ) {
+
+            # TODO this code assumes no self joins on that table.
+            # if someone can name a case where we'd want to do that,
+            # I'll change it.
+
             $args{'ALIAS'} = 'main';
         }
+
+        # {{{ if we're joining, we need to work out the table alias
+
         else {
             $args{'ALIAS'} = $self->NewAlias( $args{'TABLE'} );
         }
 
+        # }}}
     }
 
-    my $QualifiedField = $args{'ALIAS'} . "." . $args{'FIELD'};
+    # }}}
 
-    # If we've been handed a subclause, we want to use that,
-    # otherwise, we put together one subclause per ALIAS/FIELD combo
-    my $Clause = ( $args{'SUBCLAUSE'} || $QualifiedField );
+    # Set this to the name of the field and the alias, unless we've been
+    # handed a subclause name
 
-    my $restriction;
+    $QualifiedField = $args{'ALIAS'} . "." . $args{'FIELD'};
+
+    if ( $args{'SUBCLAUSE'} ) {
+        $Clause = $args{'SUBCLAUSE'};
+    }
+    else {
+        $Clause = $QualifiedField;
+    }
+
+    print STDERR "$self->_GenericRestriction QualifiedField=$QualifiedField\n"
+      if ( $self->DEBUG );
+
+    my ($restriction);
 
     # If we're trying to get a leftjoin restriction, lets set
     # $restriction to point htere. otherwise, lets construct normally
@@ -759,12 +769,7 @@ sub _GenericRestriction {
 
     # If it's a new value or we're overwriting this sort of restriction,
 
-    if (   $self->_Handle->CaseSensitive
-        && defined $args{'VALUE'}
-        && $args{'VALUE'} ne ''
-        && $args{'VALUE'} ne "''"
-        && ( $args{'OPERATOR'} !~ /IS/ && $args{'VALUE'} !~ /^null$/i ) )
-    {
+    if ( $self->_Handle->CaseSensitive && defined $args{'VALUE'} && $args{'VALUE'} ne ''  && $args{'VALUE'} ne "''" && ($args{'OPERATOR'} !~/IS/ && $args{'VALUE'} !~ /^null$/i)) {
 
         unless ( $args{'CASESENSITIVE'} || !$args{'QUOTEVALUE'} ) {
                ( $QualifiedField, $args{'OPERATOR'}, $args{'VALUE'} ) =
@@ -783,15 +788,13 @@ sub _GenericRestriction {
         delete $self->{_open_parens}{$Clause};
     }
 
-    if (
-        (
-            defined $args{'ENTRYAGGREGATOR'}
-            && $args{'ENTRYAGGREGATOR'} eq 'none'
-        )
-        || !$$restriction
-      )
-    {
+    if ( (     ( exists $args{'ENTRYAGGREGATOR'} )
+           and ( $args{'ENTRYAGGREGATOR'} || "" ) eq 'none' )
+         or ( !$$restriction )
+      ) {
+
         $$restriction = $prefix . $clause;
+
     }
     else {
         $$restriction .= $args{'ENTRYAGGREGATOR'} . $prefix . $clause;
@@ -841,15 +844,14 @@ sub _WhereClause {
     my $self = shift;
     my ( $subclause, $where_clause );
 
-#Go through all the generic restrictions and build up the "generic_restrictions" subclause
-# That's the only one that SearchBuilder builds itself.
-# Arguably, the abstraction should be better, but I don't really see where to put it.
+    #Go through all the generic restrictions and build up the "generic_restrictions" subclause
+    # That's the only one that SearchBuilder builds itself.
+    # Arguably, the abstraction should be better, but I don't really see where to put it.
     $self->_CompileGenericRestrictions();
 
     #Go through all restriction types. Build the where clause from the
     #Various subclauses.
     foreach $subclause ( keys %{ $self->{'subclauses'} } ) {
-
         # Now, build up the where clause
         if ( defined($where_clause) ) {
             $where_clause .= " AND ";
@@ -910,7 +912,7 @@ ORDER defaults to ASC(ending).  DESC(ending) is also a valid value for OrderBy
 
 sub OrderBy {
     my $self = shift;
-    my %args = (@_);
+    my %args = ( @_ );
 
     $self->OrderByCols( \%args );
 }
@@ -928,34 +930,31 @@ sub OrderByCols {
     my $row;
     my $clause;
 
-    foreach $row (@args) {
+    foreach $row ( @args ) {
 
-        my %rowhash = (
-            ALIAS => 'main',
-            FIELD => undef,
-            ORDER => 'ASC',
-            %$row
-        );
-        if ( $rowhash{'ORDER'} =~ /^des/i ) {
-            $rowhash{'ORDER'} = "DESC";
+        my %rowhash = ( ALIAS => 'main',
+			FIELD => undef,
+			ORDER => 'ASC',
+			%$row
+		      );
+        if ($rowhash{'ORDER'} =~ /^des/i) {
+	    $rowhash{'ORDER'} = "DESC";
         }
         else {
-            $rowhash{'ORDER'} = "ASC";
+	    $rowhash{'ORDER'} = "ASC";
         }
 
-        if (    ( $rowhash{'ALIAS'} )
-            and ( $rowhash{'FIELD'} )
-            and ( $rowhash{'ORDER'} ) )
-        {
+        if ( ($rowhash{'ALIAS'}) and
+	     ($rowhash{'FIELD'}) and
+             ($rowhash{'ORDER'}) ) {
 
-            if ( $rowhash{'FIELD'} =~ /^(\w+\()(.*\))$/ ) {
+	    if ($rowhash{'FIELD'} =~ /^(\w+\()(.*\))$/) {
+		# handle 'FUNCTION(FIELD)' formatted fields
+		$rowhash{'ALIAS'} = $1 . $rowhash{'ALIAS'};
+		$rowhash{'FIELD'} = $2;
+	    }
 
-                # handle 'FUNCTION(FIELD)' formatted fields
-                $rowhash{'ALIAS'} = $1 . $rowhash{'ALIAS'};
-                $rowhash{'FIELD'} = $2;
-            }
-
-            $clause .= ( $clause ? ", " : " " );
+            $clause .= ($clause ? ", " : " ");
             $clause .= $rowhash{'ALIAS'} . ".";
             $clause .= $rowhash{'FIELD'} . " ";
             $clause .= $rowhash{'ORDER'};
@@ -963,15 +962,15 @@ sub OrderByCols {
     }
 
     if ($clause) {
-        $self->{'order_clause'} = "ORDER BY" . $clause;
+	$self->{'order_clause'} = "ORDER BY" . $clause;
     }
     else {
-        $self->{'order_clause'} = "";
+	$self->{'order_clause'} = "";
     }
     $self->RedoSearch();
 }
 
-# }}}
+# }}} 
 
 # {{{ sub _OrderClause
 
@@ -985,9 +984,86 @@ sub _OrderClause {
     my $self = shift;
 
     unless ( defined $self->{'order_clause'} ) {
-        return "";
+	return "";
     }
-    return ( $self->{'order_clause'} );
+    return ($self->{'order_clause'});
+}
+
+# }}}
+
+# }}}
+
+# {{{ Routines dealing with grouping
+
+# {{{ GroupBy (OBSOLETE)
+
+=head2 GroupBy
+
+OBSOLUTE. You want GroupByCols
+
+=cut
+
+sub GroupBy {
+    my $self = shift;
+    $self->GroupByCols( @_);
+}
+# }}}
+
+# {{{ GroupByCols
+
+=head2 GroupByCols ARRAY_OF_HASHES
+
+Each hash contains the keys ALIAS and FIELD. ALIAS defaults to 'main' if ignored.
+
+=cut
+
+sub GroupByCols {
+    my $self = shift;
+    my @args = @_;
+    my $row;
+    my $clause;
+
+    foreach $row ( @args ) {
+        my %rowhash = ( ALIAS => 'main',
+			FIELD => undef,
+			%$row
+		      );
+
+        if ( ($rowhash{'ALIAS'}) and
+             ($rowhash{'FIELD'}) ) {
+
+            $clause .= ($clause ? ", " : " ");
+            $clause .= $rowhash{'ALIAS'} . ".";
+            $clause .= $rowhash{'FIELD'};
+        }
+    }
+
+    if ($clause) {
+	$self->{'group_clause'} = "GROUP BY" . $clause;
+    }
+    else {
+	$self->{'group_clause'} = "";
+    }
+    $self->RedoSearch();
+}
+# }}} 
+
+# {{{ _GroupClause
+
+=head2 _GroupClause
+
+Private function to return the "GROUP BY" clause for this query.
+
+
+=cut
+
+sub _GroupClause {
+    my $self = shift;
+
+    unless ( defined $self->{'group_clause'} ) {
+	    return "";
+    }
+    return ($self->{'group_clause'});
 }
 
 # }}}
@@ -1014,7 +1090,7 @@ sub NewAlias {
 
     my $subclause = "$table $alias";
 
-    push( @{ $self->{'aliases'} }, $subclause );
+    push ( @{ $self->{'aliases'} }, $subclause );
 
     return $alias;
 }
@@ -1127,8 +1203,7 @@ sub GotoPage {
 
     if ( $self->RowsPerPage ) {
     	$self->FirstRow( 1 + ( $self->RowsPerPage * $page ) );
-    }
-    else {
+    } else {
         $self->FirstRow(1);
     }
 }
@@ -1209,11 +1284,14 @@ Returns the number of records in the set.
 
 =cut
 
+
+
 sub Count {
     my $self = shift;
 
-    # An unlimited search returns no tickets
-    return 0 unless ( $self->_isLimited );
+    # An unlimited search returns no tickets    
+    return 0 unless ($self->_isLimited);
+
 
     # If we haven't actually got all objects loaded in memory, we
     # really just want to do a quick count from the database.
@@ -1244,16 +1322,37 @@ LimitClause.
 
 =cut
 
+# 22:24 [Robrt(500@outer.space)] It has to do with Caching.
+# 22:25 [Robrt(500@outer.space)] The documentation says it ignores the limit.
+# 22:25 [Robrt(500@outer.space)] But I don't believe thats true.
+# 22:26 [msg(Robrt)] yeah. I
+# 22:26 [msg(Robrt)] yeah. I'm not convinced it does anything useful right now
+# 22:26 [msg(Robrt)] especially since until a week ago, it was setting one variable and returning another
+# 22:27 [Robrt(500@outer.space)] I remember.
+# 22:27 [Robrt(500@outer.space)] It had to do with which Cached value was returned.
+# 22:27 [msg(Robrt)] (given that every time we try to explain it, we get it Wrong)
+# 22:27 [Robrt(500@outer.space)] Because Count can return a different number than actual NumberOfResults
+# 22:28 [msg(Robrt)] in what case?
+# 22:28 [Robrt(500@outer.space)] CountAll _always_ used the return value of _DoCount(), as opposed to Count which would return the cached number of 
+#           results returned.
+# 22:28 [Robrt(500@outer.space)] IIRC, if you do a search with a Limit, then raw_rows will == Limit.
+# 22:31 [msg(Robrt)] ah.
+# 22:31 [msg(Robrt)] that actually makes sense
+# 22:31 [Robrt(500@outer.space)] You should paste this conversation into the CountAll docs.
+# 22:31 [msg(Robrt)] perhaps I'll create a new method that _actually_ do that.
+# 22:32 [msg(Robrt)] since I'm not convinced it's been doing that correctly
+
+
+
 sub CountAll {
     my $self = shift;
 
-    # An unlimited search returns no tickets
-    return 0 unless ( $self->_isLimited );
+    # An unlimited search returns no tickets    
+    return 0 unless ($self->_isLimited);
 
     # If we haven't actually got all objects loaded in memory, we
     # really just want to do a quick count from the database.
-    if ( $self->{'must_redo_search'} || !$self->{'count_all'} ) {
-
+    if ( $self->{'must_redo_search'} || !$self->{'count_all'}) {
         # If we haven't already asked the database for the row count, do that
         $self->_DoCount(1) unless ( $self->{'count_all'} );
 
@@ -1269,6 +1368,7 @@ sub CountAll {
 }
 
 # }}}
+
 
 # {{{ sub IsLast
 
@@ -1303,24 +1403,40 @@ sub DEBUG {
 
 # }}}
 
+
+
+
 # }}}
 
+# {{{ Column
+
+=head2 Column { FIELD => undef } 
+
+Specify that we want to load the column  FIELD. 
+
+Other parameters are TABLE ALIAS AND FUNCTION.
+
+Autrijus and Ruslan owe docs.
+
+=cut
+
 sub Column {
-    my ( $self, %args ) = @_;
-    my $table;
+    my $self = shift;
+    my %args = ( TABLE => undef,
+               ALIAS => undef,
+               FIELD => undef,
+               FUNCTION => undef,
+               @_);
 
-    if ( $args{TABLE} ) {
-        $table = $args{TABLE};
-    }
-    elsif ( $args{ALIAS} =~ /^(.*?)_\d+$/ ) {
-
-        # this code relies on the fact that RT generates table aliases
-        # of the form TableName_Number to create table aliases.
-        $table = $1;
-    }
-    else {
-        $table = $self->{table};
-    }
+    my $table = $args{TABLE} || do {
+        if ( my $alias = $args{ALIAS} ) {
+            $alias =~ s/_\d+$//;
+            $alias;
+        }
+        else {
+            $self->{table};
+        }
+    };
 
     my $name = ( $args{ALIAS} || 'main' ) . '.' . $args{FIELD};
     if ( my $func = $args{FUNCTION} ) {
@@ -1338,14 +1454,41 @@ sub Column {
     return $column;
 }
 
+# }}}
+
+# {{{ Columns 
+
+
+=head2 Columns LIST
+
+Specify that we want to load only the columns in LIST
+
+=cut
+
 sub Columns {
     my $self = shift;
     $self->Column( FIELD => $_ ) for @_;
 }
 
+# }}}
+
+# {{{ Fields
+
+=head2 Fields TABLE
+ 
+Return a list of fields in TABLE, lowercased.
+
+TODO: Why are they lowercased?
+
+=cut
+
 sub Fields {
-    my ( $self, $table ) = @_;
+    my $self  = shift;
+    my $table = shift;
+
     my $dbh = $self->_Handle->dbh;
+
+    # TODO: memoize this
 
     return map lc( $_->[0] ), @{
         eval {
@@ -1354,70 +1497,58 @@ sub Fields {
           || $dbh->selectall_arrayref("DESCRIBE $table;")
           || $dbh->selectall_arrayref("DESCRIBE \u$table;")
           || []
-    };
+      };
 }
 
+# }}}
+
+
+# {{{ HasField
+
+=head2 HasField  { TABLE => undef, FIELD => undef }
+
+Returns true if TABLE has field FIELD.
+Return false otherwise
+
+=cut
+
 sub HasField {
-    my ( $self, %args ) = @_;
+    my $self = shift;
+    my %args = ( FIELD => undef,
+                 TABLE => undef,
+                 @_);
+
     my $table = $args{TABLE} or die;
     my $field = $args{FIELD} or die;
     return grep { $_ eq $field } $self->Fields($table);
 }
 
+# }}}
+
+# {{{ SetTable
+
+=head2 Table [TABLE]
+
+If called with an arguemnt, sets this collection's table.
+
+Always returns this collection's table.
+
+=cut
+
 sub SetTable {
     my $self = shift;
-    $self->{table} = shift;
+    return $self->Table(@_);
+}
+
+sub Table {
+    my $self = shift;
+    $self->{table} = shift if (@_);
     return $self->{table};
 }
 
-sub Table { $_[0]->{table} }
 
-sub GroupBy {
-    my $self = shift;
-    my %args = (@_);
-    $self->GroupByCols( \%args );
-}
+# }}}
 
-sub GroupByCols {
-    my $self = shift;
-    my @args = @_;
-    my $row;
-    my $clause;
-
-    foreach $row (@args) {
-        my %rowhash = (
-            ALIAS => 'main',
-            FIELD => undef,
-            %$row
-        );
-
-        if (    ( $rowhash{'ALIAS'} )
-            and ( $rowhash{'FIELD'} ) )
-        {
-
-            $clause .= ( $clause ? ", " : " " );
-            $clause .= $rowhash{'ALIAS'} . ".";
-            $clause .= $rowhash{'FIELD'};
-        }
-    }
-
-    if ($clause) {
-        $self->{'group_clause'} = "GROUP BY" . $clause;
-    }
-    else {
-        $self->{'group_clause'} = "";
-    }
-    $self->RedoSearch();
-}
-
-sub _GroupClause {
-    my $self = shift;
-
-    unless ( defined $self->{'group_clause'} ) {
-        return "";
-    }
-    return ( $self->{'group_clause'} );
-}
 
 1;
 __END__
