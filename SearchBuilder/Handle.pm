@@ -780,7 +780,6 @@ sub ApplyLimits {
 
 # }}}
 
-
 # {{{ Join
 
 =head2 Join { Paramhash }
@@ -997,7 +996,6 @@ sub DistinctQuery {
 }
 
 # }}}
-
 
 # {{{ DistinctCount
 

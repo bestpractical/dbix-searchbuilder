@@ -1,11 +1,10 @@
-# $Header: /home/jesse/DBIx-SearchBuilder/history/SearchBuilder/Handle/Sybase.pm,v 1.8 2001/10/12 05:27:05 jesse Exp $
+use strict;
 
 package DBIx::SearchBuilder::Handle::Sybase;
 use DBIx::SearchBuilder::Handle;
-@ISA = qw(DBIx::SearchBuilder::Handle);
+use base qw(DBIx::SearchBuilder::Handle);
 
-use vars qw($VERSION @ISA $DBIHandle $DEBUG);
-use strict;
+use vars qw($VERSION $DEBUG);
 
 =head1 NAME
 
@@ -106,8 +105,9 @@ sub ApplyLimits {
 }
 
 
-=head2 DistinctQuery STATEMENTREFtakes an incomplete SQL SELECT statement and massages it to return a DISTINCT result set.
+=head2 DistinctQuery STATEMENTREF
 
+takes an incomplete SQL SELECT statement and massages it to return a DISTINCT result set.
 
 =cut
 
@@ -136,7 +136,11 @@ sub BinarySafeBLOBs {
     return(undef);
 }
 
-# }}}
 
-# }}}
+=head2 NativeSearchPaging 
 
+Sybase can't handle search paging and result set limiting natively.
+
+=cut
+
+1;

@@ -1222,8 +1222,10 @@ Returns the number of rows the database should display.
 
 sub RowsPerPage {
     my $self = shift;
-    $self->{'show_rows'} = shift if (@_);
-
+    if (@_) {
+        $self->{'show_rows'} = shift;
+        $self->RedoSearch();
+    }
     return ( $self->{'show_rows'} );
 }
 
@@ -1280,7 +1282,9 @@ sub _ItemsCounter {
 
 =head2 Count
 
-Returns the number of records in the set.
+Returns the number of records in the record set. If the user has limited down
+to some max number of rows, this should never ever be larger than that number.
+If you want to ignore the search paging, use I<CountAll>
 
 =cut
 
@@ -1318,8 +1322,7 @@ sub Count {
 =head2 CountAll
 
 Returns the total number of potential records in the set, ignoring any
-LimitClause.
-
+search paging.
 =cut
 
 # 22:24 [Robrt(500@outer.space)] It has to do with Caching.
@@ -1347,12 +1350,13 @@ LimitClause.
 sub CountAll {
     my $self = shift;
 
-    # An unlimited search returns no tickets    
-    return 0 unless ($self->_isLimited);
+    # An unlimited search returns no tickets
+    return 0 unless ( $self->_isLimited );
 
     # If we haven't actually got all objects loaded in memory, we
     # really just want to do a quick count from the database.
-    if ( $self->{'must_redo_search'} || !$self->{'count_all'}) {
+    if ( $self->{'must_redo_search'} || !$self->{'count_all'} ) {
+
         # If we haven't already asked the database for the row count, do that
         $self->_DoCount(1) unless ( $self->{'count_all'} );
 
@@ -1365,6 +1369,7 @@ sub CountAll {
     else {
         return ( $self->{'rows'} );
     }
+
 }
 
 # }}}
