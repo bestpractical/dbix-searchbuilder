@@ -1,11 +1,10 @@
-# $Header: /home/jesse/DBIx-SearchBuilder/history/SearchBuilder/Handle/Sybase.pm,v 1.8 2001/10/12 05:27:05 jesse Exp $
+use strict;
 
 package DBIx::SearchBuilder::Handle::Sybase;
 use DBIx::SearchBuilder::Handle;
-@ISA = qw(DBIx::SearchBuilder::Handle);
+use base qw(DBIx::SearchBuilder::Handle);
 
-use vars qw($VERSION @ISA $DBIHandle $DEBUG);
-use strict;
+use vars qw($VERSION $DEBUG);
 
 =head1 NAME
 
@@ -25,6 +24,42 @@ Jesse Vincent, jesse@fsck.com
 perl(1), DBIx::SearchBuilder
 
 =cut
+
+
+
+# {{{ sub Connect 
+
+=head2 Connect PARAMHASH: Driver, Database, Host, User, Password
+
+Takes a paramhash and connects to your DBI datasource. 
+
+
+=cut
+
+sub Connect  {
+  my $self = shift;
+  
+  my %args = ( Driver => undef,
+               Database => undef,
+               User => undef,
+               Password => undef, 
+           SID => undef,
+           Host => undef,
+               @_);
+  
+    $self->SUPER::Connect(%args);
+  
+    # Will return dates in the format
+    #            Nov 15 1998 11:30:11:496AM
+    # It'd be really nice if sybase supported ISO dates.
+    $self->dbh->func('LONG', '_date_fmt');
+     
+    
+    
+    return ($self->dbh);
+}
+# }}}
+
 
 # {{{ sub Insert
 
@@ -67,20 +102,7 @@ sub Insert {
 # }}}
 
 
-=head2 DatabaseVersion
 
-return the database version, trimming off any -foo identifier
-
-=cut
-
-sub DatabaseVersion {
-    my $self = shift;
-    my $v = $self->SUPER::DatabaseVersion();
-
-   $v =~ s/\-(.*)$//;
-   return ($v);
-
-}
 
 =head2 CaseSensitive 
 
@@ -106,8 +128,9 @@ sub ApplyLimits {
 }
 
 
-=head2 DistinctQuery STATEMENTREFtakes an incomplete SQL SELECT statement and massages it to return a DISTINCT result set.
+=head2 DistinctQuery STATEMENTREF
 
+takes an incomplete SQL SELECT statement and massages it to return a DISTINCT result set.
 
 =cut
 
@@ -136,7 +159,5 @@ sub BinarySafeBLOBs {
     return(undef);
 }
 
-# }}}
 
-# }}}
-
+1;

@@ -1,12 +1,11 @@
-# $Header: /home/jesse/DBIx-SearchBuilder/history/SearchBuilder/Handle/Oracle.pm,v 1.14 2002/01/28 06:11:37 jesse Exp $
+use strict;
 
 package DBIx::SearchBuilder::Handle::Oracle;
 use DBIx::SearchBuilder::Handle;
-@ISA = qw(DBIx::SearchBuilder::Handle);
+use base qw(DBIx::SearchBuilder::Handle);
 
-use vars qw($VERSION @ISA $DBIHandle $DEBUG);
+use vars qw($VERSION $DBIHandle $DEBUG);
 
-use strict;
 
 =head1 NAME
 
@@ -27,14 +26,6 @@ perl(1), DBIx::SearchBuilder
 
 =cut
 
-
-sub new  {
-      my $proto = shift;
-      my $class = ref($proto) || $proto;
-      my $self  = {};
-      bless ($self, $class);
-      return ($self);
-}
 
 
 # {{{ sub Connect 
@@ -65,7 +56,7 @@ sub Connect  {
     
     $self->SimpleQuery("ALTER SESSION set NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
     
-    return ($DBIHandle); 
+    return ($self->dbh);
 }
 # }}}
 

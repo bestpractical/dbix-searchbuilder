@@ -259,7 +259,7 @@ sub _gen_alternate_cache_key {
         $value ||= '__undef';
 
         if ( ref($value) eq "HASH" ) { 
-            $value = $value->{operator}.$value->{value}; 
+            $value = ($value->{operator}||'=').$value->{value}; 
         } else {
             $value = "=".$value;
         }    

@@ -579,19 +579,20 @@ overrid __Value.
 *__value = \&__Value;
 sub __Value {
   my $self = shift;
-  my $field = lc(shift);
+  my $field =shift;
 
-  if (!$self->{'fetched'}{$field} and my $id = $self->{'values'}{'id'}) {
+  my $lc_field = lc($field);
+  if (!$self->{'fetched'}{$lc_field} and my $id = $self->{'values'}{'id'}) {
     my $QueryString = "SELECT $field FROM " . $self->Table . " WHERE id = ?";
     my $sth = $self->_Handle->SimpleQuery( $QueryString, $id );
     my ($value) = eval { $sth->fetchrow_array() };
     warn $@ if $@;
 
-    $self->{'values'}{$field} = $value;
-    $self->{'fetched'}{$field} = 1;
+    $self->{'values'}{$lc_field} = $value;
+    $self->{'fetched'}{$lc_field} = 1;
   }
 
-  return($self->{'values'}{$field});
+  return($self->{'values'}{$lc_field});
 }
 # }}}
 # {{{ sub _Value 
@@ -685,6 +686,11 @@ sub __Set {
         $args{'Table'}       = $self->Table();
         $args{'PrimaryKeys'} = { $self->PrimaryKeys() };
 
+        unless ($args{'IsSQLFunction'}) {
+            $args{'Value'} = $self->AnnotateColumnValue($args{'Column'}, $args{Value});
+
+        } 
+
         my $val = $self->_Handle->UpdateRecordValue(%args);
         unless ($val) {
             $ret->as_array( 0,
@@ -702,7 +708,11 @@ sub __Set {
             $self->Load( $self->Id );
         }
         else {
+        if (ref($args{'Value'})) {
+            $self->{'values'}->{"$column"} = $args{'Value'}->{'value'};
+        } else {
             $self->{'values'}->{"$column"} = $args{'Value'};
+        }
         }
     }
     $ret->as_array( 1, "The new value has been set." );
@@ -857,7 +867,7 @@ sub LoadByCols  {
         my $value;
 	my $function = "?";
         if (ref $hash{$key} eq 'HASH') {
-            $op = $hash{$key}->{operator};
+            $op = ($hash{$key}->{operator} || '=');
             $value = $hash{$key}->{value};
             $function = $hash{$key}->{function} || "?";
        } else {
@@ -1056,33 +1066,62 @@ as columns for this recordtype
 
 *create = \&Create;
 
-sub Create  {
-    my $self = shift;
+sub Create {
+    my $self    = shift;
     my %attribs = @_;
 
-    my ($key);
-    foreach $key (keys %attribs) {	
-	my $method = "Validate$key";
-	unless ($self->$method($attribs{$key})) {
-		delete	$attribs{$key};
-	};
-    }
-    unless ($self->_Handle->KnowsBLOBs) {
-        # Support for databases which don't deal with LOBs automatically
-        my $ca = $self->_ClassAccessible();
-        foreach $key (keys %attribs) {
-            if ($ca->{$key}->{'type'} =~ /^(text|longtext|clob|blob|lob)$/i) {
-                my $bhash = $self->_Handle->BLOBParams($key, $ca->{$key}->{'type'});
-                $bhash->{'value'} = $attribs{$key};
-                $attribs{$key} = $bhash;
-            }
+    foreach my $key ( keys %attribs ) {
+        my $method = "Validate$key";
+        unless ( $self->$method( $attribs{$key} ) ) {
+            delete $attribs{$key};
         }
     }
-    return ($self->_Handle->Insert($self->Table, %attribs));
-  }
+
+    foreach my $key ( keys %attribs ) {
+        $attribs{$key} =  $self->AnnotateColumnValue($key, $attribs{$key});
+    }
+    return ( $self->_Handle->Insert( $self->Table, %attribs ) );
+}
 
 # }}}
 
+=head2 AnnotateColumnValue COLUMN VALUE
+
+Peeks inside the ClassAccessible hash to turn a $value into a hash with 
+some useful data, so that the database engine doing an insert or an update
+can figure up how to deal with the datatype in question.
+
+=cut
+
+sub AnnotateColumnValue {
+    my  $self = shift;
+    my $key = shift;
+    my $value = shift;
+    # Support for databases which don't deal with LOBs automatically
+    my $ca = $self->_ClassAccessible();
+     
+        my $bhash;
+
+
+    
+        if ( !$self->_Handle->KnowsBLOBs
+            && $ca->{$key}->{'type'} =~ /^(text|longtext|clob|blob|lob)$/i )
+        {
+            $bhash = $self->_Handle->BLOBParams( $key, $ca->{$key}->{'type'} );
+        }
+
+        if (ref $value) {
+            $bhash = $value;
+        } else {
+            $bhash->{'value'} = $value;
+        }
+        $bhash->{'type'}  = $ca->{$key}->{'type'};
+        $bhash->{'is_numeric'}  = $ca->{$key}->{'is_numeric'};
+        $bhash->{'is_blob'}  = $ca->{$key}->{'is_blob'};
+        $bhash->{'sql_type'}  = $ca->{$key}->{'sql_type'};
+        return $bhash;
+
+}
 # {{{ sub Delete 
 
 *delete =  \&Delete;
