@@ -636,7 +636,8 @@ sub Limit {
         #if we're explicitly told not to to quote the value or
         # we're doing an IS or IS NOT (null), don't quote the operator.
 
-        if ( $args{'QUOTEVALUE'} && $args{'OPERATOR'} !~ /IS/i ) {
+        if ( $args{'QUOTEVALUE'} && $args{'OPERATOR'} !~ /IS/i && $args{'VALUE'} !~ /^\d+$/) {
+            # XXX This should be smarter and not rely on whether the current value is an integer but on whether it's an int field
             my $tmp = $self->_Handle->dbh->quote( $args{'VALUE'} );
 
             # Accomodate DBI drivers that don't understand UTF8
