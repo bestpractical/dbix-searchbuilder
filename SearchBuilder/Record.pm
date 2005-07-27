@@ -426,7 +426,7 @@ sub AUTOLOAD {
         goto &$AUTOLOAD;
     }
     elsif ( $self->_Accessible( $Attrib, 'record-read') ) {
-        *{$AUTOLOAD} = sub { $_[0]->_ToRecord( $Attrib, $_[0]->_Value($Attrib) ) };
+        *{$AUTOLOAD} = sub { $_[0]->_ToRecord( $Attrib, $_[0]->__Value($Attrib) ) };
         goto &$AUTOLOAD;        
     }
     elsif ( $self->_Accessible( $Attrib, 'foreign-collection') ) {
