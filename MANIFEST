@@ -10,8 +10,8 @@ inc/Module/Install/Metadata.pm
 Makefile.PL
 MANIFEST			This list of files
 META.yml
-pm_to_blib
 README
+ROADMAP
 SearchBuilder.pm
 SearchBuilder/Handle.pm
 SearchBuilder/Handle/Informix.pm

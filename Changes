@@ -1,5 +1,12 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.31 Fri Jul 29 12:47:25 EDT 2005
+
+* Updated MANIFEST to fix a build issue - 
+    Thanks to Andy Lester and David Glasser
+
+1.30 Thu Jul 28 10:17:27 EDT 2005
+
 *  Removed {{{ and  }}} fold markers. Patch from Ruslan
 
 1.30_03 Thu Jun  9 01:35:49 EDT 2005
