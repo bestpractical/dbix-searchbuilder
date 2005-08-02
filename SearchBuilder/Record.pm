@@ -336,7 +336,7 @@ this HowTo to discuss using container classes,  overloading, and what
 ever else I think of.
 
 =head1 METHOD NAMING
- 
+
 Each method has a lower case alias; '_' is used to separate words.
 For example, the method C<_PrimaryKeys> has the alias C<_primary_keys>.
 
@@ -593,7 +593,12 @@ sub _ClassAccessibleFromSchema {
         $accessible->{$field} = { 'read' => 1, 'write' => 1 };
     } elsif (my $refclass = $schema->{$field}{'REFERENCES'}) {
         if (UNIVERSAL::isa($refclass, 'DBIx::SearchBuilder::Record')) {
-            $accessible->{$field} = { 'record-read' => 1, 'record-write' => 1 };
+            if ($field =~ /(.*)_id$/) {
+                $accessible->{$field} = { 'read' => 1, 'write' => 1 };
+                $accessible->{$1}     = { 'record-read' => 1, 'column' => $field };
+            } else {
+                $accessible->{$field} = { 'record-read' => 1, 'record-write' => 1 };
+            }
         } elsif (UNIVERSAL::isa($refclass, 'DBIx::SearchBuilder')) {
             $accessible->{$field} = { 'foreign-collection' => 1 };
         } else {
@@ -614,8 +619,10 @@ sub _ToRecord {
     return unless defined $value;
     
     my $schema = $self->Schema;
-    my $description = $schema->{$field};
+    my $description = $schema->{$field} || $schema->{$field . "_id"};
     
+    die "Can't get schema for $field on $self" unless $description;
+
     return unless $description;
     
     return $value unless $description->{'REFERENCES'};
@@ -695,6 +702,8 @@ override __Value.
 sub __Value {
   my $self = shift;
   my $field = lc shift;
+
+  $field = $self->_Accessible($field, "column") while defined $self->_Accessible($field, "column");
 
   if (!$self->{'fetched'}{$field} and my $id = $self->id() ) {
     my $pkey = $self->_PrimaryKey();

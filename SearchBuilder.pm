@@ -58,7 +58,7 @@ You can try to override just about every other method here, as long as you think
 are doing.
 
 =head1 METHOD NAMING
- 
+
 Each method has a lower case alias; '_' is used to separate words.
 For example, the method C<RedoSearch> has the alias C<redo_search>.
 
@@ -168,8 +168,6 @@ sub _Handle {
     return ( $self->{'DBIxHandle'} );
 }
 
-
-    
 =head2 _DoSearch
 
 This internal private method actually executes the search on the database;
@@ -281,7 +279,6 @@ sub _ApplyLimits {
 This routine takes a reference to a scalar containing an SQL statement. 
 It massages the statement to ensure a distinct result set is returned.
 
-
 =cut
 
 sub _DistinctQuery {
@@ -297,8 +294,6 @@ sub _DistinctQuery {
 	$self->_Handle->DistinctQuery($statementref, $table)
     }
 }
-
-
 
 =head2 _BuildJoins
 
@@ -1501,7 +1496,7 @@ sub Columns {
 
 
 =head2 Fields TABLE
- 
+
 Return a list of fields in TABLE, lowercased.
 
 TODO: Why are they lowercased?
