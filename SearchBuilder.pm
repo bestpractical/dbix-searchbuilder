@@ -645,6 +645,11 @@ STARTSWITH is like LIKE, except it only appends a % at the end of the string
 
 ENDSWITH is like LIKE, except it prepends a % to the beginning of the string
 
+=item "MATCHES"
+
+MATCHES is equivalent to the database's LIKE -- that is, it's actually LIKE, but
+doesn't surround the string in % signs as LIKE does.
+
 =back
 
 =item ENTRYAGGREGATOR 
@@ -694,7 +699,9 @@ sub Limit {
         elsif ( $args{'OPERATOR'} =~ /ENDSWITH/i ) {
             $args{'VALUE'}    = "%" . $args{'VALUE'};
             $args{'OPERATOR'} = "LIKE";
-        }
+        } 
+	
+	$args{'OPERATOR'} =~ s/MATCHES/LIKE/i;  # MATCHES becomes LIKE, with no % stuff
 
         #if we're explicitly told not to to quote the value or
         # we're doing an IS or IS NOT (null), don't quote the operator.
