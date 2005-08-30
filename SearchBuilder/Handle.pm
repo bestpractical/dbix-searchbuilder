@@ -1,7 +1,7 @@
 # $Header: /home/jesse/DBIx-SearchBuilder/history/SearchBuilder/Handle.pm,v 1.21 2002/01/28 06:11:37 jesse Exp $
 package DBIx::SearchBuilder::Handle;
 use strict;
-use Carp;
+use Carp qw(croak cluck);
 use DBI;
 use Class::ReturnValue;
 use Encode;
@@ -236,11 +236,10 @@ Returns whether we're currently logging or not as a boolean
 sub LogSQLStatements {
     my $self = shift;
     if (@_) {
-
         require Time::HiRes;
-    $self->{'_DoLogSQL'} = shift;
-    return ($self->{'_DoLogSQL'});
+        $self->{'_DoLogSQL'} = shift;
     }
+    return ($self->{'_DoLogSQL'});
 }
 
 =head2 _LogSQLStatement STATEMENT DURATION
@@ -253,7 +252,8 @@ sub _LogSQLStatement {
     my $self = shift;
     my $statement = shift;
     my $duration = shift;
-    push @{$self->{'StatementLog'}} , ([Time::Hires::time(), $statement, $duration]);
+    my @bind = @_;
+    push @{$self->{'StatementLog'}} , ([Time::HiRes::time(), $statement, [@bind], $duration]);
 
 }
 
@@ -493,8 +493,7 @@ sub SimpleQuery {
         eval { $executed = $sth->execute(@bind_values) };
     }
     if ( $self->LogSQLStatements ) {
-        $self->_LogSQLStatement( $QueryString, tv_interval($basetime) );
-
+        $self->_LogSQLStatement( $QueryString, Time::HiRes::time() - $basetime, @bind_values );
     }
 
     if ( $@ or !$executed ) {
@@ -504,7 +503,7 @@ sub SimpleQuery {
 
         }
         else {
-            warn "$self couldn't execute the query '$QueryString'";
+            cluck "$self couldn't execute the query '$QueryString'";
 
             my $ret = Class::ReturnValue->new();
             $ret->as_error(
@@ -853,7 +852,6 @@ sub Join {
         if ( !$alias || $args{'ALIAS1'} ) {
             return ( $self->_NormalJoin(%args) );
         }
-
         $args{'SearchBuilder'}->{'aliases'} = \@new_aliases;
     }
 
@@ -909,7 +907,6 @@ sub _NormalJoin {
 
     if ( $args{'TYPE'} =~ /LEFT/i ) {
         my $alias = $sb->_GetAlias( $args{'TABLE2'} );
-
         $sb->{'left_joins'}{"$alias"}{'alias_string'} =
           " LEFT JOIN $args{'TABLE2'} $alias ";
 
