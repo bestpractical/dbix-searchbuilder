@@ -1,5 +1,10 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.33 Thu Sep 22 14:27:46 EDT 2005
+
+* Better SQL statement logging from alex
+
+
 1.32 Thu Sep  1 06:52:42 EDT 2005
 
 * DBD::SQLite is necessary for the test suite to run correctl
