@@ -1,5 +1,9 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.32 Thu Sep  1 06:52:42 EDT 2005
+
+* DBD::SQLite is necessary for the test suite to run correctl
+
 1.31 Fri Jul 29 12:47:25 EDT 2005
 
 * Updated MANIFEST to fix a build issue - 
