@@ -1026,7 +1026,7 @@ sub __Object {
         eval "require $class";
         die "Couldn't use $class: $@" if ($@);
         unless ( $vglob && *$vglob{'SCALAR'} ) {
-            *{ $class . "::VERSION" } = '-1, By DBIx::SerchBuilder';
+            *{ $class . "::VERSION" } = '-1, By DBIx::SearchBuilder';
         }
     }
 
