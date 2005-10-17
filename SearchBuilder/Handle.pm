@@ -702,7 +702,7 @@ sub Rollback {
     my $self = shift;
     my $force = shift || undef;
     #unless ($TRANSDEPTH) {Carp::confess("Attempted to rollback a transaction with none in progress")};
-    $TRANSDEPTH--;
+    $TRANSDEPTH-- if ($TRANSDEPTH >= 1);
 
     if ($force) {
         $TRANSDEPTH = 0;
