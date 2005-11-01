@@ -972,23 +972,22 @@ sub _CompileGenericRestrictions {
 
 
 
-=head2 Orderby PARAMHASH
+=head2 OrderBy PARAMHASH
 
-Orders the returned results by ALIAS.FIELD ORDER. (by default 'main.id ASC')
+Orders the returned results by ALIAS.FIELD ORDER.
 
 Takes a paramhash of ALIAS, FIELD and ORDER.  
-ALIAS defaults to main
-FIELD defaults to the primary key of the main table.  Also accepts C<FUNCTION(FIELD)> format
-ORDER defaults to ASC(ending).  DESC(ending) is also a valid value for OrderBy
+ALIAS defaults to C<main>.
+FIELD has no default value.
+ORDER defaults to ASC(ending). DESC(ending) is also a valid value for OrderBy.
 
+FIELD also accepts C<FUNCTION(FIELD)> format.
 
 =cut
 
 sub OrderBy {
     my $self = shift;
-    my %args = ( @_ );
-
-    $self->OrderByCols( \%args );
+    $self->OrderByCols( { @_ } );
 }
 
 =head2 OrderByCols ARRAY
@@ -1001,10 +1000,9 @@ The result set is ordered by the items in the array.
 sub OrderByCols {
     my $self = shift;
     my @args = @_;
-    my $row;
-    my $clause;
+    my $clause = '';
 
-    foreach $row ( @args ) {
+    foreach my $row ( @args ) {
 
         my %rowhash = ( ALIAS => 'main',
 			FIELD => undef,
@@ -1034,17 +1032,13 @@ sub OrderByCols {
             $clause .= $rowhash{'ORDER'};
         }
     }
+    $clause = "ORDER BY$clause" if $clause;
 
-    if ($clause) {
-	$self->{'order_clause'} = "ORDER BY" . $clause;
+    if( ($self->{'order_clause'} || '') ne $clause ) {
+	$self->RedoSearch();
     }
-    else {
-	$self->{'order_clause'} = "";
-    }
-    $self->RedoSearch();
+    $self->{'order_clause'} = $clause;
 }
-
-
 
 =head2 _OrderClause
 
