@@ -1034,7 +1034,7 @@ sub OrderByCols {
     }
     $clause = "ORDER BY$clause" if $clause;
 
-    if( ($self->{'order_clause'} || '') ne $clause ) {
+    if ( ($self->{'order_clause'} || '') ne $clause ) {
 	$self->RedoSearch();
     }
     $self->{'order_clause'} = $clause;
