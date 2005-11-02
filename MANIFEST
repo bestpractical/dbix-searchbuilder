@@ -2,9 +2,11 @@ Changes
 ex/create_tables.pl
 ex/Example/Model/Address.pm
 ex/Example/Model/Employee.pm
+inc/ExtUtils/AutoInstall.pm
 inc/Module/Install.pm
 inc/Module/Install/AutoInstall.pm
 inc/Module/Install/Base.pm
+inc/Module/Install/Include.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
 Makefile.PL
