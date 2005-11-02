@@ -2,9 +2,11 @@
 package DBIx::SearchBuilder;
 
 use strict;
-use vars qw($VERSION);
 
-$VERSION = "1.33";
+use vars qw($VERSION);
+$VERSION = "1.34";
+
+use Clone qw();
 
 =head1 NAME
 
@@ -149,7 +151,49 @@ sub CleanSlate {
 
     #we have no limit statements. DoSearch won't work.
     $self->_isLimited(0);
+}
 
+=head2 Clone
+
+Returns copy of the current object with all search restrictions.
+
+=cut
+
+sub Clone
+{
+    my $self = shift;
+
+    my $obj = bless {}, ref($self);
+    %$obj = %$self;
+
+    delete $obj->{$_} for qw(
+        items
+    );
+    $obj->{'must_redo_search'} = 1;
+    $obj->{'itemscount'}       = 0;
+    
+    $obj->{$_} = Clone::clone($obj->{$_}) for ( $self->_ClonedAttributes );
+    return $obj;
+}
+
+=head2 _ClonedAttributes
+
+Returns list of the object's fields that should be copied.
+
+If your subclass store references in the object that should be copied while
+clonning then you probably want override this method and add own values to
+the list.
+
+=cut
+
+sub _ClonedAttributes
+{
+    return qw(
+        aliases
+        left_joins
+        subclauses
+        restrictions
+    );
 }
 
 
