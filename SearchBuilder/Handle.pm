@@ -700,17 +700,23 @@ If this method is passed a true argument, stack depth is blown away and the oute
 
 sub Rollback {
     my $self = shift;
-    my $force = shift || undef;
-    #unless ($TRANSDEPTH) {Carp::confess("Attempted to rollback a transaction with none in progress")};
-    $TRANSDEPTH-- if ($TRANSDEPTH >= 1);
+    my $force = shift;
 
-    if ($force) {
+    my $dbh = $self->dbh;
+    unless( $dbh ) {
         $TRANSDEPTH = 0;
-       return($self->dbh->rollback);
+        return;
     }
 
+    #unless ($TRANSDEPTH) {Carp::confess("Attempted to rollback a transaction with none in progress")};
+    if ($force) {
+        $TRANSDEPTH = 0;
+        return($dbh->rollback);
+    }
+
+    $TRANSDEPTH-- if ($TRANSDEPTH >= 1);
     if ($TRANSDEPTH == 0 ) {
-       return($self->dbh->rollback);
+        return($dbh->rollback);
     } else { #we're inside a transaction
         return($TRANSDEPTH);
     }
