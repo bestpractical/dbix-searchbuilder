@@ -77,8 +77,11 @@ sub ApplyLimits {
 sub DistinctQuery {
     my $self         = shift;
     my $statementref = shift;
+    my $sb = shift;
 
     $$statementref = "SELECT main.* FROM $$statementref";
+    $$statementref .= $sb->_GroupClause;
+    $$statementref .= $sb->_OrderClause;
 }
 
 sub Encoding {

@@ -991,11 +991,12 @@ takes an incomplete SQL SELECT statement and massages it to return a DISTINCT re
 sub DistinctQuery {
     my $self = shift;
     my $statementref = shift;
-    #my $table = shift;
+    my $sb = shift;
 
     # Prepend select query for DBs which allow DISTINCT on all column types.
     $$statementref = "SELECT DISTINCT main.* FROM $$statementref";
-
+    $$statementref .= $sb->_GroupClause;
+    $$statementref .= $sb->_OrderClause;
 }
 
 

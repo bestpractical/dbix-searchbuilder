@@ -164,6 +164,33 @@ sub _MakeClauseCaseInsensitive {
     }
 }
 
+=head2 DistinctQuery STATEMENTREF
+
+takes an incomplete SQL SELECT statement and massages it to return a DISTINCT result set.
+
+=cut
+
+sub DistinctQuery {
+    my $self = shift;
+    my $statementref = shift;
+    my $sb = shift;
+    my $table = $sb->Table;
+
+    if ($sb->_OrderClause =~ /(?<!main)\./) {
+        # If we are ordering by something not in 'main', we need to GROUP
+        # BY and adjust the ORDER_BY accordingly
+        local $sb->{group_by} = [@{$sb->{group_by} || []}, {FIELD => 'id'}];
+        local $sb->{order_by} = [map {($_->{ALIAS} and $_->{ALIAS} ne "main") ? {%{$_}, FIELD => "min(".$_->{FIELD}.")"}: $_} @{$sb->{order_by}}];
+        my $group = $sb->_GroupClause;
+        my $order = $sb->_OrderClause;
+        $$statementref = "SELECT main.* FROM ( SELECT main.id FROM $$statementref $group $order ) distinctquery, $table main WHERE (main.id = distinctquery.id)";
+    } else {
+        $$statementref = "SELECT DISTINCT main.* FROM $$statementref";
+        $$statementref .= $sb->_GroupClause;
+        $$statementref .= $sb->_OrderClause;
+    }
+}
+
 1;
 
 __END__

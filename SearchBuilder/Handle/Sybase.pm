@@ -107,12 +107,20 @@ sub ApplyLimits {
 sub DistinctQuery {
     my $self = shift;
     my $statementref = shift;
-    my $table = shift;
+    my $sb = shift;
+    my $table = $sb->Table;
 
-    # Wrapper select query in a subselect as Oracle doesn't allow
-    # DISTINCT against CLOB/BLOB column types.
-    $$statementref = "SELECT main.* FROM ( SELECT DISTINCT main.id FROM $$statementref ) distinctquery, $table main WHERE (main.id = distinctquery.id) ";
-
+    if ($sb->_OrderClause =~ /(?<!main)\./) {
+        # Don't know how to do ORDER BY when the DISTINCT is in a subquery
+        warn "Query will contain duplicate rows; don't how how to ORDER BY across DISTINCT";
+        $$statementref = "SELECT main.* FROM $$statementref";
+    } else {
+        # Wrapper select query in a subselect as Sybase doesn't allow
+        # DISTINCT against CLOB/BLOB column types.
+        $$statementref = "SELECT main.* FROM ( SELECT DISTINCT main.id FROM $$statementref ) distinctquery, $table main WHERE (main.id = distinctquery.id) ";
+    }
+    $$statementref .= $sb->_GroupClause;
+    $$statementref .= $sb->_OrderClause;
 }
 
 

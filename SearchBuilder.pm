@@ -328,15 +328,9 @@ It massages the statement to ensure a distinct result set is returned.
 sub _DistinctQuery {
     my $self = shift;
     my $statementref = shift;
-    my $table = shift;
 
     # XXX - Postgres gets unhappy with distinct and OrderBy aliases
-    if (exists $self->{'order_clause'} && $self->{'order_clause'} =~ /(?<!main)\./) {
-        $$statementref = "SELECT main.* FROM $$statementref";
-    }
-    else {
-	$self->_Handle->DistinctQuery($statementref, $table)
-    }
+    $self->_Handle->DistinctQuery($statementref, $self)
 }
 
 =head2 _BuildJoins
@@ -432,14 +426,12 @@ sub BuildSelectQuery {
 
     # DISTINCT query only required for multi-table selects
     if ($self->_isJoined) {
-        $self->_DistinctQuery(\$QueryString, $self->Table);
+        $self->_DistinctQuery(\$QueryString);
     } else {
         $QueryString = "SELECT main.* FROM $QueryString";
+        $QueryString .= $self->_GroupClause;
+        $QueryString .= $self->_OrderClause;
     }
-
-    $QueryString .= ' ' . $self->_GroupClause . ' ';
-
-    $QueryString .= ' ' . $self->_OrderClause . ' ';
 
     $self->_ApplyLimits(\$QueryString);
 
@@ -1044,9 +1036,24 @@ The result set is ordered by the items in the array.
 sub OrderByCols {
     my $self = shift;
     my @args = @_;
-    my $clause = '';
 
-    foreach my $row ( @args ) {
+    $self->{'order_by'} = \@args;
+    $self->RedoSearch();
+}
+
+=head2 _OrderClause
+
+returns the ORDER BY clause for the search.
+
+=cut
+
+sub _OrderClause {
+    my $self = shift;
+
+    return '' unless $self->{'order_by'};
+
+    my $clause = '';
+    foreach my $row ( @{$self->{'order_by'}} ) {
 
         my %rowhash = ( ALIAS => 'main',
 			FIELD => undef,
@@ -1076,25 +1083,9 @@ sub OrderByCols {
             $clause .= $rowhash{'ORDER'};
         }
     }
-    $clause = "ORDER BY$clause" if $clause;
+    $clause = " ORDER BY$clause " if $clause;
 
-    if ( ($self->{'order_clause'} || '') ne $clause ) {
-	$self->RedoSearch();
-    }
-    $self->{'order_clause'} = $clause;
-}
-
-=head2 _OrderClause
-
-returns the ORDER BY clause for the search.
-
-=cut
-
-sub _OrderClause {
-    my $self = shift;
-
-    return '' unless $self->{'order_clause'};
-    return ($self->{'order_clause'});
+    return $clause;
 }
 
 
@@ -1120,10 +1111,26 @@ Each hash contains the keys ALIAS and FIELD. ALIAS defaults to 'main' if ignored
 sub GroupByCols {
     my $self = shift;
     my @args = @_;
+
+    $self->{'group_by'} = \@args;
+    $self->RedoSearch();
+}
+
+
+=head2 _GroupClause
+
+Private function to return the "GROUP BY" clause for this query.
+
+=cut
+
+sub _GroupClause {
+    my $self = shift;
+    return '' unless $self->{'group_by'};
+
     my $row;
     my $clause;
 
-    foreach $row ( @args ) {
+    foreach $row ( @{$self->{'group_by'}} ) {
         my %rowhash = ( ALIAS => 'main',
 			FIELD => undef,
 			%$row
@@ -1143,26 +1150,11 @@ sub GroupByCols {
     }
 
     if ($clause) {
-	$self->{'group_clause'} = "GROUP BY" . $clause;
+	return " GROUP BY" . $clause . " ";
     }
     else {
-	$self->{'group_clause'} = "";
+	return '';
     }
-    $self->RedoSearch();
-}
-
-
-=head2 _GroupClause
-
-Private function to return the "GROUP BY" clause for this query.
-
-=cut
-
-sub _GroupClause {
-    my $self = shift;
-
-    return '' unless $self->{'group_clause'};
-    return ($self->{'group_clause'});
 }
 
 
