@@ -703,7 +703,7 @@ sub __Value {
   my $self = shift;
   my $field = lc shift;
 
-  $field = $self->_Accessible($field, "column") while $self->_Accessible($field, "column");
+  $field = $self->_Accessible($field, "column") if $self->_Accessible($field, "column");
 
   if (!$self->{'fetched'}{$field} and my $id = $self->id() ) {
     my $pkey = $self->_PrimaryKey();
