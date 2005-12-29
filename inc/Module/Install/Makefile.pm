@@ -23,6 +23,14 @@ sub makemaker_args {
     $args;
 }
 
+sub build_subdirs {
+    my $self = shift;
+    my $subdirs = $self->makemaker_args->{DIR} ||= [];
+    for my $subdir (@_) {
+        push @$subdirs, $subdir;
+    }
+}
+
 sub clean_files {
     my $self = shift;
     my $clean = $self->makemaker_args->{clean} ||= {};
@@ -53,7 +61,8 @@ sub write {
     $args->{NAME} = $self->module_name || $self->name || $self->determine_NAME($args);
     $args->{VERSION} = $self->version || $self->determine_VERSION($args);
     $args->{NAME} =~ s/-/::/g;
-    $args->{test} = {TESTS => $self->tests};
+
+    $args->{test} = {TESTS => $self->tests} if $self->tests;
 
     if ($] >= 5.005) {
 	$args->{ABSTRACT} = $self->abstract;
@@ -73,10 +82,13 @@ sub write {
                  ($self->build_requires, $self->requires) );
 
     # merge both kinds of requires into prereq_pm
-    my $dir = ($args->{DIR} ||= []);
+    my $subdirs = ($args->{DIR} ||= []);
     if ($self->bundles) {
-        push @$dir, map "$_->[1]", @{$self->bundles};
-        delete $prereq->{$_->[0]} for @{$self->bundles};
+        foreach my $bundle (@{ $self->bundles }) {
+            my ($file, $dir) = @$bundle;
+            push @$subdirs, $dir if -d $dir;
+            delete $prereq->{$file};
+        }
     }
 
     if (my $perl_version = $self->perl_version) {
@@ -107,6 +119,7 @@ sub fix_up_makefile {
     my $postamble = "# Postamble by $top_class $top_version\n" . 
                     ($self->postamble || '');
 
+    local *MAKEFILE;
     open MAKEFILE, '< Makefile' or die $!;
     my $makefile = do { local $/; <MAKEFILE> };
     close MAKEFILE;
@@ -141,4 +154,4 @@ sub postamble {
 
 __END__
 
-#line 274
+#line 287

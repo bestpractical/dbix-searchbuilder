@@ -1,5 +1,8 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.38 Thu Dec 29 03:17:54 EST 2005
+* Released 1.37 dev series
+
 1.37_01 Thu Dec  8 15:56:50 EST 2005
 * Switched Postgres sequence lookups to use CURRVAL, rather than OIDs
 

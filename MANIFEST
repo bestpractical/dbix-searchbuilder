@@ -2,7 +2,7 @@ Changes
 ex/create_tables.pl
 ex/Example/Model/Address.pm
 ex/Example/Model/Employee.pm
-inc/ExtUtils/AutoInstall.pm
+inc/Module/AutoInstall.pm
 inc/Module/Install.pm
 inc/Module/Install/AutoInstall.pm
 inc/Module/Install/Base.pm
