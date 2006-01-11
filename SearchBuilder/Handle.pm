@@ -1,17 +1,17 @@
 # $Header: /home/jesse/DBIx-SearchBuilder/history/SearchBuilder/Handle.pm,v 1.21 2002/01/28 06:11:37 jesse Exp $
 package DBIx::SearchBuilder::Handle;
+
 use strict;
+use warnings;
+
 use Carp qw(croak cluck);
 use DBI;
 use Class::ReturnValue;
 use Encode;
 
-use vars qw($VERSION @ISA %DBIHandle $PrevHandle $DEBUG $TRANSDEPTH);
-
-$TRANSDEPTH = 0;
+use vars qw($VERSION @ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH);
 
 $VERSION = '$Version$';
-
 
 
 =head1 NAME
@@ -311,12 +311,11 @@ Disconnect from your DBI datasource
 =cut
 
 sub Disconnect  {
-  my $self = shift;
-  if ($self->dbh) {
-      return ($self->dbh->disconnect());
-  } else {
-      return;
-  }
+    my $self = shift;
+    my $dbh = $self->dbh;
+    return unless $dbh;
+    $self->Rollback(1);
+    return $dbh->disconnect;
 }
 
 
@@ -644,88 +643,118 @@ sub _MakeClauseCaseInsensitive {
     return ($field, $operator, $value,undef);
 }
 
+=head2 Transactions
 
+L<DBIx::SearchBuilder::Handle> emulates nested transactions,
+by keeping a transaction stack depth.
 
+B<NOTE:> In nested transactions you shouldn't mix rollbacks and commits,
+because only last action really do commit/rollback. For example next code
+would produce desired results:
 
-=head2 BeginTransaction
+  $handle->BeginTransaction;
+    $handle->BeginTransaction;
+    ...
+    $handle->Rollback;
+    $handle->BeginTransaction;
+    ...
+    $handle->Commit;
+  $handle->Commit;
 
-Tells DBIx::SearchBuilder to begin a new SQL transaction. This will
-temporarily suspend Autocommit mode.
+Only last action(Commit in example) finilize transaction in DB.
 
-Emulates nested transactions, by keeping a transaction stack depth.
+=head3 BeginTransaction
+
+Tells DBIx::SearchBuilder to begin a new SQL transaction.
+This will temporarily suspend Autocommit mode.
 
 =cut
 
 sub BeginTransaction {
     my $self = shift;
-    $TRANSDEPTH++;
-    if ($TRANSDEPTH > 1 ) {
-        return ($TRANSDEPTH);
-    } else {
-       return($self->dbh->begin_work);
-    }
+
+    my $depth = $self->TransactionDepth;
+    return unless defined $depth;
+
+    $self->TransactionDepth(++$depth);
+    return 1 if $depth > 1;
+
+    return $self->dbh->begin_work;
 }
 
+=head3 EndTransaction [Action => 'commit'] [Force => 0]
 
+Tells to end the current transaction. Takes C<Action> argument
+that could be C<commit> or C<rollback>, the default value
+is C<commit>.
 
-=head2 Commit
+If C<Force> argument is true then all nested transactions
+would be committed or rolled back.
 
-Tells DBIx::SearchBuilder to commit the current SQL transaction. 
-This will turn Autocommit mode back on.
+If there is no transaction in progress then method throw
+warning unless action is forced.
+
+Method returns true on success or false if error occured.
+
+=cut
+
+sub EndTransaction {
+    my $self = shift;
+    my %args = ( Action => 'commit', Force => 0, @_ );
+    my $action = lc $args{'Action'} eq 'commit'? 'commit': 'rollback';
+
+    my $depth = $self->TransactionDepth || 0;
+    unless ( $depth ) {
+        unless( $args{'Force'} ) {
+            Carp::cluck( "Attempted to $action a transaction with none in progress" );
+            return 0;
+        }
+        return 1;
+    } else {
+        $depth--;
+    }
+    $depth = 0 if $args{'Force'};
+
+    $self->TransactionDepth( $depth );
+    return 1 if $depth;
+    return $self->dbh->rollback unless $action eq 'commit';
+    return $self->dbh->commit;
+}
+
+=head3 Commit [FORCE]
+
+Tells to commit the current SQL transaction.
+
+Method uses C<EndTransaction> method, read its
+L<description|DBIx::SearchBuilder::Handle/EndTransaction>.
 
 =cut
 
 sub Commit {
     my $self = shift;
-    unless ($TRANSDEPTH) {Carp::confess("Attempted to commit a transaction with none in progress")};
-    $TRANSDEPTH--;
-
-    if ($TRANSDEPTH == 0 ) {
-        return($self->dbh->commit);
-    } else { #we're inside a transaction
-        return($TRANSDEPTH);
-    }
+    $self->EndTransaction( Action => 'commit', Force => shift );
 }
 
 
+=head3 Rollback [FORCE]
 
-=head2 Rollback [FORCE]
+Tells to abort the current SQL transaction.
 
-Tells DBIx::SearchBuilder to abort the current SQL transaction. 
-This will turn Autocommit mode back on.
-
-If this method is passed a true argument, stack depth is blown away and the outermost transaction is rolled back
+Method uses C<EndTransaction> method, read its
+L<description|DBIx::SearchBuilder::Handle/EndTransaction>.
 
 =cut
 
 sub Rollback {
     my $self = shift;
-    my $force = shift;
-
-    my $dbh = $self->dbh;
-    unless( $dbh ) {
-        $TRANSDEPTH = 0;
-        return;
-    }
-
-    #unless ($TRANSDEPTH) {Carp::confess("Attempted to rollback a transaction with none in progress")};
-    if ($force) {
-        $TRANSDEPTH = 0;
-        return($dbh->rollback);
-    }
-
-    $TRANSDEPTH-- if ($TRANSDEPTH >= 1);
-    if ($TRANSDEPTH == 0 ) {
-        return($dbh->rollback);
-    } else { #we're inside a transaction
-        return($TRANSDEPTH);
-    }
+    $self->EndTransaction( Action => 'rollback', Force => shift );
 }
 
 
-=head2 ForceRollback
+=head3 ForceRollback
 
-Force the handle to rollback. Whether or not we're deep in nested transactions
+Force the handle to rollback.
+Whether or not we're deep in nested transactions.
 
 =cut
 
@@ -735,23 +764,34 @@ sub ForceRollback {
 }
 
 
-=head2 TransactionDepth
+=head3 TransactionDepth
 
-Return the current depth of the faked nested transaction stack.
+Returns the current depth of the nested transaction stack.
+Returns C<undef> if there is no connection to database.
 
 =cut
 
 sub TransactionDepth {
     my $self = shift;
-    return ($TRANSDEPTH); 
-}
 
+    my $dbh = $self->dbh;
+    return undef unless $dbh && $dbh->ping;
+
+    if ( @_ ) {
+        my $depth = shift;
+        if ( $depth ) {
+            $TRANSDEPTH{ $dbh } = $depth;
+        } else {
+            delete $TRANSDEPTH{ $dbh };
+        }
+    }
+    return $TRANSDEPTH{ $dbh } || 0;
+}
 
 
 =head2 ApplyLimits STATEMENTREF ROWS_PER_PAGE FIRST_ROW
 
 takes an SQL SELECT statement and massages it to return ROWS_PER_PAGE starting with FIRST_ROW;
-
 
 =cut
 
