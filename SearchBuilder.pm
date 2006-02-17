@@ -709,13 +709,23 @@ sub Limit {
         VALUE           => undef,
         ALIAS           => undef,
         QUOTEVALUE      => 1,
-        ENTRYAGGREGATOR => 'or',
+        ENTRYAGGREGATOR => undef,
         CASESENSITIVE   => undef,
         OPERATOR        => '=',
         SUBCLAUSE       => undef,
         LEFTJOIN        => undef,
         @_    # get the real argumentlist
     );
+
+    if (not $args{'ENTRYAGGREGATOR'} ) {
+        if ( $args{'LEFTJOIN'} ) {
+            $args{'ENTRYAGGREGATOR'} = 'AND';
+            } else {
+
+            $args{'ENTRYAGGREGATOR'} = 'OR';
+            }
+    }
+
 
     my ($Alias);
 
