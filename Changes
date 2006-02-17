@@ -1,5 +1,9 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.39 Thu Feb 16 16:27:42 PST 2006
+* Allow ORs on left joins
+
+
 1.38 Thu Dec 29 03:17:54 EST 2005
 * Released 1.37 dev series
 

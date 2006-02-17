@@ -882,8 +882,11 @@ sub _GenericRestriction {
     # $restriction to point htere. otherwise, lets construct normally
 
     if ( $args{'LEFTJOIN'} ) {
-        $restriction =
-          \$self->{'left_joins'}{ $args{'LEFTJOIN'} }{'criteria'}{"$Clause"};
+        if ($args{'ENTRYAGGREGATOR'} ) {
+            $self->{'left_joins'}{ $args{'LEFTJOIN'} }{'entry_aggregator'} = 
+                $args{'ENTRYAGGREGATOR'};
+        }
+        $restriction = \$self->{'left_joins'}{ $args{'LEFTJOIN'} }{'criteria'}{"$Clause"};
     }
     else {
         $restriction = \$self->{'restrictions'}{"$Clause"};

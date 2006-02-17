@@ -997,12 +997,15 @@ sub _BuildJoins {
     my %seen;
 
     while ( my $join = shift @keys ) {
+        my $aggregator = $sb->{'left_joins'}{$join}{'entry_aggregator'} 
+            || 'AND';
+
         if ( ! $sb->{'left_joins'}{$join}{'depends_on'} || $seen_aliases{ $sb->{'left_joins'}{$join}{'depends_on'} } ) {
             $join_clause = "(" . $join_clause;
             $join_clause .=
               $sb->{'left_joins'}{$join}{'alias_string'} . " ON (";
             $join_clause .=
-              join ( ') AND( ',
+              join ( ") $aggregator ( ",
                 values %{ $sb->{'left_joins'}{$join}{'criteria'} } );
             $join_clause .= ")) ";
 
