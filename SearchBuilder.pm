@@ -740,11 +740,11 @@ sub Limit {
         }
         elsif ( $args{'OPERATOR'} =~ /STARTSWITH/i ) {
             $args{'VALUE'}    = $args{'VALUE'} . "%";
-            $args{'OPERATOR'} = "LIKE";
+            $args{'OPERATOR'} =~ s/STARTSWITH/LIKE/;
         }
         elsif ( $args{'OPERATOR'} =~ /ENDSWITH/i ) {
             $args{'VALUE'}    = "%" . $args{'VALUE'};
-            $args{'OPERATOR'} = "LIKE";
+            $args{'OPERATOR'} = s/ENDSWITH/LIKE/;
         } 
 	
 	$args{'OPERATOR'} =~ s/MATCHES/LIKE/i;  # MATCHES becomes LIKE, with no % stuff
