@@ -4,7 +4,7 @@ package DBIx::SearchBuilder;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = "1.39";
+$VERSION = "1.40";
 
 use Clone qw();
 
@@ -744,7 +744,7 @@ sub Limit {
         }
         elsif ( $args{'OPERATOR'} =~ /ENDSWITH/i ) {
             $args{'VALUE'}    = "%" . $args{'VALUE'};
-            $args{'OPERATOR'} = s/ENDSWITH/LIKE/;
+            $args{'OPERATOR'} =~ s/ENDSWITH/LIKE/;
         } 
 	
 	$args{'OPERATOR'} =~ s/MATCHES/LIKE/i;  # MATCHES becomes LIKE, with no % stuff

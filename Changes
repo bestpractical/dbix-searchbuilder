@@ -1,5 +1,8 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.40 not released yet
+* 'NOT STARTSWITH' and 'NOT ENDSWITH'
+
 1.39 Thu Feb 16 16:27:42 PST 2006
 * Allow ORs on left joins
 
