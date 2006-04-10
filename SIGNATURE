@@ -1,12 +1,12 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.50.
+signed via the Module::Signature module, version 0.41.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
 
     % cpansign -v
 
-It will check each file's integrity, as well as the signature's
+It would check each file's integrity, as well as the signature's
 validity.  If "==> Signature verified OK! <==" is not displayed,
 the distribution may already have been compromised, and you should
 not run its Makefile.PL or Build.PL.
@@ -14,18 +14,18 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 6cef58560aca34692c3257b44f5c40f65b7bb73c Changes
+SHA1 78f5e9885416e7e803382e316c7b66d3a0ece8bc Changes
 SHA1 fc42e1f5a880ad8ec5281de689d8ccfb741f1cd1 MANIFEST
-SHA1 7bcd87bd408ea370d1f58aca4519d7665bb248be META.yml
+SHA1 6fb484d32f2468ee098625c086daa64ea07d27b6 META.yml
 SHA1 3276df7ccabe8b5e7960c7bd319b3873749035a0 Makefile.PL
 SHA1 d7a41642c368f2a587587e09f9e815d434feebff README
 SHA1 5a53d12d5cccd94845a6a7cc105cd9be34e20f1c ROADMAP
-SHA1 12025b457ba34a2752baee1da56de778c00b418d SearchBuilder.pm
+SHA1 f2b8b818e4413a54c3f6f2a255cfdb2fd318fb25 SearchBuilder.pm
 SHA1 f702f54ed7bd531eb68b1a98ff88bcccb1828c89 SearchBuilder/Handle.pm
 SHA1 38b773e6069d3dc91308ea9e4f2ef322ddef9419 SearchBuilder/Handle/Informix.pm
 SHA1 25d73426d93cece304b6eea8c786b224e14e1b5c SearchBuilder/Handle/ODBC.pm
 SHA1 59871a88e8228ed27d216af9e9af0b76184fd41d SearchBuilder/Handle/Oracle.pm
-SHA1 3560138d8d201be5087bf97d90d2895799e99318 SearchBuilder/Handle/Pg.pm
+SHA1 f28c9ea064d3575948e3156604fb9a5f1595b88d SearchBuilder/Handle/Pg.pm
 SHA1 b2efe7b5c8fe4016dcbcfb4c0617b9123fa31934 SearchBuilder/Handle/SQLite.pm
 SHA1 088e3584eb431d1467ef7ef45a1863da52b40ea6 SearchBuilder/Handle/Sybase.pm
 SHA1 7fac6d8e867781f7d2007f8cc91bb7d9eadb1bfe SearchBuilder/Handle/mysql.pm
@@ -38,13 +38,13 @@ SHA1 1eb4e838ff1d8d927bfe177bf578df246802b03d SearchBuilder/Unique.pm
 SHA1 e7c7c7c91025072d25da78c93cefa2bc0aaf2b35 ex/Example/Model/Address.pm
 SHA1 f821661849153c21ad99393b6a3ea6720fdaf581 ex/Example/Model/Employee.pm
 SHA1 9689368197327e7b38af7f3d1f863e918ed4fa98 ex/create_tables.pl
-SHA1 df67884b7dda672ad41cd76c9f0d16b94785cc9e inc/Module/AutoInstall.pm
-SHA1 fe2940852c113e3afb8913663152a7d56f0b15e0 inc/Module/Install.pm
-SHA1 2f2c729aaa5a1aec63e8eef1464b8846559c0813 inc/Module/Install/AutoInstall.pm
-SHA1 9dbed9ff1790473ec3136a606f062fa050326c43 inc/Module/Install/Base.pm
-SHA1 7fcdb4fd635735e7b97d777a0e6d70f256d7a6d4 inc/Module/Install/Include.pm
-SHA1 044cd2f160364fe36eca2ba35e16e7cf46c79138 inc/Module/Install/Makefile.pm
-SHA1 49e0d839edeb0f3e9af12fd2444b98365393a23e inc/Module/Install/Metadata.pm
+SHA1 0bb5ddbe64424d40536acdee2f09e853ab39087d inc/Module/AutoInstall.pm
+SHA1 e7688055bf405375921ea837273d8bdc68803efb inc/Module/Install.pm
+SHA1 4fad9a959426996f62d0e4e972cf09e3a0cf8c0c inc/Module/Install/AutoInstall.pm
+SHA1 e5b3215acb96829f2142dcfce736c1b6484fbc08 inc/Module/Install/Base.pm
+SHA1 0db6efc5925b96e1ea3b8bc46c3ecdb14660ae82 inc/Module/Install/Include.pm
+SHA1 81b798c6ca71d1b665a470fb49d32105084ac389 inc/Module/Install/Makefile.pm
+SHA1 c8c9737da19baa15ffa7d9d5037913f64b592189 inc/Module/Install/Metadata.pm
 SHA1 e59ea21b9407644714a5f67c7132a11916c25133 t/00.load.t
 SHA1 a7ed1ee359ebe2842b354b5652a441403e802080 t/01basics.t
 SHA1 2b2dc6f72370f60e1d233f2f8c12bb87414e825c t/01nocap_api.t
@@ -59,9 +59,9 @@ SHA1 e9c6a5881fc60173fbc8d479c1afd2ce3b43bef1 t/pod.t
 SHA1 dacb28645e8b80df7c190ddfedcdc957c3d08d75 t/testmodels.pl
 SHA1 4788496012998da32d01aef7e74d2070931290e0 t/utils.pl
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-iD8DBQFD9TXqEi9d9xCOQEYRAsIVAJ49V4rH3NgPmbBAjbjIXDgiuEAAswCgm7UE
-8ri0e6bh/c2JEVQ20P09awY=
-=LbJH
+iD8DBQFEOnmoEi9d9xCOQEYRAmRAAKCwQF+fyDPRHEFPnZK7p/wrPRojzgCgjSeu
+3wNcze0+qPuMNr2BvUkbQPQ=
+=t//b
 -----END PGP SIGNATURE-----
