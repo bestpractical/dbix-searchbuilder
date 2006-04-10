@@ -102,7 +102,8 @@ sub IdSequenceName {
         # Regexp from DBIx::Class's Pg handle. Thanks to Marcus Ramberg
         if ( defined $foo->{'COLUMN_DEF'}
             && $foo->{'COLUMN_DEF'}
-            =~ m!^nextval\('"?([^"']+)"?'::(?:text|regclass)\)!i )
+            =~ m!^nextval\(\('"?([^"']+)"?'::(?:text|regclass)\).*\)!i )
+
         {
             return $self->{'_sequences'}{$table} = $1;
         }

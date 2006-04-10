@@ -1,5 +1,7 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+    * PG 8.1 sequence compatibility fixes from Daniel Tabuenca
+
 1.40 not released yet
 * 'NOT STARTSWITH' and 'NOT ENDSWITH'
 

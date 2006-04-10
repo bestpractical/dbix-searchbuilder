@@ -1,20 +1,20 @@
-build_requires:
+build_requires: 
   DBD::SQLite: 0
   Test::More: 0.52
 distribution_type: module
-generated_by: Module::Install version 0.55
+generated_by: Module::Install version 0.61
 license: perl
 name: DBIx-SearchBuilder
-no_index:
-  directory:
+no_index: 
+  directory: 
     - t
     - inc
     - t
-requires:
+requires: 
   Cache::Simple::TimedExpiry: 0.21
   Class::ReturnValue: 0.4
   Clone: 0
   DBI: 0
   Encode: 0
   Want: 0
-version: 1.39
+version: 1.40
