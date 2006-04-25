@@ -690,7 +690,9 @@ doesn't surround the string in % signs as LIKE does.
 
 =item ENTRYAGGREGATOR 
 
-Can be AND or OR (or anything else valid to aggregate two clauses in SQL)
+Can be C<AND> or C<OR> (or anything else valid to aggregate two clauses in SQL).
+Special value is C<none> which means that no entry aggregator should be used.
+The default value is C<OR>.
 
 =item CASESENSITIVE
 
@@ -699,7 +701,7 @@ this search case sensitive
 
 =back
 
-=cut 
+=cut
 
 sub Limit {
     my $self = shift;
@@ -833,8 +835,6 @@ sub _GenericRestriction {
                  QUOTEVALUE     => undef,
                  @_ );
 
-    my ( $Clause, $QualifiedField );
-
     #TODO: $args{'VALUE'} should take an array of values and generate
     # the proper where clause.
 
@@ -874,32 +874,26 @@ sub _GenericRestriction {
     # Set this to the name of the field and the alias, unless we've been
     # handed a subclause name
 
-    $QualifiedField = $args{'ALIAS'} . "." . $args{'FIELD'};
-
-    if ( $args{'SUBCLAUSE'} ) {
-        $Clause = $args{'SUBCLAUSE'};
-    }
-    else {
-        $Clause = $QualifiedField;
-    }
+    my $QualifiedField = $args{'ALIAS'} . "." . $args{'FIELD'};
+    my $ClauseId = $args{'SUBCLAUSE'} || $QualifiedField;
 
     print STDERR "$self->_GenericRestriction QualifiedField=$QualifiedField\n"
       if ( $self->DEBUG );
 
-    my ($restriction);
 
     # If we're trying to get a leftjoin restriction, lets set
     # $restriction to point htere. otherwise, lets construct normally
 
+    my ($restriction);
     if ( $args{'LEFTJOIN'} ) {
-        if ($args{'ENTRYAGGREGATOR'} ) {
+        if ( $args{'ENTRYAGGREGATOR'} ) {
             $self->{'left_joins'}{ $args{'LEFTJOIN'} }{'entry_aggregator'} = 
                 $args{'ENTRYAGGREGATOR'};
         }
-        $restriction = \$self->{'left_joins'}{ $args{'LEFTJOIN'} }{'criteria'}{"$Clause"};
+        $restriction = \$self->{'left_joins'}{ $args{'LEFTJOIN'} }{'criteria'}{ $ClauseId };
     }
     else {
-        $restriction = \$self->{'restrictions'}{"$Clause"};
+        $restriction = \$self->{'restrictions'}{ $ClauseId };
     }
 
     # If it's a new value or we're overwriting this sort of restriction,
@@ -918,21 +912,15 @@ sub _GenericRestriction {
 
     # Juju because this should come _AFTER_ the EA
     my $prefix = "";
-    if ( $self->{_open_parens}{$Clause} ) {
-        $prefix = " ( " x $self->{_open_parens}{$Clause};
-        delete $self->{_open_parens}{$Clause};
+    if ( $self->{_open_parens}{ $ClauseId } ) {
+        $prefix = " ( " x delete $self->{_open_parens}{ $ClauseId };
     }
 
-    if ( (     ( exists $args{'ENTRYAGGREGATOR'} )
-           and ( $args{'ENTRYAGGREGATOR'} || "" ) eq 'none' )
-         or ( !$$restriction )
-      ) {
-
+    if ( lc( $args{'ENTRYAGGREGATOR'} || "" ) eq 'none' || !$$restriction ) {
         $$restriction = $prefix . $clause;
-
     }
     else {
-        $$restriction .= $args{'ENTRYAGGREGATOR'} . $prefix . $clause;
+        $$restriction .= " ". $args{'ENTRYAGGREGATOR'} . " " . $prefix . $clause;
     }
 
     return ( $args{'ALIAS'} );
@@ -942,13 +930,13 @@ sub _GenericRestriction {
 
 sub _OpenParen {
     my ( $self, $clause ) = @_;
-    $self->{_open_parens}{$clause}++;
+    $self->{_open_parens}{ $clause }++;
 }
 
 # Immediate Action
 sub _CloseParen {
     my ( $self, $clause ) = @_;
-    my $restriction = \$self->{'restrictions'}{"$clause"};
+    my $restriction = \$self->{'restrictions'}{ $clause };
     if ( !$$restriction ) {
         $$restriction = " ) ";
     }
@@ -963,7 +951,7 @@ sub _AddSubClause {
     my $clauseid  = shift;
     my $subclause = shift;
 
-    $self->{'subclauses'}{"$clauseid"} = $subclause;
+    $self->{'subclauses'}{ $clauseid } = $subclause;
 
 }
 
@@ -971,7 +959,6 @@ sub _AddSubClause {
 
 sub _WhereClause {
     my $self = shift;
-    my ( $subclause, $where_clause );
 
     #Go through all the generic restrictions and build up the "generic_restrictions" subclause
     # That's the only one that SearchBuilder builds itself.
@@ -980,21 +967,15 @@ sub _WhereClause {
 
     #Go through all restriction types. Build the where clause from the
     #Various subclauses.
-    foreach $subclause ( keys %{ $self->{'subclauses'} } ) {
-        # Now, build up the where clause
-        if ( defined($where_clause) ) {
-            $where_clause .= " AND ";
-        }
-
-        warn "$self $subclause doesn't exist"
-          if ( !defined $self->{'subclauses'}{"$subclause"} );
-        $where_clause .= $self->{'subclauses'}{"$subclause"};
+    my $where_clause = '';
+    foreach my $subclause ( grep $_, values %{ $self->{'subclauses'} } ) {
+        $where_clause .= " AND " if $where_clause;
+        $where_clause .= $subclause;
     }
 
-    $where_clause = " WHERE " . $where_clause if ( $where_clause ne '' );
+    $where_clause = " WHERE " . $where_clause if $where_clause;
 
     return ($where_clause);
-
 }
 
 
@@ -1003,18 +984,16 @@ sub _WhereClause {
 
 sub _CompileGenericRestrictions {
     my $self = shift;
-    my ($restriction);
 
-    delete $self->{'subclauses'}{'generic_restrictions'};
+    $self->{'subclauses'}{'generic_restrictions'} = '';
 
+    my $result = '';
     #Go through all the restrictions of this type. Buld up the generic subclause
-    foreach $restriction ( sort keys %{ $self->{'restrictions'} } ) {
-        if ( defined $self->{'subclauses'}{'generic_restrictions'} ) {
-            $self->{'subclauses'}{'generic_restrictions'} .= " AND ";
-        }
-        $self->{'subclauses'}{'generic_restrictions'} .=
-          "(" . $self->{'restrictions'}{"$restriction"} . ")";
+    foreach my $restriction ( sort keys %{ $self->{'restrictions'} } ) {
+        $result .= " AND " if $result;
+        $result .= "(" . $self->{'restrictions'}{ $restriction } . ")";
     }
+    return ($self->{'subclauses'}{'generic_restrictions'} = $result);
 }
 
 
@@ -1073,7 +1052,7 @@ sub _OrderClause {
 			ORDER => 'ASC',
 			%$row
 		      );
-        if ($rowhash{'ORDER'} =~ /^des/i) {
+        if ($rowhash{'ORDER'} && $rowhash{'ORDER'} =~ /^des/i) {
 	    $rowhash{'ORDER'} = "DESC";
         }
         else {
