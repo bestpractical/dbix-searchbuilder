@@ -21,9 +21,6 @@ compensates for some of the idiosyncrasies of MySQL.
 
 =head1 METHODS
 
-=cut
-
-
 =head2 Insert
 
 Takes a table name as the first argument and assumes that the rest of the arguments are an array of key-value pairs to be inserted.

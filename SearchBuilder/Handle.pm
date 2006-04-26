@@ -587,23 +587,48 @@ sub BLOBParams {
 
 
 
-=head2 DatabaseVersion
+=head2 DatabaseVersion [Short => 1]
 
-Returns the database's version. The base implementation uses a "SELECT VERSION"
+Returns the database's version.
+
+If argument C<Short> is true returns short variant, in other
+case returns whatever database handle/driver returns. By default
+returns short version, e.g. '4.1.23' or '8.0-rc4'.
+
+Returns empty string on error or if database couldn't return version.
+
+The base implementation uses a C<SELECT VERSION()>
 
 =cut
 
 sub DatabaseVersion {
     my $self = shift;
+    my %args = ( Short => 1, @_ );
 
-    unless ($self->{'database_version'}) {
-        my $statement  = "SELECT VERSION()";
-        my $sth = $self->SimpleQuery($statement);
-        my @vals = $sth->fetchrow();
-        $self->{'database_version'}= $vals[0];
+    unless ( defined $self->{'database_version'} ) {
+
+        # turn off error handling, store old values to restore later
+        my $re = $self->RaiseError;
+        $self->RaiseError(0);
+        my $pe = $self->PrintError;
+        $self->PrintError(0);
+
+        my $statement = "SELECT VERSION()";
+        my $sth       = $self->SimpleQuery($statement);
+
+        my $ver = '';
+        $ver = ( $sth->fetchrow_arrayref->[0] || '' ) if $sth;
+        $ver =~ /(\d+(?:\.\d+)*(?:-[a-z0-9]+)?)/i;
+        $self->{'database_version'}       = $ver;
+        $self->{'database_version_short'} = $1 || $ver;
+
+        $self->RaiseError($re);
+        $self->PrintError($pe);
     }
-}
 
+    return $self->{'database_version_short'} if $args{'Short'};
+    return $self->{'database_version'};
+}
 
 =head2 CaseSensitive
 
