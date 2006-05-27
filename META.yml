@@ -2,7 +2,7 @@ build_requires:
   DBD::SQLite: 0
   Test::More: 0.52
 distribution_type: module
-generated_by: Module::Install version 0.61
+generated_by: Module::Install version 0.62
 license: perl
 name: DBIx-SearchBuilder
 no_index: 
@@ -17,4 +17,4 @@ requires:
   DBI: 0
   Encode: 0
   Want: 0
-version: 1.43
+version: 1.44_01
