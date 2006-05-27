@@ -1,5 +1,8 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.44
+* DBIx::SearchBuilder::Handle::DatabaseVersion enhancements
+
 1.43 Wed Apr 12 13:59:58 EDT 2006
 * Fix to the sequence compatibility fixes. For backwards compatibility.
 
