@@ -9,9 +9,7 @@ use DBI;
 use Class::ReturnValue;
 use Encode;
 
-use vars qw($VERSION @ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH);
-
-$VERSION = '$Version$';
+use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH);
 
 
 =head1 NAME
