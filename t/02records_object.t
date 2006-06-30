@@ -9,7 +9,16 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 11;
+use Test::More;
+eval "use DBD::SQLite";
+if ($@) { 
+plan skip_all => "DBD::SQLite required for testing database interaction" 
+} else{
+plan tests => 9;
+}
+my $handle = get_handle('SQLite');
+connect_handle( $handle );
+isa_ok($handle->dbh, 'DBI::db');
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
