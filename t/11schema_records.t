@@ -238,7 +238,9 @@ CREATE TEMPORARY TABLE Phones (
 
 package TestApp::Employee;
 
-use base qw/DBIx::SearchBuilder::Record/;
+use base $ENV{SB_TEST_CACHABLE}?
+    qw/DBIx::SearchBuilder::Record::Cachable/:
+    qw/DBIx::SearchBuilder::Record/;
 
 sub Table { 'Employees' }
 
@@ -260,7 +262,9 @@ sub _Value  {
 
 package TestApp::Phone;
 
-use base qw/DBIx::SearchBuilder::Record/;
+use base $ENV{SB_TEST_CACHABLE}?
+    qw/DBIx::SearchBuilder::Record::Cachable/:
+    qw/DBIx::SearchBuilder::Record/;
 
 sub Table { 'Phones' }
 

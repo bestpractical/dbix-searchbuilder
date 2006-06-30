@@ -9,16 +9,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use Test::More;
-eval "use DBD::SQLite";
-if ($@) { 
-plan skip_all => "DBD::SQLite required for testing database interaction" 
-} else{
-plan tests => 9;
-}
-my $handle = get_handle('SQLite');
-connect_handle( $handle );
-isa_ok($handle->dbh, 'DBI::db');
+use constant TESTS_PER_DRIVER => 11;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -115,7 +106,10 @@ CREATE TEMPORARY TABLE Phones (
 
 package TestApp::Employee;
 
-use base qw/DBIx::SearchBuilder::Record/;
+use base $ENV{SB_TEST_CACHABLE}?
+    qw/DBIx::SearchBuilder::Record::Cachable/:
+    qw/DBIx::SearchBuilder::Record/;
+
 use vars qw/$VERSION/;
 $VERSION=0.01;
 
@@ -144,7 +138,9 @@ package TestApp::Phone;
 use vars qw/$VERSION/;
 $VERSION=0.01;
 
-use base qw/DBIx::SearchBuilder::Record/;
+use base $ENV{SB_TEST_CACHABLE}?
+    qw/DBIx::SearchBuilder::Record::Cachable/:
+    qw/DBIx::SearchBuilder::Record/;
 
 sub _Init {
     my $self = shift;

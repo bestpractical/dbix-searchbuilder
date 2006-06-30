@@ -403,8 +403,7 @@ Return a hash of the values of our primary keys for this function.
 
 sub PrimaryKeys { 
     my $self = shift; 
-    my %hash = map { $_ => $self->{'values'}->{$_} } @{$self->_PrimaryKeys};
-    return (%hash);
+    return map { $_ => $self->{'values'}->{$_} } @{$self->_PrimaryKeys};
 }
 
 
@@ -700,25 +699,21 @@ override __Value.
 
 
 sub __Value {
-  my $self = shift;
-  my $field = lc shift;
+    my $self = shift;
+    my $field = lc shift;
 
-  $field = $self->_Accessible($field, "column") if $self->_Accessible($field, "column");
+    $field = $self->_Accessible($field, "column") if $self->_Accessible($field, "column");
 
-  if (!$self->{'fetched'}{$field} and my $id = $self->id() ) {
-    my $pkey = $self->_PrimaryKey();
-    my $QueryString = "SELECT $field FROM " . $self->Table . " WHERE $pkey = ?";
-    my $sth = $self->_Handle->SimpleQuery( $QueryString, $id );
-    my ($value) = eval { $sth->fetchrow_array() };
-    warn $@ if $@;
-
-    $self->{'values'}{$field} = $value;
+    return $self->{'values'}{$field} if $self->{'fetched'}{$field};
     $self->{'fetched'}{$field} = 1;
-  }
-
-  my $value = $self->{'values'}{$field};
     
-  return $value;
+    my %pk = $self->PrimaryKeys;
+    return undef if grep !defined, values %pk;
+
+    my $query = "SELECT $field FROM ". $self->Table
+        ." WHERE ". join " AND ", map "$_ = ?", keys %pk;
+    my $sth = $self->_Handle->SimpleQuery( $query, values %pk ) or return undef;
+    return $self->{'values'}{$field} = ($sth->fetchrow_array)[0];
 }
 
 =head2 _Value
@@ -1053,9 +1048,8 @@ is $id
 
 
 
-sub Load  {
+sub Load {
     my $self = shift;
-    # my ($package, $filename, $line) = caller;
     return $self->LoadById(@_);
 }
 
@@ -1068,14 +1062,9 @@ undefined
 
 =cut
 
-
-
 sub LoadByCol  {
     my $self = shift;
-    my $col = shift;
-    my $val = shift;
-    
-    return($self->LoadByCols($col => $val));
+    return $self->LoadByCols(@_);
 }
 
 
@@ -1144,12 +1133,8 @@ Loads a record by its primary key. Your record class must define a single primar
 
 
 sub LoadById  {
-    my $self = shift;
-    my $id = shift;
-
-    $id = 0 if (!defined($id));
-    my $pkey = $self->_PrimaryKey();
-    return ($self->LoadByCols($pkey => $id));
+    my ($self, $id) = @_;
+    return $self->LoadByCols( $self->_PrimaryKey, defined $id? $id: 0 );
 }
 
 

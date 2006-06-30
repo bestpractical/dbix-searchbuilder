@@ -1,6 +1,8 @@
 package Sample::Address;
 
-use base qw/DBIx::SearchBuilder::Record/;
+use base $ENV{SB_TEST_CACHABLE}?
+    qw/DBIx::SearchBuilder::Record::Cachable/:
+    qw/DBIx::SearchBuilder::Record/;
 
 # Class and instance method
 
@@ -18,7 +20,9 @@ sub Schema {
 
 package Sample::Employee;
 
-use base qw/DBIx::SearchBuilder::Record/;
+use base $ENV{SB_TEST_CACHABLE}?
+    qw/DBIx::SearchBuilder::Record::Cachable/:
+    qw/DBIx::SearchBuilder::Record/;
 
 sub Table { "Employees" }
 

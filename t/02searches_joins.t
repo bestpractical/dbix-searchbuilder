@@ -153,7 +153,9 @@ CREATE TEMPORARY TABLE Groups (
 
 package TestApp::User;
 
-use base qw/DBIx::SearchBuilder::Record/;
+use base $ENV{SB_TEST_CACHABLE}?
+    qw/DBIx::SearchBuilder::Record::Cachable/:
+    qw/DBIx::SearchBuilder::Record/;
 
 sub _Init {
     my $self = shift;
@@ -204,7 +206,9 @@ sub NewItem
 
 package TestApp::Group;
 
-use base qw/DBIx::SearchBuilder::Record/;
+use base $ENV{SB_TEST_CACHABLE}?
+    qw/DBIx::SearchBuilder::Record::Cachable/:
+    qw/DBIx::SearchBuilder::Record/;
 
 sub _Init {
     my $self = shift;
@@ -248,7 +252,9 @@ sub NewItem { return TestApp::Group->new( (shift)->_Handle ) }
 
 package TestApp::UsersToGroup;
 
-use base qw/DBIx::SearchBuilder::Record/;
+use base $ENV{SB_TEST_CACHABLE}?
+    qw/DBIx::SearchBuilder::Record::Cachable/:
+    qw/DBIx::SearchBuilder::Record/;
 
 sub _Init {
     my $self = shift;

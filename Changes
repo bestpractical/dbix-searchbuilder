@@ -1,5 +1,12 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+* cleanup ::Record::Cachable
+* use cache in:
+    $a->LoadByCols(...);
+    $b->LoadById( $a->id );
+* add cache tests
+
+
 1.44
 * DBIx::SearchBuilder::Handle::DatabaseVersion enhancements
 

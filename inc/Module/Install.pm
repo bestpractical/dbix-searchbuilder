@@ -1,4 +1,4 @@
-#line 1 "inc/Module/Install.pm - /usr/lib/perl5/site_perl/5.8.5/Module/Install.pm"
+#line 1
 package Module::Install;
 
 # For any maintainers:

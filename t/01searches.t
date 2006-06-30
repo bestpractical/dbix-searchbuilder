@@ -228,7 +228,9 @@ EOF
 
 package TestApp::User;
 
-use base qw/DBIx::SearchBuilder::Record/;
+use base $ENV{SB_TEST_CACHABLE}?
+    qw/DBIx::SearchBuilder::Record::Cachable/:
+    qw/DBIx::SearchBuilder::Record/;
 
 sub _Init {
     my $self = shift;

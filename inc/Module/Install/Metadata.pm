@@ -1,4 +1,4 @@
-#line 1 "inc/Module/Install/Metadata.pm - /usr/lib/perl5/site_perl/5.8.5/Module/Install/Metadata.pm"
+#line 1
 package Module::Install::Metadata;
 
 use strict 'vars';

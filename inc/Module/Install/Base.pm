@@ -1,4 +1,4 @@
-#line 1 "inc/Module/Install/Base.pm - /usr/lib/perl5/site_perl/5.8.5/Module/Install/Base.pm"
+#line 1
 package Module::Install::Base;
 
 $VERSION = '0.62';
