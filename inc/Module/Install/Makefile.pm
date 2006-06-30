@@ -1,4 +1,4 @@
-#line 1
+#line 1 "inc/Module/Install/Makefile.pm - /usr/lib/perl5/site_perl/5.8.5/Module/Install/Makefile.pm"
 package Module::Install::Makefile;
 
 use strict 'vars';
