@@ -48,11 +48,12 @@ sub Connect {
 
 =head2 Insert
 
-Takes a table name as the first argument and assumes that the rest of the arguments
-are an array of key-value pairs to be inserted.
+Takes a table name as the first argument and assumes
+that the rest of the arguments are an array of key-value
+pairs to be inserted.
 
-In case of isnert failure, returns a Class::ReturnValue object preloaded
-with error info
+In case of insert failure, returns a L<Class::ReturnValue>
+object preloaded with error info.
 
 =cut
 
@@ -61,11 +62,9 @@ sub Insert {
     my $self  = shift;
     my $table = shift;
     my %args  = (@_);
-    my $sth   = $self->SUPER::Insert( $table, %args );
 
-    unless ($sth) {
-        return ($sth);
-    }
+    my $sth = $self->SUPER::Insert( $table, %args );
+    return $sth unless $sth;
 
     if ( $args{'id'} || $args{'Id'} ) {
         $self->{'id'} = $args{'id'} || $args{'Id'};
@@ -82,6 +81,19 @@ sub Insert {
     return ( $self->{'id'} );
 }
 
+=head2 InsertQueryString
+
+Postgres sepcific overriding method for
+L<DBIx::SearchBuilder::Handle/InsertQueryString>.
+
+=cut
+
+sub InsertQueryString {
+    my $self = shift;
+    my ($query_string, @bind) = $self->SUPER::InsertQueryString( @_ );
+    $query_string .= ' DEFAULT VALUES' unless $query_string =~ /\bVALUES\s+\(/i;
+    return ($query_string, @bind);
+}
 
 =head2 IdSequenceName TABLE
 
