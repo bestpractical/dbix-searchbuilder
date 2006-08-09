@@ -375,8 +375,8 @@ sub InsertQueryString {
     }
 
     my $QueryString = "INSERT INTO $table";
-    $QueryString .= " (". join(", ", @cols) .")" if @cols;
-    $QueryString .= " VALUES (". join(", ", @vals). ")" if @vals;
+    $QueryString .= " (". join(", ", @cols) .")";
+    $QueryString .= " VALUES (". join(", ", @vals). ")";
     return ($QueryString, @bind);
 }
 

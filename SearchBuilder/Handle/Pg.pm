@@ -91,7 +91,7 @@ L<DBIx::SearchBuilder::Handle/InsertQueryString>.
 sub InsertQueryString {
     my $self = shift;
     my ($query_string, @bind) = $self->SUPER::InsertQueryString( @_ );
-    $query_string .= ' DEFAULT VALUES' unless $query_string =~ /\bVALUES\s+\(/i;
+    $query_string =~ s/\(\s*\)\s+VALUES\s+\(\s*\)\s*$/DEFAULT VALUES/;
     return ($query_string, @bind);
 }
 
