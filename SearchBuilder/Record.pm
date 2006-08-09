@@ -773,7 +773,17 @@ sub __Set {
         return ( $ret->return_value );
     }
     my $column = lc $args{'Column'};
-    if ( !defined( $args{'Value'} ) ) {
+
+    if ( defined $args{'Value'} ) {
+        if ( $args{'Value'} eq '' &&
+             ( $self->_Accessible( $args{'Column'}, 'is_numeric' )
+               || ($self->_Accessible( $args{'Column'}, 'type' ) || '') =~ /INT/i ) )
+        {
+            $args{'Value'} = 0;
+        }
+    }
+
+    unless ( defined $args{'Value'} ) {
         $ret->as_array( 0, "No value passed to _Set" );
         $ret->as_error(
             errno        => 2,
@@ -1254,6 +1264,19 @@ sub Create {
             $attribs{$key} = $attribs{$key}->id
               if UNIVERSAL::isa( $attribs{$key},
                 'DBIx::SearchBuilder::Record' );
+        }
+
+        if ( defined $attribs{$key} ) {
+            if ( $attribs{$key} eq '' &&
+                 ( $self->_Accessible( $key, 'is_numeric' )
+                   || ($self->_Accessible( $key, 'type' ) || '') =~ /INT/i ) )
+            {
+                $attribs{$key} = 0;
+            }
+        }
+        else {
+            $attribs{$key} = $self->_Accessible( $key, 'default' )
+                if $self->_Accessible( $key, 'no_nulls' );
         }
 
         #Truncate things that are too long for their datatypes
