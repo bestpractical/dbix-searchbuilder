@@ -344,25 +344,25 @@ Takes a table name and a set of key-value pairs in an array. splits the key valu
 =cut
 
 sub Insert {
-  my($self, $table, @pairs) = @_;
-  my(@cols, @vals, @bind);
+    my($self, $table, @pairs) = @_;
+    my(@cols, @vals, @bind);
 
-  #my %seen; #only the *first* value is used - allows drivers to specify default
-  while ( my $key = shift @pairs ) {
-    my $value = shift @pairs;
-    # next if $seen{$key}++;
-    push @cols, $key;
-    push @vals, '?';
-    push @bind, $value;  
-  }
+    #my %seen; #only the *first* value is used - allows drivers to specify default
+    while ( my $key = shift @pairs ) {
+        my $value = shift @pairs;
+        # next if $seen{$key}++;
+        push @cols, $key;
+        push @vals, '?';
+        push @bind, $value;  
+    }
 
-  my $QueryString =
-    "INSERT INTO $table (". join(", ", @cols). ") VALUES ".
-    "(". join(", ", @vals). ")";
+    my $QueryString =
+        "INSERT INTO $table (". join(", ", @cols). ") VALUES ".
+        "(". join(", ", @vals). ")";
 
-    my $sth =  $self->SimpleQuery($QueryString, @bind);
-    return ($sth);
-  }
+    my $sth = $self->SimpleQuery($QueryString, @bind);
+    return $sth;
+}
 
 
 =head2 UpdateRecordValue 
