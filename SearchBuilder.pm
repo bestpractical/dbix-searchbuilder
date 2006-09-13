@@ -649,6 +649,14 @@ Unless ALIAS is set, the join criterias will be taken from EXT_LINKFIELD
 and INT_LINKFIELD and added to the criterias.  If ALIAS is set, new
 criterias about the foreign table will be added.
 
+=item LEFTJOIN
+
+To apply the Limit inside the ON clause of a previously created left
+join, pass this option along with the alias returned from creating
+the left join. ( This is similar to using the EXPRESSION option when
+creating a left join but this allows you to refer to the join alias
+in the expression. )
+
 =item FIELD
 
 Column to be checked against.
@@ -1619,7 +1627,7 @@ is installed, using a temporary file as the database.  For example:
 
 =head1 AUTHOR
 
-Copyright (c) 2001-2005 Jesse Vincent, jesse@fsck.com.
+Copyright (c) 2001-2006 Jesse Vincent, jesse@bestpractical.com.
 
 All rights reserved.
 
