@@ -35,6 +35,8 @@ t/01basics.t
 t/01nocap_api.t
 t/01records.t
 t/01searches.t
+t/02records_cachable.t
+t/02records_integers.t
 t/02records_object.t
 t/02searches_joins.t
 t/03rebless.t
