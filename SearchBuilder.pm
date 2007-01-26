@@ -707,6 +707,24 @@ The default value is C<OR>.
 on some databases, such as postgres, setting CASESENSITIVE to 1 will make
 this search case sensitive
 
+=item SUBCLAUSE
+
+Subclause allows you to assign tags to Limit statements.  Statements with
+matching SUBCLAUSE tags will be grouped together in the final SQL statement.
+
+Example:
+
+Suppose you want to create Limit statments which would produce results
+the same as the following SQL:
+
+   SELECT * FROM Users WHERE EmailAddress OR Name OR RealName OR Email LIKE $query;
+
+You would use the following Limit statements:
+
+    $folks->Limit( FIELD => 'EmailAddress', OPERATOR => 'LIKE', VALUE => "$query", SUBCLAUSE => 'groupsearch');
+    $folks->Limit( FIELD => 'Name', OPERATOR => 'LIKE', VALUE => "$query", SUBCLAUSE => 'groupsearch');
+    $folks->Limit( FIELD => 'RealName', OPERATOR => 'LIKE', VALUE => "$query", SUBCLAUSE => 'groupsearch');
+
 =back
 
 =cut
