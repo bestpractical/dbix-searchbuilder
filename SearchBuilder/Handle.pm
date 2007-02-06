@@ -955,20 +955,14 @@ sub Join {
 
     }
 
+    my $meta = $args{'SearchBuilder'}->{'left_joins'}{"$alias"} ||= {};
+    $meta->{'alias_string'} = $string;
+    $meta->{'type'}         = uc $args{'TYPE'};
+    $meta->{'depends_on'}   = $args{'ALIAS1'};
 
-    my $criterion;
-    if ($args{'EXPRESSION'}) {
-        $criterion = $args{'EXPRESSION'};
-    } else {
-        $criterion = $args{'ALIAS1'}.".".$args{'FIELD1'};
-    }
-
-    $args{'SearchBuilder'}->{'left_joins'}{"$alias"}{'alias_string'} = $string;
-    $args{'SearchBuilder'}->{'left_joins'}{"$alias"}{'depends_on'}   =
-      $args{'ALIAS1'};
-    $args{'SearchBuilder'}->{'left_joins'}{"$alias"}{'criteria'}
-      { 'criterion' . $args{'SearchBuilder'}->{'criteria_count'}++ } =
-      " $alias.$args{'FIELD2'} = $criterion";
+    my $criterion = $args{'EXPRESSION'} || $args{'ALIAS1'}.".".$args{'FIELD1'};
+    $meta->{'criteria'}{ 'criterion' . $args{'SearchBuilder'}->{'criteria_count'}++ } =
+        [ { field => "$alias.$args{'FIELD2'}", op => '=', value => $criterion } ];
 
     return ($alias);
 }
