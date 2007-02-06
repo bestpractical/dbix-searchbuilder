@@ -745,7 +745,7 @@ sub Limit {
         @_    # get the real argumentlist
     );
 
-    if (not $args{'ENTRYAGGREGATOR'} ) {
+    unless ( $args{'ENTRYAGGREGATOR'} ) {
         if ( $args{'LEFTJOIN'} ) {
             $args{'ENTRYAGGREGATOR'} = 'AND';
             } else {
@@ -867,8 +867,7 @@ sub _GenericRestriction {
     #If we're performing a left join, we really want the alias to be the
     #left join criterion.
 
-    if (    ( defined $args{'LEFTJOIN'} )
-         && ( !defined $args{'ALIAS'} ) ) {
+    if ( defined $args{'LEFTJOIN'} && !defined $args{'ALIAS'} ) {
         $args{'ALIAS'} = $args{'LEFTJOIN'};
     }
 
