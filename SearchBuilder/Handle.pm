@@ -1061,7 +1061,119 @@ sub _BuildJoins {
 
 }
 
+=head2 MayBeNull
 
+Takes a C<SearchBuilder> and C<ALIAS> in a hash and resturns
+true if restrictions of the query allow NULLs in a table joined with
+the ALIAS, otherwise returns false value which means that you can
+use normal join instead of left for the aliased table.
+
+Works only for queries have been built with L<DBIx::SearchBuilder/Join> and
+L<DBIx::SearchBuilder/Limit> methods, for other cases return true value to
+avoid fault optimizations.
+
+=cut
+
+sub MayBeNull {
+    my $self = shift;
+    my %args = (SearchBuilder => undef, ALIAS => undef, @_);
+    # if we have at least one subclause that is not generic then we should get out
+    # of here as we can't parse subclauses
+    return 1 if grep $_ ne 'generic_restrictions', keys %{ $args{'SearchBuilder'}->{'subclauses'} };
+
+    # build full list of generic conditions
+    my @conditions;
+    foreach ( grep @$_, values %{ $args{'SearchBuilder'}->{'restrictions'} } ) {
+        push @conditions, 'AND' if @conditions;
+        push @conditions, '(', @$_, ')';
+    }
+    return 1 unless @conditions;
+
+    # replace conditions with boolean result: 1 - allows nulls, 0 - not
+    # all restrictions on that don't act on required alias allow nulls
+    # otherwise only IS NULL operator 
+    foreach ( splice @conditions ) {
+        unless ( ref $_ ) {
+            push @conditions, $_;
+        } elsif ( $_->{'field'} !~ /^\Q$args{'ALIAS'}./ ) {
+            push @conditions, 1;
+        } elsif ( lc $_->{op} eq 'is' ) {
+            push @conditions, 1;
+        } else {
+            push @conditions, 0;
+        }
+    }
+
+    # resturns index of closing paren by index of openning paren
+    my $closing_paren = sub {
+        my $i = shift;
+        my $count = 0;
+        for ( $i; $i < @conditions; $i++ ) {
+            if ( $conditions[$i] eq '(' ) {
+                $count++;
+            }
+            elsif ( $conditions[$i] eq ')' ) {
+                $count--;
+            }
+            return $i unless $count;
+        }
+        die "lost in parens";
+    };
+
+    # solve boolean expression we have, an answer is our result
+    my @tmp = ();
+    while ( my $e = shift @conditions ) {
+        return $e if !@conditions && !@tmp;
+
+        if ( $e eq '0' ) {
+            if ( $conditions[0] eq ')' ) {
+                push @tmp, $e;
+                next;
+            }
+
+            my $aggreg = shift @conditions;
+            if ( $aggreg eq 'OR' ) {
+                # 0 OR x == x
+                next;
+            } elsif ( $aggreg eq 'AND' ) {
+                # 0 AND x == 0
+                my $close_p = $closing_paren->(0);
+                splice @conditions, 0, $close_p + 1, (0);
+            } else {
+                die "lost @tmp >>>$e $aggreg<<< @conditions";
+            }
+        } elsif ( $e eq '1' ) {
+            if ( $conditions[0] eq ')' ) {
+                push @tmp, $e;
+                next;
+            }
+
+            my $aggreg = shift @conditions;
+            if ( $aggreg eq 'OR' ) {
+                # 1 OR x == 1
+                my $close_p = $closing_paren->(0);
+                splice @conditions, 0, $close_p + 1, (1);
+            } elsif ( $aggreg eq 'AND' ) {
+                # 1 AND x == x
+                next;
+            } else {
+                die "lost @tmp >>>$e $aggreg<<< @conditions";
+            }
+        } elsif ( $e eq '(' ) {
+            if ( $conditions[1] eq ')' ) {
+                splice @conditions, 1, 1;
+            } else {
+                push @tmp, $e;
+            }
+        } elsif ( $e eq ')' ) {
+            unshift @conditions, @tmp, $e;
+            @tmp = ();
+        } else {
+            die "lost: @tmp >>>$e<<< @conditions";
+        }
+    }
+    return 1;
+}
 
 =head2 DistinctQuery STATEMENTREF 
 
