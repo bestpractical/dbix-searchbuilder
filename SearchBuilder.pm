@@ -755,8 +755,6 @@ sub Limit {
     }
 
 
-    my ($Alias);
-
     #since we're changing the search criteria, we need to redo the search
     $self->RedoSearch();
 
@@ -768,14 +766,11 @@ sub Limit {
         }
         elsif ( $args{'OPERATOR'} =~ /STARTSWITH/i ) {
             $args{'VALUE'}    = $args{'VALUE'} . "%";
-            $args{'OPERATOR'} =~ s/STARTSWITH/LIKE/i;
         }
         elsif ( $args{'OPERATOR'} =~ /ENDSWITH/i ) {
             $args{'VALUE'}    = "%" . $args{'VALUE'};
-            $args{'OPERATOR'} =~ s/ENDSWITH/LIKE/i;
-        } 
-	
-	$args{'OPERATOR'} =~ s/MATCHES/LIKE/i;  # MATCHES becomes LIKE, with no % stuff
+        }
+        $args{'OPERATOR'} =~ s/(?:MATCHES|ENDSWITH|STARTSWITH)/LIKE/i;
 
         #if we're explicitly told not to to quote the value or
         # we're doing an IS or IS NOT (null), don't quote the operator.
@@ -794,7 +789,7 @@ sub Limit {
         }
     }
 
-    $Alias = $self->_GenericRestriction(%args);
+    my $Alias = $self->_GenericRestriction(%args);
 
     warn "No table alias set!"
       unless $Alias;
