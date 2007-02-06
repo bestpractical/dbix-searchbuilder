@@ -8,7 +8,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 69;
+use constant TESTS_PER_DRIVER => 76;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -103,7 +103,7 @@ SKIP: {
 	isa_ok( $items_ref, 'ARRAY', 'ItemsArrayRef always returns array reference' );
 	is( scalar @{$items_ref}, 1, 'ItemsArrayRef has only 1 record' );
 
-# similar basic limit, but with different OPERATORS and less Firs/Next/Last tests
+# similar basic limit, but with different OPERATORS and less First/Next/Last tests
 	# LIKE
 	$users_obj->CleanSlate;
 	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
@@ -179,6 +179,33 @@ SKIP: {
 	$first_rec = $users_obj->First;
 	isa_ok( $first_rec, 'DBIx::SearchBuilder::Record', 'First returns record object' );
 	is( $first_rec->Login, 'obra', 'login is correct' );
+
+# Let's play a little with ENTRYAGGREGATOR
+    # EA defaults to OR for the same field
+	$users_obj->CleanSlate;
+	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+	$users_obj->Limit( FIELD => 'Phone', OPERATOR => 'IS', VALUE => 'NULL', QOUTEVALUE => 0 );
+	$users_obj->Limit( FIELD => 'Phone', OPERATOR => 'LIKE', VALUE => 'X' );
+	is( $users_obj->Count, 4, "found users who has no phone or it has X char" );
+
+    # set AND for the same field
+	$users_obj->CleanSlate;
+	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+	$users_obj->Limit( FIELD => 'Login', OPERATOR => 'NOT LIKE', VALUE => 'c' );
+	$users_obj->Limit(
+        ENTRYAGGREGATOR => 'AND', FIELD => 'Login', OPERATOR => 'LIKE', VALUE => 'u'
+    );
+	is( $users_obj->Count, 1, "found users who has no phone or it has X char" );
+
+    # default is AND for different fields
+	$users_obj->CleanSlate;
+	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+	$users_obj->Limit( FIELD => 'Phone', OPERATOR => 'IS', VALUE => 'NULL', QOUTEVALUE => 0 );
+	$users_obj->Limit( FIELD => 'Login', OPERATOR => 'LIKE', VALUE => 'r' );
+	is( $users_obj->Count, 2, "found users who has no phone number or login has 'r' char" );
+
+	$users_obj->CleanSlate;
+	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
 
 	cleanup_schema( 'TestApp', $handle );
 }} # SKIP, foreach blocks
