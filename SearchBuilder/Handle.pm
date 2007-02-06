@@ -1111,7 +1111,7 @@ sub MayBeNull {
     my $closing_paren = sub {
         my $i = shift;
         my $count = 0;
-        for ( $i; $i < @conditions; $i++ ) {
+        for ( ; $i < @conditions; $i++ ) {
             if ( $conditions[$i] eq '(' ) {
                 $count++;
             }
