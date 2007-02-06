@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 19;
+use constant TESTS_PER_DRIVER => 25;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -79,6 +79,26 @@ SKIP: {
 	);
     $users_obj->Limit( ALIAS => $alias, FIELD => 'id', OPERATOR => 'IS', VALUE => 'NULL' );
     is( $users_obj->Count, 1, "user is not member of any group" );
+
+	# main, alias, join. The join depends on the alias.
+    # We should build joins with correct order.
+	$users_obj->CleanSlate;
+	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+	ok( !$users_obj->_isJoined, "new object isn't joined");
+	$alias = $users_obj->NewAlias( 'UsersToGroups' );
+	ok( $alias, "new alias" );
+	ok( $users_obj->_isJoined, "object with aliases is joined");
+    $users_obj->Limit( FIELD => 'id', VALUE => "$alias.UserId", QUOTEVALUE => 0);
+	ok( my $groups_alias = $users_obj->Join(
+            ALIAS1 => $alias,
+			FIELD1 => 'GroupId',
+			TABLE2 => 'Groups',
+			FIELD2 => 'id',
+        ),
+        "joined table"
+	);
+    $users_obj->Limit( ALIAS => $groups_alias, FIELD => 'Name', VALUE => 'Developers' );
+    is( $users_obj->Count, 3, "three members" );
 
 	cleanup_schema( 'TestApp', $handle );
 
