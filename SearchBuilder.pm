@@ -356,10 +356,10 @@ Returns true if this SearchBuilder will be joining multiple tables together.
 
 sub _isJoined {
     my $self = shift;
-    if (keys(%{$self->{'left_joins'}})) {
-        return(1);
+    if ( keys %{ $self->{'left_joins'} } ) {
+        return (1);
     } else {
-        return(@{$self->{'aliases'}});
+        return (@{ $self->{'aliases'} });
     }
 
 }
