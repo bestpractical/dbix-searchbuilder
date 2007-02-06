@@ -1022,7 +1022,7 @@ sub _BuildJoins {
     $seen_aliases{'main'} = 1;
 
    	# We don't want to get tripped up on a dependency on a simple alias. 
-    	foreach my $alias ( @{ $sb->{'aliases'}} ) {
+    foreach my $alias ( @{ $sb->{'aliases'}} ) {
           if ( $alias =~ /^(.*?)\s+(.*?)$/ ) {
               $seen_aliases{$2} = 1;
           }
@@ -1031,20 +1031,18 @@ sub _BuildJoins {
     my $join_clause = $sb->Table . " main ";
 
 	
-    my @keys = ( keys %{ $sb->{'left_joins'} } );
+    my @keys = keys %{ $sb->{'left_joins'} };
     my %seen;
 
     while ( my $join = shift @keys ) {
-        my $aggregator = $sb->{'left_joins'}{$join}{'entry_aggregator'} 
-            || 'AND';
+        my $meta = $sb->{'left_joins'}{$join};
+        my $aggregator = $meta->{'entry_aggregator'} || 'AND';
 
-        if ( ! $sb->{'left_joins'}{$join}{'depends_on'} || $seen_aliases{ $sb->{'left_joins'}{$join}{'depends_on'} } ) {
+        if ( !$meta->{'depends_on'} || $seen_aliases{ $meta->{'depends_on'} } ) {
             $join_clause = "(" . $join_clause;
-            $join_clause .=
-              $sb->{'left_joins'}{$join}{'alias_string'} . " ON (";
-            $join_clause .=
-              join ( ") $aggregator ( ",
-                values %{ $sb->{'left_joins'}{$join}{'criteria'} } );
+            $join_clause .= $meta->{'alias_string'} . " ON (";
+            $join_clause .= join ( ") $aggregator ( ",
+                values %{ $meta->{'criteria'} } );
             $join_clause .= ")) ";
 
             $seen_aliases{$join} = 1;
@@ -1056,7 +1054,7 @@ sub _BuildJoins {
         }
 
     }
-    return ( join ( ", ", ( $join_clause, @{ $sb->{'aliases'} } ) ) );
+    return ( join ", ", $join_clause, @{ $sb->{'aliases'} } );
 
 }
 
