@@ -167,7 +167,7 @@ SKIP: {
 	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
 	$users_obj->Limit( FIELD => 'Phone', OPERATOR => 'IS NOT', VALUE => 'NULL', QOUTEVALUE => 0 );
 	is( $users_obj->Count, $count_all - 2, "found users who has phone number filled" );
-	
+
 	# ORDER BY / GROUP BY
 	$users_obj->CleanSlate;
 	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
@@ -180,10 +180,15 @@ SKIP: {
 	isa_ok( $first_rec, 'DBIx::SearchBuilder::Record', 'First returns record object' );
 	is( $first_rec->Login, 'obra', 'login is correct' );
 
+	$users_obj->CleanSlate;
+	TODO: {
+        local $TODO = 'we leave order_by after clean slate, fixing this results in many RT failures';
+        is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+	    $users_obj = TestApp::Users->new( $handle );
+    }
+
 # Let's play a little with ENTRYAGGREGATOR
     # EA defaults to OR for the same field
-	$users_obj->CleanSlate;
-	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
 	$users_obj->Limit( FIELD => 'Phone', OPERATOR => 'IS', VALUE => 'NULL', QOUTEVALUE => 0 );
 	$users_obj->Limit( FIELD => 'Phone', OPERATOR => 'LIKE', VALUE => 'X' );
 	is( $users_obj->Count, 4, "found users who has no phone or it has X char" );

@@ -148,9 +148,9 @@ sub CleanSlate {
 	restrictions
 	_open_parens
 	_close_parens
-    order_by
     group_by
     columns
+    criteria_count
     );
 
     #we have no limit statements. DoSearch won't work.
