@@ -900,16 +900,16 @@ sub _GenericRestriction {
     # If we're trying to get a leftjoin restriction, lets set
     # $restriction to point htere. otherwise, lets construct normally
 
-    my ($restriction);
+    my $restriction;
     if ( $args{'LEFTJOIN'} ) {
         if ( $args{'ENTRYAGGREGATOR'} ) {
             $self->{'left_joins'}{ $args{'LEFTJOIN'} }{'entry_aggregator'} = 
                 $args{'ENTRYAGGREGATOR'};
         }
-        $restriction = \$self->{'left_joins'}{ $args{'LEFTJOIN'} }{'criteria'}{ $ClauseId };
+        $restriction = $self->{'left_joins'}{ $args{'LEFTJOIN'} }{'criteria'}{ $ClauseId } ||= [];
     }
     else {
-        $restriction = \$self->{'restrictions'}{ $ClauseId };
+        $restriction = $self->{'restrictions'}{ $ClauseId } ||= [];
     }
 
     # If it's a new value or we're overwriting this sort of restriction,
@@ -924,19 +924,23 @@ sub _GenericRestriction {
 
     }
 
-    my $clause = "($QualifiedField $args{'OPERATOR'} $args{'VALUE'})";
+    my $clause = {
+        field => $QualifiedField,
+        op => $args{'OPERATOR'},
+        value => $args{'VALUE'},
+    };
 
     # Juju because this should come _AFTER_ the EA
-    my $prefix = "";
+    my @prefix;
     if ( $self->{_open_parens}{ $ClauseId } ) {
-        $prefix = " ( " x delete $self->{_open_parens}{ $ClauseId };
+        @prefix = ('(') x delete $self->{_open_parens}{ $ClauseId };
     }
 
-    if ( lc( $args{'ENTRYAGGREGATOR'} || "" ) eq 'none' || !$$restriction ) {
-        $$restriction = $prefix . $clause;
+    if ( lc( $args{'ENTRYAGGREGATOR'} || "" ) eq 'none' || !@$restriction ) {
+        @$restriction = (@prefix, $clause);
     }
     else {
-        $$restriction .= " ". $args{'ENTRYAGGREGATOR'} . " " . $prefix . $clause;
+        push @$restriction, $args{'ENTRYAGGREGATOR'}, @prefix, $clause;
     }
 
     return ( $args{'ALIAS'} );
@@ -945,20 +949,15 @@ sub _GenericRestriction {
 
 
 sub _OpenParen {
-    my ( $self, $clause ) = @_;
+    my ($self, $clause) = @_;
     $self->{_open_parens}{ $clause }++;
 }
 
 # Immediate Action
 sub _CloseParen {
     my ( $self, $clause ) = @_;
-    my $restriction = \$self->{'restrictions'}{ $clause };
-    if ( !$$restriction ) {
-        $$restriction = " ) ";
-    }
-    else {
-        $$restriction .= " ) ";
-    }
+    my $restriction = ($self->{'restrictions'}{ $clause } ||= []);
+    push @$restriction, ')';
 }
 
 
@@ -1001,13 +1000,20 @@ sub _WhereClause {
 sub _CompileGenericRestrictions {
     my $self = shift;
 
-    $self->{'subclauses'}{'generic_restrictions'} = '';
-
     my $result = '';
     #Go through all the restrictions of this type. Buld up the generic subclause
-    foreach my $restriction ( sort keys %{ $self->{'restrictions'} } ) {
+    foreach my $restriction ( grep @$_, values %{ $self->{'restrictions'} } ) {
         $result .= " AND " if $result;
-        $result .= "(" . $self->{'restrictions'}{ $restriction } . ")";
+        $result .= '(';
+        foreach my $entry ( @$restriction ) {
+            unless ( ref $entry ) {
+                $result .= ' '. $entry . ' ';
+            }
+            else {
+                $result .= join ' ', @{$entry}{qw(field op value)};
+            }
+        }
+        $result .= ')';
     }
     return ($self->{'subclauses'}{'generic_restrictions'} = $result);
 }
