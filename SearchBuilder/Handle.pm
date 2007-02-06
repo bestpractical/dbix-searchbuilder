@@ -1033,6 +1033,12 @@ sub _BuildJoins {
 
     while ( my $join = shift @keys ) {
         my $meta = $sb->{'left_joins'}{$join};
+        if ( $meta->{'type'} eq 'LEFT' ) {
+            unless ( $self->MayBeNull( SearchBuilder => $sb, ALIAS => $join ) ) {
+                $meta->{'alias_string'} =~ s/^\s*LEFT\s+/ /;
+                $meta->{'type'} = 'NORMAL';
+            }
+        }
         my $aggregator = $meta->{'entry_aggregator'} || 'AND';
 
         if ( !$meta->{'depends_on'} || $seen_aliases{ $meta->{'depends_on'} } ) {

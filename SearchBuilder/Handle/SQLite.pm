@@ -128,23 +128,34 @@ sub _BuildJoins {
     my %seen;
     
     while ( my $join = shift @keys ) {
-        if ( ! $sb->{'left_joins'}{$join}{'depends_on'} || $seen_aliases{ $sb->{'left_joins'}{$join}{'depends_on'} } ) {
-           #$join_clause = "(" . $join_clause;
-            $join_clause .=
-              $sb->{'left_joins'}{$join}{'alias_string'} . " ON (";
-            $join_clause .=
-              join ( ') AND( ',
-                values %{ $sb->{'left_joins'}{$join}{'criteria'} } );
-            $join_clause .= ") ";
-            
+        my $meta = $sb->{'left_joins'}{$join};
+        if ( $meta->{'type'} eq 'LEFT' ) {
+            unless ( $self->MayBeNull( SearchBuilder => $sb, ALIAS => $join ) ) {
+                $meta->{'alias_string'} =~ s/^\s*LEFT\s+/ /;
+                $meta->{'type'} = 'NORMAL';
+            }
+        }
+        my $aggregator = $meta->{'entry_aggregator'} || 'AND';
+
+        if ( !$meta->{'depends_on'} || $seen_aliases{ $meta->{'depends_on'} } ) {
+            $join_clause .= $meta->{'alias_string'} . " ON ";
+            my @tmp = map {
+                    ref($_)?
+                        $_->{'field'} .' '. $_->{'op'} .' '. $_->{'value'}:
+                        $_
+                }
+                map { ('(', @$_, ')', $aggregator) } values %{ $meta->{'criteria'} };
+            pop @tmp;
+            $join_clause .= join ' ', @tmp;
+
             $seen_aliases{$join} = 1;
-        }   
+        }
         else {
             push ( @keys, $join );
             die "Unsatisfied dependency chain in Joins @keys"
               if $seen{"@keys"}++;
-        }     
-        
+        }
+
     }
     return ( join ( ", ", ( $join_clause, @{ $sb->{'aliases'} } ) ) );
     
