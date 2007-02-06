@@ -1037,10 +1037,16 @@ sub _BuildJoins {
 
         if ( !$meta->{'depends_on'} || $seen_aliases{ $meta->{'depends_on'} } ) {
             $join_clause = "(" . $join_clause;
-            $join_clause .= $meta->{'alias_string'} . " ON (";
-            $join_clause .= join ( ") $aggregator ( ",
-                values %{ $meta->{'criteria'} } );
-            $join_clause .= ")) ";
+            $join_clause .= $meta->{'alias_string'} . " ON ";
+            my @tmp = map {
+                    ref($_)?
+                        $_->{'field'} .' '. $_->{'op'} .' '. $_->{'value'}:
+                        $_
+                }
+                map { ('(', @$_, ')', $aggregator) } values %{ $meta->{'criteria'} };
+            pop @tmp;
+            $join_clause .= join ' ', @tmp;
+            $join_clause .= ") ";
 
             $seen_aliases{$join} = 1;
         }
