@@ -983,6 +983,7 @@ sub _NormalJoin {
         my $alias = $sb->_GetAlias( $args{'TABLE2'} );
         my $meta = $sb->{'left_joins'}{"$alias"} ||= {};
         $meta->{'alias_string'} = " LEFT JOIN $args{'TABLE2'} $alias ";
+        $meta->{'depends_on'}   = $args{'ALIAS1'};
         $meta->{'type'}         = 'LEFT';
         $meta->{'criteria'}{'base_criterion'} = [ {
             field => "$args{'ALIAS1'}.$args{'FIELD1'}",
