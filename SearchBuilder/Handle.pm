@@ -7,7 +7,7 @@ use warnings;
 use Carp qw(croak cluck);
 use DBI;
 use Class::ReturnValue;
-use Encode;
+use Encode qw();
 
 use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH);
 

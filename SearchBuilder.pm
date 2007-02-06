@@ -7,6 +7,7 @@ use vars qw($VERSION);
 $VERSION = "1.45";
 
 use Clone qw();
+use Encode qw();
 
 =head1 NAME
 
@@ -782,16 +783,11 @@ sub Limit {
         # we're doing an IS or IS NOT (null), don't quote the operator.
 
         if ( $args{'QUOTEVALUE'} && $args{'OPERATOR'} !~ /IS/i ) {
-            my $tmp = $self->_Handle->dbh->quote( $args{'VALUE'} );
+            my $turn_utf = Encode::is_utf8( $args{'VALUE'} );
+            $args{'VALUE'} = $self->_Handle->dbh->quote( $args{'VALUE'} );
 
             # Accomodate DBI drivers that don't understand UTF8
-	    if ($] >= 5.007) {
-	        require Encode;
-	        if( Encode::is_utf8( $args{'VALUE'} ) ) {
-	            Encode::_utf8_on( $tmp );
-	        }
-            }
-	    $args{'VALUE'} = $tmp;
+            Encode::_utf8_on( $args{'VALUE'} ) if $turn_utf;
         }
     }
 

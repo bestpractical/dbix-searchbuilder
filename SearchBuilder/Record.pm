@@ -6,6 +6,7 @@ use warnings;
 
 use vars qw($AUTOLOAD);
 use Class::ReturnValue;
+use Encode qw();
 
 
 
@@ -957,41 +958,35 @@ sub TruncateValue {
     my $value = shift;
 
     # We don't need to truncate empty things.
-    return undef unless (defined ($value));
+    return undef unless defined $value;
 
     my $metadata = $self->_ClassAccessible->{$key};
+    return $value unless $metadata;
 
     my $truncate_to;
     if ( $metadata->{'length'} && !$metadata->{'is_numeric'} ) {
-        $truncate_to = $metadata->{'length'};
+        $truncate_to = int $metadata->{'length'};
     }
-    elsif ($metadata->{'type'} &&  $metadata->{'type'} =~ /char\((\d+)\)/ ) {
+    elsif ($metadata->{'type'} && $metadata->{'type'} =~ /char\((\d+)\)/ ) {
         $truncate_to = $1;
     }
+    return $value unless $truncate_to;
 
-    return ($value) unless ($truncate_to);    # don't need to truncate
-
-    # Perl 5.6 didn't speak unicode
-    return substr( $value, 0, $truncate_to ) unless ( $] >= 5.007 );
-
-    require Encode;
+    # return asap if length in bytes is smaller than limit
+    return $value if $truncate_to >= do { use bytes; length $value };
 
     if ( Encode::is_utf8($value) ) {
-        return Encode::decode(
-            utf8 => substr( Encode::encode( utf8 => $value ), 0, $truncate_to ),
+        return Encode::decode_utf8(
+            substr( Encode::encode_utf8( $value ), 0, $truncate_to ),
             Encode::FB_QUIET(),
         );
     }
     else {
-        return Encode::encode(
-            utf8 => Encode::decode(
-                utf8 => substr( $value, 0, $truncate_to ),
-                Encode::FB_QUIET(),
-            )
-        );
-
+        # XXX: if it's not UTF-8 then why do we convert it to?
+        return Encode::encode_utf8( Encode::decode_utf8 (
+            substr( $value, 0, $truncate_to ), Encode::FB_QUIET(),
+        ) );
     }
-
 }
 
 
