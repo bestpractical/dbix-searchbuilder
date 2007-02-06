@@ -122,7 +122,7 @@ sub _BuildJoins {
           }
     }
 
-    my $join_clause = $sb->Table . " main ";
+    my $join_clause = join ", ", ($sb->Table ." main"), @{ $sb->{'aliases'} };
     
     my @keys = ( keys %{ $sb->{'left_joins'} } );
     my %seen;
@@ -157,8 +157,7 @@ sub _BuildJoins {
         }
 
     }
-    return ( join ( ", ", ( $join_clause, @{ $sb->{'aliases'} } ) ) );
-    
+    return $join_clause;
 }
 
 1;
