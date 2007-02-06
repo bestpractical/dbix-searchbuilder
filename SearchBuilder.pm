@@ -903,10 +903,6 @@ sub _GenericRestriction {
     my $QualifiedField = $args{'ALIAS'} . "." . $args{'FIELD'};
     my $ClauseId = $args{'SUBCLAUSE'} || $QualifiedField;
 
-    print STDERR "$self->_GenericRestriction QualifiedField=$QualifiedField\n"
-      if ( $self->DEBUG );
-
-
     # If we're trying to get a leftjoin restriction, lets set
     # $restriction to point htere. otherwise, lets construct normally
 
@@ -1468,18 +1464,7 @@ sub IsLast {
 
 
 
-sub DEBUG {
-    my $self = shift;
-    if (@_) {
-        $self->{'DEBUG'} = shift;
-    }
-    return ( $self->{'DEBUG'} );
-}
-
-
-
-
-
+sub DEBUG { warn "DEBUG is deprecated" }
 
 
 =head2 Column { FIELD => undef } 
