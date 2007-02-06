@@ -147,6 +147,9 @@ sub CleanSlate {
 	restrictions
 	_open_parens
 	_close_parens
+    order_by
+    group_by
+    columns
     );
 
     #we have no limit statements. DoSearch won't work.
@@ -193,6 +196,9 @@ sub _ClonedAttributes
         left_joins
         subclauses
         restrictions
+        order_by
+        group_by
+        columns
     );
 }
 
