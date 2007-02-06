@@ -884,7 +884,6 @@ sub Join {
         @_
     );
 
-    my $string;
 
     my $alias;
 
@@ -944,15 +943,12 @@ sub Join {
 
     }
 
+    my $string;
     if ( $args{'TYPE'} =~ /LEFT/i ) {
-
         $string = " LEFT JOIN " . $args{'TABLE2'} . " $alias ";
-
     }
     else {
-
         $string = " JOIN " . $args{'TABLE2'} . " $alias ";
-
     }
 
     my $meta = $args{'SearchBuilder'}->{'left_joins'}{"$alias"} ||= {};
