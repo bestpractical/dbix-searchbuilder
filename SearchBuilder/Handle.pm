@@ -1090,6 +1090,20 @@ sub MayBeNull {
         push @conditions, 'AND' if @conditions;
         push @conditions, '(', @$_, ')';
     }
+
+    # find tables that depends on this alias and add their join conditions
+    foreach my $join ( values %{ $args{'SearchBuilder'}->{'left_joins'} } ) {
+        # left joins on the left side so later we'll get 1 AND x expression
+        # which equal to x, so we just skip it
+        next if $join->{'type'} eq 'LEFT';
+        next unless $join->{'depends_on'} eq $args{'ALIAS'};
+
+        my @tmp = map { ('(', @$_, ')', $join->{'entry_aggregator'}) } values %{ $join->{'criteria'} };
+        pop @tmp;
+
+        @conditions = ('(', @conditions, ')', 'AND', '(', @tmp ,')');
+
+    }
     return 1 unless @conditions;
 
     # replace conditions with boolean result: 1 - allows nulls, 0 - not
