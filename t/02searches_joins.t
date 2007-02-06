@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 17;
+use constant TESTS_PER_DRIVER => 19;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -35,6 +35,8 @@ SKIP: {
 	my $count_us2gs = init_data( 'TestApp::UsersToGroup', $handle );
 	ok( $count_us2gs,  "init users&groups relations data" );
 
+	my $clean_obj = TestApp::Users->new( $handle );
+
 	# simple JOIN
 	my $users_obj = TestApp::Users->new( $handle );
 	ok( !$users_obj->_isJoined, "new object isn't joined");
@@ -52,6 +54,7 @@ SKIP: {
 
 	# LEFT JOIN
 	$users_obj->CleanSlate;
+	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
 	ok( !$users_obj->_isJoined, "new object isn't joined");
 	$alias = $users_obj->Join( TYPE   => 'LEFT',
 			           FIELD1 => 'id',
@@ -64,6 +67,7 @@ SKIP: {
 
 	# JOIN via existan alias
 	$users_obj->CleanSlate;
+	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
 	ok( !$users_obj->_isJoined, "new object isn't joined");
 	$alias = $users_obj->NewAlias( 'UsersToGroups' );
 	ok( $alias, "new alias" );
