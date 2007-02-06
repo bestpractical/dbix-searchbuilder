@@ -65,7 +65,7 @@ SKIP: {
         is( $users_obj->Count, 1, "user is not member of any group" );
         is( $users_obj->First->id, 3, "correct user id" );
 
-	# JOIN via existan alias
+	# JOIN via existant alias
 	$users_obj->CleanSlate;
 	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
 	ok( !$users_obj->_isJoined, "new object isn't joined");
@@ -77,12 +77,8 @@ SKIP: {
 			     FIELD2 => 'UserId' ),
 		"joined table"
 	);
-        $users_obj->Limit( ALIAS => $alias, FIELD => 'id', OPERATOR => 'IS', VALUE => 'NULL' );
-	TODO: {
-		local $TODO = "JOIN with ALIAS2 is broken";
-	        is( $users_obj->Count, 1, "user is not member of any group" );
-	}
-
+    $users_obj->Limit( ALIAS => $alias, FIELD => 'id', OPERATOR => 'IS', VALUE => 'NULL' );
+    is( $users_obj->Count, 1, "user is not member of any group" );
 
 	cleanup_schema( 'TestApp', $handle );
 

@@ -932,7 +932,8 @@ sub Join {
 
         }
 
-        if ( !$alias || $args{'ALIAS1'} ) {
+        unless ( $alias ) {
+            # XXX: this situation is really bug in the caller!!!
             return ( $self->_NormalJoin(%args) );
         }
         $args{'SearchBuilder'}->{'aliases'} = \@new_aliases;
