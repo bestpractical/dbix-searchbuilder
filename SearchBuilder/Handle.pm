@@ -985,11 +985,14 @@ sub _NormalJoin {
 
     if ( $args{'TYPE'} =~ /LEFT/i ) {
         my $alias = $sb->_GetAlias( $args{'TABLE2'} );
-        $sb->{'left_joins'}{"$alias"}{'alias_string'} =
-          " LEFT JOIN $args{'TABLE2'} $alias ";
-
-        $sb->{'left_joins'}{"$alias"}{'criteria'}{'base_criterion'} =
-          " $args{'ALIAS1'}.$args{'FIELD1'} = $alias.$args{'FIELD2'}";
+        my $meta = $sb->{'left_joins'}{"$alias"} ||= {};
+        $meta->{'alias_string'} = " LEFT JOIN $args{'TABLE2'} $alias ";
+        $meta->{'type'}         = 'LEFT';
+        $meta->{'criteria'}{'base_criterion'} = [ {
+            field => "$args{'ALIAS1'}.$args{'FIELD1'}",
+            op => '=',
+            value => "$alias.$args{'FIELD2'}",
+        } ];
 
         return ($alias);
     }
