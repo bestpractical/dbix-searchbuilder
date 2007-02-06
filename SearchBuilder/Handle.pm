@@ -897,7 +897,7 @@ sub Join {
         my @aliases = @{ $args{'SearchBuilder'}->{'aliases'} };
         my @new_aliases;
         foreach my $old_alias (@aliases) {
-            if ( $old_alias =~ /^(.*?) ($args{'ALIAS2'})$/ ) {
+            if ( $old_alias =~ /^(.*?) (\Q$args{'ALIAS2'}\E)$/ ) {
                 $args{'TABLE2'} = $1;
                 $alias = $2;
 
