@@ -1,5 +1,27 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.46
+
+* deprecate DEBUG method, it's still there but produce warning
+* fix CleanSlate method that was missing several keys
+* fix a long standing bug we had, we didn't write depends_on data about
+  a join, so we could build queries with incorrect parens around join
+  conditions
+* fix default values for ALIAS1 argument in the Join method, istead of
+  defaulting FIELD1 to 'main' value
+* internal refactoring of a storage for query's conditions,
+  instead of building query strings right after the limit
+  or join, we now build a perl structure
+* don't clone attributes that don't exists in the Clone method
+* we use Encode module without perl version check for a long time, so
+  we can get rid of all checks for the version and load the module
+  at compile time everywhere we need it
+* implement MayBeNull method in the handler that checks if applied
+  conditions allow NULLs in the result set
+* implement cascaded LEFT JOINs optimization
+* additional tests for CleanSlate and Clone methods, ENTRY_AGGREGATOR
+  argument, different types of joins and LEFT JOIN optimizer
+
 1.45 Tue Sep 26 11:08:20 EDT 2006
 
 * Postgres fixes:
