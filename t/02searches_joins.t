@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 25;
+use constant TESTS_PER_DRIVER => 27;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -36,9 +36,11 @@ SKIP: {
     ok( $count_us2gs,  "init users&groups relations data" );
 
     my $clean_obj = TestApp::Users->new( $handle );
+    my $users_obj = $clean_obj->Clone;
+    is_deeply( $users_obj, $clean_obj, 'after Clone looks the same');
 
-    diag "inner JOIN with ->Join method" if $ENV{'TEST_VERBOSE'};
-    my $users_obj = TestApp::Users->new( $handle );
+diag "inner JOIN with ->Join method" if $ENV{'TEST_VERBOSE'};
+{
     ok( !$users_obj->_isJoined, "new object isn't joined");
     my $alias = $users_obj->Join(
         FIELD1 => 'id',
@@ -53,12 +55,14 @@ SKIP: {
     # fake limit to check if join actually joins
     $users_obj->Limit( FIELD => 'id', OPERATOR => 'IS NOT', VALUE => 'NULL' );
     is( $users_obj->Count, 3, "three users are members of the groups" );
+}
 
-    diag "LEFT JOIN with ->Join method" if $ENV{'TEST_VERBOSE'};
+diag "LEFT JOIN with ->Join method" if $ENV{'TEST_VERBOSE'}; 
+{
     $users_obj->CleanSlate;
     is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
     ok( !$users_obj->_isJoined, "new object isn't joined");
-    $alias = $users_obj->Join(
+    my $alias = $users_obj->Join(
         TYPE   => 'LEFT',
         FIELD1 => 'id',
         TABLE2 => 'UsersToGroups',
@@ -66,14 +70,17 @@ SKIP: {
     );
     ok( $alias, "Join returns alias" );
     $users_obj->Limit( ALIAS => $alias, FIELD => 'id', OPERATOR => 'IS', VALUE => 'NULL' );
+    ok( $users_obj->BuildSelectQuery =~ /LEFT JOIN/, 'LJ is not optimized away');
     is( $users_obj->Count, 1, "user is not member of any group" );
     is( $users_obj->First->id, 3, "correct user id" );
+}
 
-    diag "LEFT JOIN with ->Join method and using alias" if $ENV{'TEST_VERBOSE'};
+diag "LEFT JOIN with ->Join method and using alias" if $ENV{'TEST_VERBOSE'};
+{
     $users_obj->CleanSlate;
     is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
     ok( !$users_obj->_isJoined, "new object isn't joined");
-    $alias = $users_obj->NewAlias( 'UsersToGroups' );
+    my $alias = $users_obj->NewAlias( 'UsersToGroups' );
     ok( $alias, "new alias" );
     is($users_obj->Join(
             TYPE   => 'LEFT',
@@ -84,13 +91,15 @@ SKIP: {
     );
     $users_obj->Limit( ALIAS => $alias, FIELD => 'id', OPERATOR => 'IS', VALUE => 'NULL' );
     is( $users_obj->Count, 1, "user is not member of any group" );
+}
 
-    diag "main <- alias <- join" if $ENV{'TEST_VERBOSE'};
+diag "main <- alias <- join" if $ENV{'TEST_VERBOSE'};
+{
     # The join depends on the alias, we should build joins with correct order.
     $users_obj->CleanSlate;
     is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
     ok( !$users_obj->_isJoined, "new object isn't joined");
-    $alias = $users_obj->NewAlias( 'UsersToGroups' );
+    my $alias = $users_obj->NewAlias( 'UsersToGroups' );
     ok( $alias, "new alias" );
     ok( $users_obj->_isJoined, "object with aliases is joined");
     $users_obj->Limit( FIELD => 'id', VALUE => "$alias.UserId", QUOTEVALUE => 0);
@@ -107,6 +116,7 @@ SKIP: {
         local $TODO = 'fails under Pg';
         is( $users_obj->Count, 3, "three members" );
     }
+}
 
     cleanup_schema( 'TestApp', $handle );
 
