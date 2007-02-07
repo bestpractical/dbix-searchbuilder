@@ -176,7 +176,8 @@ sub Clone
     $obj->{'must_redo_search'} = 1;
     $obj->{'itemscount'}       = 0;
     
-    $obj->{$_} = Clone::clone($obj->{$_}) for ( $self->_ClonedAttributes );
+    $obj->{ $_ } = Clone::clone( $obj->{ $_ } )
+        foreach grep exists $self->{ $_ }, $self->_ClonedAttributes;
     return $obj;
 }
 
