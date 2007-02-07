@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 27;
+use constant TESTS_PER_DRIVER => 42;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -75,6 +75,23 @@ diag "LEFT JOIN with ->Join method" if $ENV{'TEST_VERBOSE'};
     is( $users_obj->First->id, 3, "correct user id" );
 }
 
+diag "LEFT JOIN with IS NOT NULL on the right side" if $ENV{'TEST_VERBOSE'}; 
+{
+    $users_obj->CleanSlate;
+    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+    ok( !$users_obj->_isJoined, "new object isn't joined");
+    my $alias = $users_obj->Join(
+        TYPE   => 'LEFT',
+        FIELD1 => 'id',
+        TABLE2 => 'UsersToGroups',
+        FIELD2 => 'UserId'
+    );
+    ok( $alias, "Join returns alias" );
+    $users_obj->Limit( ALIAS => $alias, FIELD => 'id', OPERATOR => 'IS NOT', VALUE => 'NULL' );
+    ok( $users_obj->BuildSelectQuery !~ /LEFT JOIN/, 'LJ is optimized away');
+    is( $users_obj->Count, 3, "users whos is memebers of at least one group" );
+}
+
 diag "LEFT JOIN with ->Join method and using alias" if $ENV{'TEST_VERBOSE'};
 {
     $users_obj->CleanSlate;
@@ -90,6 +107,7 @@ diag "LEFT JOIN with ->Join method and using alias" if $ENV{'TEST_VERBOSE'};
         $alias, "joined table"
     );
     $users_obj->Limit( ALIAS => $alias, FIELD => 'id', OPERATOR => 'IS', VALUE => 'NULL' );
+    ok( $users_obj->BuildSelectQuery =~ /LEFT JOIN/, 'LJ is not optimized away');
     is( $users_obj->Count, 1, "user is not member of any group" );
 }
 
@@ -116,6 +134,60 @@ diag "main <- alias <- join" if $ENV{'TEST_VERBOSE'};
         local $TODO = 'fails under Pg';
         is( $users_obj->Count, 3, "three members" );
     }
+}
+
+diag "cascaded LEFT JOIN optimization" if $ENV{'TEST_VERBOSE'}; 
+{
+    $users_obj->CleanSlate;
+    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+    ok( !$users_obj->_isJoined, "new object isn't joined");
+    my $alias = $users_obj->Join(
+        TYPE   => 'LEFT',
+        FIELD1 => 'id',
+        TABLE2 => 'UsersToGroups',
+        FIELD2 => 'UserId'
+    );
+    ok( $alias, "Join returns alias" );
+    $alias = $users_obj->Join(
+        TYPE   => 'LEFT',
+        ALIAS1 => $alias,
+        FIELD1 => 'GroupId',
+        TABLE2 => 'Groups',
+        FIELD2 => 'id'
+    );
+    $users_obj->Limit( ALIAS => $alias, FIELD => 'id', OPERATOR => 'IS NOT', VALUE => 'NULL' );
+    ok( $users_obj->BuildSelectQuery !~ /LEFT JOIN/, 'both LJs are optimized away');
+    is( $users_obj->Count, 3, "users whos is memebers of at least one group" );
+}
+
+diag "LEFT JOIN optimization and OR clause" if $ENV{'TEST_VERBOSE'}; 
+{
+    $users_obj->CleanSlate;
+    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+    ok( !$users_obj->_isJoined, "new object isn't joined");
+    my $alias = $users_obj->Join(
+        TYPE   => 'LEFT',
+        FIELD1 => 'id',
+        TABLE2 => 'UsersToGroups',
+        FIELD2 => 'UserId'
+    );
+    $users_obj->_OpenParen('my_clause');
+    $users_obj->Limit(
+        SUBCLAUSE => 'my_clause',
+        ALIAS => $alias,
+        FIELD => 'id',
+        OPERATOR => 'IS NOT',
+        VALUE => 'NULL'
+    );
+    $users_obj->Limit(
+        SUBCLAUSE => 'my_clause',
+        ENTRY_AGGREGATOR => 'OR',
+        FIELD => 'id',
+        VALUE => 3
+    );
+    $users_obj->_CloseParen('my_clause');
+    ok( $users_obj->BuildSelectQuery =~ /LEFT JOIN/, 'LJ is not optimized away');
+    is( $users_obj->Count, 4, "all users" );
 }
 
     cleanup_schema( 'TestApp', $handle );
