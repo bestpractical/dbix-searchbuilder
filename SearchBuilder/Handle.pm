@@ -899,7 +899,6 @@ sub Join {
             if ( $old_alias =~ /^(.*?) (\Q$args{'ALIAS2'}\E)$/ ) {
                 $args{'TABLE2'} = $1;
                 $alias = $2;
-
             }
             else {
                 push @new_aliases, $old_alias;
@@ -1113,12 +1112,12 @@ sub MayBeNull {
     foreach ( splice @conditions ) {
         unless ( ref $_ ) {
             push @conditions, $_;
-        } elsif ( $_->{'field'} !~ /^\Q$args{'ALIAS'}./ ) {
-            push @conditions, 1;
-        } elsif ( lc $_->{op} eq 'is' ) {
-            push @conditions, 1;
-        } else {
+        } elsif ( $_->{'field'} =~ /^\Q$args{'ALIAS'}./ ) {
+            push @conditions, lc $_->{op} eq 'is';
+        } elsif ( $_->{'value'} && $_->{'value'} =~ /^\Q$args{'ALIAS'}./ ) {
             push @conditions, 0;
+        } else {
+            push @conditions, 1;
         }
     }
 
