@@ -111,52 +111,26 @@ Adjusts syntax of join queries for SQLite.
 sub _BuildJoins {
     my $self = shift;
     my $sb   = shift;
-    my %seen_aliases;
-    
-    $seen_aliases{'main'} = 1;
 
-    # We don't want to get tripped up on a dependency on a simple alias. 
-        foreach my $alias ( @{ $sb->{'aliases'}} ) {
-          if ( $alias =~ /^(.*?)\s+(.*?)$/ ) {
-              $seen_aliases{$2} = 1;
-          }
-    }
+    $self->OptimizeJoins( SearchBuilder => $sb );
 
     my $join_clause = join ", ", ($sb->Table ." main"), @{ $sb->{'aliases'} };
-    
-    my @keys = ( keys %{ $sb->{'left_joins'} } );
-    my %seen;
-    
-    while ( my $join = shift @keys ) {
-        my $meta = $sb->{'left_joins'}{$join};
-        if ( $meta->{'type'} eq 'LEFT' ) {
-            unless ( $self->MayBeNull( SearchBuilder => $sb, ALIAS => $join ) ) {
-                $meta->{'alias_string'} =~ s/^\s*LEFT\s+/ /;
-                $meta->{'type'} = 'NORMAL';
-            }
-        }
+    my $joins = $sb->{'left_joins'};
+    foreach my $join ( keys %{ $sb->{'left_joins'} } ) {
+        my $meta = $sb->{'left_joins'}{ $join };
         my $aggregator = $meta->{'entry_aggregator'} || 'AND';
 
-        if ( !$meta->{'depends_on'} || $seen_aliases{ $meta->{'depends_on'} } ) {
-            $join_clause .= $meta->{'alias_string'} . " ON ";
-            my @tmp = map {
-                    ref($_)?
-                        $_->{'field'} .' '. $_->{'op'} .' '. $_->{'value'}:
-                        $_
-                }
-                map { ('(', @$_, ')', $aggregator) } values %{ $meta->{'criteria'} };
-            pop @tmp;
-            $join_clause .= join ' ', @tmp;
-
-            $seen_aliases{$join} = 1;
-        }
-        else {
-            push ( @keys, $join );
-            die "Unsatisfied dependency chain in Joins @keys"
-              if $seen{"@keys"}++;
-        }
-
+        $join_clause .= $meta->{'alias_string'} . " ON ";
+        my @tmp = map {
+                ref($_)?
+                    $_->{'field'} .' '. $_->{'op'} .' '. $_->{'value'}:
+                    $_
+            }
+            map { ('(', @$_, ')', $aggregator) } values %{ $meta->{'criteria'} };
+        pop @tmp;
+        $join_clause .= join ' ', @tmp;
     }
+
     return $join_clause;
 }
 

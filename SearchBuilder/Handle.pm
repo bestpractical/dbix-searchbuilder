@@ -1011,34 +1011,24 @@ sub _NormalJoin {
 sub _BuildJoins {
     my $self = shift;
     my $sb   = shift;
-    my %seen_aliases;
 
-    $seen_aliases{'main'} = 1;
-
-   	# We don't want to get tripped up on a dependency on a simple alias. 
-    foreach my $alias ( @{ $sb->{'aliases'}} ) {
-          if ( $alias =~ /^(.*?)\s+(.*?)$/ ) {
-              $seen_aliases{$2} = 1;
-          }
-    }
+    $self->OptimizeJoins( SearchBuilder => $sb );
 
     my $join_clause = join ", ", ($sb->Table ." main"), @{ $sb->{'aliases'} };
+    my %processed = map { /^\S+\s+(\S+)$/; $1 => 1 } @{ $sb->{'aliases'} };
+    $processed{'main'} = 1;
 
-	
-    my @keys = keys %{ $sb->{'left_joins'} };
-    my %seen;
+    # get a @list of joins that have not been processed yet, but depend on processed join
+    my $joins = $sb->{'left_joins'};
+    while ( my @list = grep !$processed{ $_ }
+            && $processed{ $joins->{ $_ }{'depends_on'} }, keys %$joins )
+    {
+        foreach my $join ( @list ) {
+            $processed{ $join }++;
 
-    while ( my $join = shift @keys ) {
-        my $meta = $sb->{'left_joins'}{$join};
-        if ( $meta->{'type'} eq 'LEFT' ) {
-            unless ( $self->MayBeNull( SearchBuilder => $sb, ALIAS => $join ) ) {
-                $meta->{'alias_string'} =~ s/^\s*LEFT\s+/ /;
-                $meta->{'type'} = 'NORMAL';
-            }
-        }
-        my $aggregator = $meta->{'entry_aggregator'} || 'AND';
+            my $meta = $joins->{ $join };
+            my $aggregator = $meta->{'entry_aggregator'} || 'AND';
 
-        if ( !$meta->{'depends_on'} || $seen_aliases{ $meta->{'depends_on'} } ) {
             $join_clause = "(" . $join_clause;
             $join_clause .= $meta->{'alias_string'} . " ON ";
             my @tmp = map {
@@ -1050,17 +1040,48 @@ sub _BuildJoins {
             pop @tmp;
             $join_clause .= join ' ', @tmp;
             $join_clause .= ") ";
-
-            $seen_aliases{$join} = 1;
         }
-        else {
-            push ( @keys, $join );
-            die "Unsatisfied dependency chain in Joins @keys"
-              if $seen{"@keys"}++;
-        }
+    }
 
+    # here we could check if there is recursion in joins by checking that all joins
+    # are processed
+    if ( my @not_processed = grep !$processed{ $_ }, keys %$joins ) {
+        die "Unsatisfied dependency chain in joins @not_processed";
     }
     return $join_clause;
+}
+
+sub OptimizeJoins {
+    my $self = shift;
+    my %args = (SearchBuilder => undef, @_);
+    my $joins = $args{'SearchBuilder'}->{'left_joins'};
+
+    my %processed = map { /^\S+\s+(\S+)$/; $1 => 1 } @{ $args{'SearchBuilder'}->{'aliases'} };
+    $processed{ $_ }++ foreach grep $joins->{ $_ }{'type'} ne 'LEFT', keys %$joins;
+    $processed{'main'}++;
+
+    my @ordered;
+    # get a @list of joins that have not been processed yet, but depend on processed join
+    # if we are talking about forest then we'll get the second level of the forest,
+    # but we should process nodes on this level at the end, so we build FILO ordered list.
+    # finally we'll get ordered list with leafes in the beginning and top most nodes at
+    # the end.
+    while ( my @list = grep !$processed{ $_ }
+            && $processed{ $joins->{ $_ }{'depends_on'} }, keys %$joins )
+    {
+        unshift @ordered, @list;
+        $processed{ $_ }++ foreach @list;
+    }
+
+    foreach my $join ( @ordered ) {
+        next if $self->MayBeNull( SearchBuilder => $args{'SearchBuilder'}, ALIAS => $join );
+
+        $joins->{ $join }{'alias_string'} =~ s/^\s*LEFT\s+/ /;
+        $joins->{ $join }{'type'} = 'NORMAL';
+    }
+
+    # here we could check if there is recursion in joins by checking that all joins
+    # are processed
 
 }
 
@@ -1139,10 +1160,11 @@ sub MayBeNull {
 
     # solve boolean expression we have, an answer is our result
     my @tmp = ();
-    while ( my $e = shift @conditions ) {
+    while ( defined ( my $e = shift @conditions ) ) {
+        #warn "@tmp >>>$e<<< @conditions";
         return $e if !@conditions && !@tmp;
 
-        if ( $e eq '0' ) {
+        unless ( $e ) {
             if ( $conditions[0] eq ')' ) {
                 push @tmp, $e;
                 next;
