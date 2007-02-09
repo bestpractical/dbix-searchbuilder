@@ -96,44 +96,6 @@ sub DistinctCount {
 
 
 
-=head2 _BuildJoins
-
-Adjusts syntax of join queries for SQLite.
-
-=cut
-
-#SQLite can't handle 
-# SELECT DISTINCT main.*     FROM (Groups main          LEFT JOIN Principals Principals_2  ON ( main.id = Principals_2.id)) ,     GroupMembers GroupMembers_1      WHERE ((GroupMembers_1.MemberId = '70'))     AND ((Principals_2.Disabled = '0'))     AND ((main.Domain = 'UserDefined'))     AND ((main.id = GroupMembers_1.GroupId)) 
-#     ORDER BY main.Name ASC
-#     It needs
-# SELECT DISTINCT main.*     FROM Groups main           LEFT JOIN Principals Principals_2  ON ( main.id = Principals_2.id) ,      GroupMembers GroupMembers_1      WHERE ((GroupMembers_1.MemberId = '70'))     AND ((Principals_2.Disabled = '0'))     AND ((main.Domain = 'UserDefined'))     AND ((main.id = GroupMembers_1.GroupId)) ORDER BY main.Name ASC
-
-sub _BuildJoins {
-    my $self = shift;
-    my $sb   = shift;
-
-    $self->OptimizeJoins( SearchBuilder => $sb );
-
-    my $join_clause = join ", ", ($sb->Table ." main"), @{ $sb->{'aliases'} };
-    my $joins = $sb->{'left_joins'};
-    foreach my $join ( keys %{ $sb->{'left_joins'} } ) {
-        my $meta = $sb->{'left_joins'}{ $join };
-        my $aggregator = $meta->{'entry_aggregator'} || 'AND';
-
-        $join_clause .= $meta->{'alias_string'} . " ON ";
-        my @tmp = map {
-                ref($_)?
-                    $_->{'field'} .' '. $_->{'op'} .' '. $_->{'value'}:
-                    $_
-            }
-            map { ('(', @$_, ')', $aggregator) } values %{ $meta->{'criteria'} };
-        pop @tmp;
-        $join_clause .= join ' ', @tmp;
-    }
-
-    return $join_clause;
-}
-
 1;
 
 __END__

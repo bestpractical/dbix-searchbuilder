@@ -130,10 +130,7 @@ diag "main <- alias <- join" if $ENV{'TEST_VERBOSE'};
         "joined table"
     );
     $users_obj->Limit( ALIAS => $groups_alias, FIELD => 'Name', VALUE => 'Developers' );
-    TODO: {
-        local $TODO = 'fails under Pg';
-        is( $users_obj->Count, 3, "three members" );
-    }
+    is( $users_obj->Count, 3, "three members" );
 }
 
 diag "cascaded LEFT JOIN optimization" if $ENV{'TEST_VERBOSE'}; 

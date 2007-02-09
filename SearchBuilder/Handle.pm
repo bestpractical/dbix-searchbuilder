@@ -1027,7 +1027,6 @@ sub _BuildJoins {
             my $meta = $joins->{ $join };
             my $aggregator = $meta->{'entry_aggregator'} || 'AND';
 
-            $join_clause = "(" . $join_clause;
             $join_clause .= $meta->{'alias_string'} . " ON ";
             my @tmp = map {
                     ref($_)?
@@ -1037,7 +1036,6 @@ sub _BuildJoins {
                 map { ('(', @$_, ')', $aggregator) } values %{ $meta->{'criteria'} };
             pop @tmp;
             $join_clause .= join ' ', @tmp;
-            $join_clause .= ") ";
         }
     }
 
