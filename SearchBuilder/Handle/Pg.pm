@@ -2,13 +2,13 @@
 # Copyright 1999-2001 Jesse Vincent <jesse@fsck.com>
 
 package DBIx::SearchBuilder::Handle::Pg;
-use strict;
 
 use vars qw($VERSION @ISA $DBIHandle $DEBUG);
 use base qw(DBIx::SearchBuilder::Handle);
 use Want qw(want howmany);
 
 use strict;
+use warnings;
 
 =head1 NAME
 

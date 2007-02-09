@@ -1,8 +1,12 @@
 # $Header: /home/jesse/DBIx-SearchBuilder/history/SearchBuilder/Handle/Oracle.pm,v 1.14 2002/01/28 06:11:37 jesse Exp $
 
-use strict;
 package DBIx::SearchBuilder::Handle::Oracle;
+
+use strict;
+use warnings;
+
 use base qw/DBIx::SearchBuilder::Handle/;
+
 use DBD::Oracle qw(:ora_types);
          
 use vars qw($VERSION $DBIHandle $DEBUG);

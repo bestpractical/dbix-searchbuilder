@@ -1,10 +1,10 @@
 
 package DBIx::SearchBuilder::Handle::SQLite;
-use DBIx::SearchBuilder::Handle;
-@ISA = qw(DBIx::SearchBuilder::Handle);
 
-use vars qw($VERSION @ISA $DBIHandle $DEBUG);
 use strict;
+use warnings;
+
+use base qw(DBIx::SearchBuilder::Handle);
 
 =head1 NAME
 

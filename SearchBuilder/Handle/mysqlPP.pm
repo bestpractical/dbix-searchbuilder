@@ -1,9 +1,9 @@
-package DBIx::SearchBuilder::Handle::mysqlPP;                                  
-use DBIx::SearchBuilder::Handle::mysql;                                        
-@ISA = qw(DBIx::SearchBuilder::Handle::mysql);                                 
-                                                                               
-use vars qw($VERSION @ISA $DBIHandle $DEBUG);                                  
-use strict;                                                                    
+package DBIx::SearchBuilder::Handle::mysqlPP;
+
+use strict;
+use warnings;
+
+use base qw(DBIx::SearchBuilder::Handle::mysql);
 
 1;
 

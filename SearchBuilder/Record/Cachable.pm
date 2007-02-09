@@ -3,14 +3,13 @@
 
 package DBIx::SearchBuilder::Record::Cachable;
 
-use DBIx::SearchBuilder::Record;
-use DBIx::SearchBuilder::Handle;
-@ISA = qw (DBIx::SearchBuilder::Record);
+use strict;
+use warnings;
 
+use DBIx::SearchBuilder::Handle;
 use Cache::Simple::TimedExpiry;
 
-use strict;
-
+use base qw(DBIx::SearchBuilder::Record);
 
 =head1 NAME
 

@@ -1,11 +1,13 @@
 # $Header: /home/jesse/DBIx-SearchBuilder/history/SearchBuilder/Handle/ODBC.pm,v 1.8 2001/10/12 05:27:05 jesse Exp $
 
 package DBIx::SearchBuilder::Handle::ODBC;
-use DBIx::SearchBuilder::Handle;
-@ISA = qw(DBIx::SearchBuilder::Handle);
 
-use vars qw($VERSION @ISA $DBIHandle $DEBUG);
 use strict;
+use warnings;
+
+use base qw(DBIx::SearchBuilder::Handle);
+
+use vars qw($VERSION $DBIHandle $DEBUG);
 
 =head1 NAME
 
