@@ -106,8 +106,9 @@ sub Next {
   my $self=shift;
 
   return undef unless defined  $self->{data}[ $self->{curp} ];
-
+    
   my $cur =  $self->{data}[ $self->{curp} ];
+  $cur->_DoSearch(); # force the search, instead of doing a count.
   if ( $cur->_ItemsCounter == $cur->Count ) {
 	# move to the next element
 	$self->{curp}++;
