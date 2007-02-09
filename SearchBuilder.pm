@@ -2,9 +2,9 @@
 package DBIx::SearchBuilder;
 
 use strict;
+use warnings;
 
-use vars qw($VERSION);
-$VERSION = "1.45_01";
+our $VERSION = "1.45_02";
 
 use Clone qw();
 use Encode qw();

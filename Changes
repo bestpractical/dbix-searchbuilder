@@ -9,6 +9,9 @@ Revision history for Perl extension DBIx::SearchBuilder.
   conditions
 * fix default values for ALIAS1 argument in the Join method, istead of
   defaulting FIELD1 to 'main' value
+* fix a TODO test
+* applied patch from Joop van de Wege that should fix ordering of results
+  in some cases with Oracle backend
 * internal refactoring of a storage for query's conditions,
   instead of building query strings right after the limit
   or join, we now build a perl structure
