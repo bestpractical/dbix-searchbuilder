@@ -9,9 +9,6 @@ use base qw/DBIx::SearchBuilder::Handle/;
 
 use DBD::Oracle qw(:ora_types);
          
-use vars qw($VERSION $DBIHandle $DEBUG);
-
-
 =head1 NAME
 
   DBIx::SearchBuilder::Handle::Oracle - An oracle specific Handle object
@@ -46,14 +43,14 @@ sub Connect  {
 	       Host => undef,
 	       @_);
   
-    $self->SUPER::Connect(%args);
+    my $rv = $self->SUPER::Connect(%args);
     
     $self->dbh->{LongTruncOk}=1;
     $self->dbh->{LongReadLen}=8000;
     
     $self->SimpleQuery("ALTER SESSION set NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
     
-    return ($DBIHandle); 
+    return ($rv); 
 }
 
 

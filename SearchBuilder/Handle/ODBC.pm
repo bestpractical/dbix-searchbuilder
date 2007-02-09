@@ -7,8 +7,6 @@ use warnings;
 
 use base qw(DBIx::SearchBuilder::Handle);
 
-use vars qw($VERSION $DBIHandle $DEBUG);
-
 =head1 NAME
 
   DBIx::SearchBuilder::Handle::ODBC - An ODBC specific Handle object

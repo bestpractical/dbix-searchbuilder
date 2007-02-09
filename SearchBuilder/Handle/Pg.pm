@@ -3,12 +3,12 @@
 
 package DBIx::SearchBuilder::Handle::Pg;
 
-use vars qw($VERSION @ISA $DBIHandle $DEBUG);
-use base qw(DBIx::SearchBuilder::Handle);
-use Want qw(want howmany);
-
 use strict;
 use warnings;
+
+use base qw(DBIx::SearchBuilder::Handle);
+
+use Want qw(howmany);
 
 =head1 NAME
 
@@ -38,11 +38,11 @@ it returns a database handle.
 sub Connect {
     my $self = shift;
     
-    $self->SUPER::Connect(@_);
+    my $rv = $self->SUPER::Connect(@_);
     $self->SimpleQuery("SET TIME ZONE 'GMT'");
     $self->SimpleQuery("SET DATESTYLE TO 'ISO'");
     $self->AutoCommit(1);
-    return ($DBIHandle); 
+    return ($rv); 
 }
 
 
