@@ -943,17 +943,15 @@ sub Join {
 
     }
 
-    my $string;
+    my $meta = $args{'SearchBuilder'}->{'left_joins'}{"$alias"} ||= {};
     if ( $args{'TYPE'} =~ /LEFT/i ) {
-        $string = " LEFT JOIN " . $args{'TABLE2'} . " $alias ";
+        $meta->{'alias_string'} = " LEFT JOIN " . $args{'TABLE2'} . " $alias ";
+        $meta->{'type'} = 'LEFT';
     }
     else {
-        $string = " JOIN " . $args{'TABLE2'} . " $alias ";
+        $meta->{'alias_string'} = " JOIN " . $args{'TABLE2'} . " $alias ";
+        $meta->{'type'} = 'NORMAL';
     }
-
-    my $meta = $args{'SearchBuilder'}->{'left_joins'}{"$alias"} ||= {};
-    $meta->{'alias_string'} = $string;
-    $meta->{'type'}         = uc $args{'TYPE'};
     $meta->{'depends_on'}   = $args{'ALIAS1'};
 
     my $criterion = $args{'EXPRESSION'} || $args{'ALIAS1'}.".".$args{'FIELD1'};
