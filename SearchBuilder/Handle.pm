@@ -952,10 +952,10 @@ sub Join {
         $meta->{'alias_string'} = " JOIN " . $args{'TABLE2'} . " $alias ";
         $meta->{'type'} = 'NORMAL';
     }
-    $meta->{'depends_on'}   = $args{'ALIAS1'};
+    $meta->{'depends_on'} = $args{'ALIAS1'};
 
     my $criterion = $args{'EXPRESSION'} || $args{'ALIAS1'}.".".$args{'FIELD1'};
-    $meta->{'criteria'}{ 'criterion' . $args{'SearchBuilder'}->{'criteria_count'}++ } =
+    $meta->{'criteria'}{'base_criterion'} =
         [ { field => "$alias.$args{'FIELD2'}", op => '=', value => $criterion } ];
 
     return ($alias);

@@ -150,7 +150,6 @@ sub CleanSlate {
 	_close_parens
     group_by
     columns
-    criteria_count
     );
 
     #we have no limit statements. DoSearch won't work.
