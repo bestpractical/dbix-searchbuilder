@@ -7,7 +7,7 @@ use warnings;
 
 use base qw/DBIx::SearchBuilder::Handle/;
 
-use DBD::Oracle qw(:ora_types);
+use DBD::Oracle qw(:ora_types ORA_OCI);
          
 =head1 NAME
 
@@ -277,6 +277,15 @@ sub BinarySafeBLOBs {
     return(undef);
 }
 
+=head2 DatabaseVersion
+
+Returns value of ORA_OCI constant, see L<DBI/Constants>.
+
+=cut
+
+sub DatabaseVersion {
+    return ''. ORA_OCI;
+}
 
 1;
 
