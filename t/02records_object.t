@@ -104,6 +104,28 @@ CREATE TEMPORARY TABLE Phones (
 } ]
 }
 
+sub schema_oracle { [
+    "CREATE SEQUENCE Employees_seq",
+    "CREATE TABLE Employees (
+        id integer CONSTRAINT Employees_Key PRIMARY KEY,
+        Name varchar(36)
+    )",
+    "CREATE SEQUENCE Phones_seq",
+    "CREATE TABLE Phones (
+        id integer CONSTRAINT Phones_Key PRIMARY KEY,
+        Employee integer NOT NULL,
+        Phone varchar(18)
+    )",
+] }
+
+sub cleanup_schema_oracle { [
+    "DROP SEQUENCE Employees_seq",
+    "DROP TABLE Employees", 
+    "DROP SEQUENCE Phones_seq",
+    "DROP TABLE Phones", 
+] }
+
+
 package TestApp::Employee;
 
 use base $ENV{SB_TEST_CACHABLE}?

@@ -280,6 +280,34 @@ CREATE TEMPORARY TABLE Groups (
 ]
 }
 
+sub schema_oracle { [
+    "CREATE SEQUENCE Users_seq",
+    "CREATE TABLE Users (
+        id integer CONSTRAINT Users_Key PRIMARY KEY,
+        Login varchar(36)
+    )",
+    "CREATE SEQUENCE UsersToGroups_seq",
+    "CREATE TABLE UsersToGroups (
+        id integer CONSTRAINT UsersToGroups_Key PRIMARY KEY,
+        UserId integer,
+        GroupId integer
+    )",
+    "CREATE SEQUENCE Groups_seq",
+    "CREATE TABLE Groups (
+        id integer CONSTRAINT Groups_Key PRIMARY KEY,
+        Name varchar(36)
+    )",
+] }
+
+sub cleanup_schema_oracle { [
+    "DROP SEQUENCE Users_seq",
+    "DROP TABLE Users", 
+    "DROP SEQUENCE Groups_seq",
+    "DROP TABLE Groups", 
+    "DROP SEQUENCE UsersToGroups_seq",
+    "DROP TABLE UsersToGroups", 
+] }
+
 package TestApp::User;
 
 use base $ENV{SB_TEST_CACHABLE}?

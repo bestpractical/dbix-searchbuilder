@@ -123,6 +123,17 @@ sub connect_pg
 	);
 }
 
+sub connect_oracle
+{
+	my $handle = shift;
+	return $handle->Connect(
+		Driver   => 'Oracle',
+#		Database => $ENV{'SB_TEST_ORACLE'},
+		User     => $ENV{'SB_TEST_ORACLE_USER'} || 'test',
+		Password => $ENV{'SB_TEST_RACLE_PASS'} || 'test',
+    );
+}
+
 =head2 should_test
 
 Checks environment for C<SB_TEST_*> variables.

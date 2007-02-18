@@ -160,4 +160,19 @@ EOF
 
 }
 
+sub schema_oracle { [
+    "CREATE SEQUENCE MyTable_seq",
+    "CREATE TABLE MyTable (
+        id integer CONSTRAINT MyTable_Key PRIMARY KEY,
+        Optional INTEGER NULL,
+        Mandatory integer DEFAULT 1 NOT NULL
+    )",
+] }
+
+sub cleanup_schema_oracle { [
+    "DROP SEQUENCE MyTable_seq",
+    "DROP TABLE MyTable", 
+] }
+
+
 1;
