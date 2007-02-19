@@ -2,6 +2,9 @@ Revision history for Perl extension DBIx::SearchBuilder.
 
 1.46
 
+* add support for testing with Oracle backend
+* Use CROSS JOIN instead of ',' as SQL parsers in Pg and some mysql
+  are buggy and cannot parse "FROM X, Y JOIN Z ON Z.f = X.f"
 * deprecate DEBUG method, it's still there but produce warning
 * fix CleanSlate method that was missing several keys
 * fix a long standing bug we had, we didn't write depends_on data about
