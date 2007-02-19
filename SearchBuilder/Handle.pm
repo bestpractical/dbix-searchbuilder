@@ -1012,7 +1012,7 @@ sub _BuildJoins {
 
     $self->OptimizeJoins( SearchBuilder => $sb );
 
-    my $join_clause = join ", ", ($sb->Table ." main"), @{ $sb->{'aliases'} };
+    my $join_clause = join " CROSS JOIN ", ($sb->Table ." main"), @{ $sb->{'aliases'} };
     my %processed = map { /^\S+\s+(\S+)$/; $1 => 1 } @{ $sb->{'aliases'} };
     $processed{'main'} = 1;
 
