@@ -1,7 +1,9 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
-1.46
+1.46 Sun Feb 25 19:04:00 UTC 2007
 
+* when doing a union, we need to actually search, rather than just
+  doing a count
 * add support for testing with Oracle backend
 * Use CROSS JOIN instead of ',' as SQL parsers in Pg and some mysql
   are buggy and cannot parse "FROM X, Y JOIN Z ON Z.f = X.f"
@@ -13,8 +15,6 @@ Revision history for Perl extension DBIx::SearchBuilder.
 * fix default values for ALIAS1 argument in the Join method, istead of
   defaulting FIELD1 to 'main' value
 * fix a TODO test
-* applied patch from Joop van de Wege that should fix ordering of results
-  in some cases with Oracle backend
 * internal refactoring of a storage for query's conditions,
   instead of building query strings right after the limit
   or join, we now build a perl structure
