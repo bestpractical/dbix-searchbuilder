@@ -8,6 +8,7 @@ name: DBIx-SearchBuilder
 no_index: 
   directory: 
     - t
+    - ex
     - inc
     - t
 requires: 

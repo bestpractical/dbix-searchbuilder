@@ -11,7 +11,6 @@ requires('Cache::Simple::TimedExpiry' => '0.21');
 requires('Clone');
 build_requires('Test::More' => 0.52);
 build_requires('DBD::SQLite');
-no_index( directory => 't');
 features(
 	'Lower case API' => [
 		-default => 0,
@@ -24,6 +23,9 @@ features(
 	],
 );
 auto_install();
+
+no_index directory => 't';
+no_index directory => 'ex';
 
 &Makefile->write;
 &Meta->write;
