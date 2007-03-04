@@ -1,5 +1,11 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.47 Sun Mar 4 03:30:00 UTC 2007
+
+* Do the search in unions only when we must do them, not on every
+  call to the Next method
+* Don't index ex/ dir to avoid complains by the indexer of PAUSE/CPAN
+
 1.46 Sun Feb 25 19:04:00 UTC 2007
 
 * when doing a union, we need to actually search, rather than just
