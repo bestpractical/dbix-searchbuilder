@@ -1,5 +1,10 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.48 Sun Mar 11 05:24:40 UTC 2007
+
+* Fix a problem when left joins optimizer fails to calculate a boolean
+  expression because of lower case aggregators.
+
 1.47 Sun Mar 4 03:30:00 UTC 2007
 
 * Do the search in unions only when we must do them, not on every
