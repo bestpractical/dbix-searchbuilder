@@ -1166,7 +1166,7 @@ sub MayBeNull {
                 next;
             }
 
-            my $aggreg = shift @conditions;
+            my $aggreg = uc shift @conditions;
             if ( $aggreg eq 'OR' ) {
                 # 0 OR x == x
                 next;
@@ -1183,7 +1183,7 @@ sub MayBeNull {
                 next;
             }
 
-            my $aggreg = shift @conditions;
+            my $aggreg = uc shift @conditions;
             if ( $aggreg eq 'OR' ) {
                 # 1 OR x == 1
                 my $close_p = $closing_paren->(0);
