@@ -2,7 +2,6 @@
 
 use strict;
 use warnings;
-use File::Spec;
 use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);

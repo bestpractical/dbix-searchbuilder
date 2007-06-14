@@ -1,7 +1,6 @@
 #!/usr/bin/perl -w
 
 use strict;
-use File::Spec;
 use Test::More;
 
 BEGIN { require "t/utils.pl" }
