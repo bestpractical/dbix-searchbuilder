@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.54.
+signed via the Module::Signature module, version 0.55.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,58 +14,58 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 1c596889ad6d44cf320e0f2e1d7b6db524405b72 Changes
+SHA1 7f92930618cf0faa0b5a503be7e66f8d87527c0b Changes
 SHA1 2e9746a7afda5167d8c7ff25a88f345ea5e35a02 MANIFEST
-SHA1 d334e6a8a058e1c74d3f12ccb17df36079e151b2 META.yml
-SHA1 3276df7ccabe8b5e7960c7bd319b3873749035a0 Makefile.PL
+SHA1 61d5fb7ba86d8afb17b4db523621da09c40c7973 META.yml
+SHA1 9caac7d42ee2e69b1768c238bd199b260756a0e6 Makefile.PL
 SHA1 d7a41642c368f2a587587e09f9e815d434feebff README
 SHA1 5a53d12d5cccd94845a6a7cc105cd9be34e20f1c ROADMAP
-SHA1 8927ec9875c730b0a5a2f7845a89c65525d89f4a SearchBuilder.pm
-SHA1 0c1bc49940a35630ad9ff166920b8038a6d40d97 SearchBuilder/Handle.pm
-SHA1 38b773e6069d3dc91308ea9e4f2ef322ddef9419 SearchBuilder/Handle/Informix.pm
-SHA1 25d73426d93cece304b6eea8c786b224e14e1b5c SearchBuilder/Handle/ODBC.pm
-SHA1 59871a88e8228ed27d216af9e9af0b76184fd41d SearchBuilder/Handle/Oracle.pm
-SHA1 939dffb56c5dd5839732b75ef1f94722bfde0569 SearchBuilder/Handle/Pg.pm
-SHA1 c7222d65546ad693a6f786ed0428084732547dc6 SearchBuilder/Handle/SQLite.pm
-SHA1 088e3584eb431d1467ef7ef45a1863da52b40ea6 SearchBuilder/Handle/Sybase.pm
-SHA1 0b48632b9044c8b289685c7d38c9381d74b433fe SearchBuilder/Handle/mysql.pm
-SHA1 f4f6ea88631e6310243b6351e8df11e1ec88b261 SearchBuilder/Handle/mysqlPP.pm
-SHA1 3d6a2fe0f63a230ed447dddc72443b68f06ad22b SearchBuilder/Record.pm
-SHA1 5ca3b5fa47cfeb5711df99136548641fd01a5a95 SearchBuilder/Record/Cachable.pm
+SHA1 3a75b15d8683426a543af789abe5336ffa208331 SearchBuilder.pm
+SHA1 0777214c051789d8a42951997e897b7bd49510ce SearchBuilder/Handle.pm
+SHA1 55d337e6dd1ab5aecc39d2ae491bffb12e9ca449 SearchBuilder/Handle/Informix.pm
+SHA1 4efdcaefa5f94d994b052d1b343d2f5164ef4b52 SearchBuilder/Handle/ODBC.pm
+SHA1 5e3af079baf4651c464fca8e168c52eb8f130c30 SearchBuilder/Handle/Oracle.pm
+SHA1 4e096c7cf4583c2ab01a5a893741bf1f26cf48a4 SearchBuilder/Handle/Pg.pm
+SHA1 ecb52a19979aea9528fc690028d16a05ab356c13 SearchBuilder/Handle/SQLite.pm
+SHA1 ec3fbc03b27c008d93a52b6b7fb0076529e5fcc8 SearchBuilder/Handle/Sybase.pm
+SHA1 ea451e77f452b7739fccb2af4301b70866c6cf19 SearchBuilder/Handle/mysql.pm
+SHA1 877685aaff265e36fa37298c372aa56864f68aa5 SearchBuilder/Handle/mysqlPP.pm
+SHA1 e83d5f379f845d69117bb1b255b8cb14ec38e2cd SearchBuilder/Record.pm
+SHA1 1680fe8c21ca1667c55501c5f0e9b7bef434647f SearchBuilder/Record/Cachable.pm
 SHA1 a15065e472797e2bfe8149f04d3bdc58f67a7a6d SearchBuilder/SchemaGenerator.pm
-SHA1 446f59a1fa8fa631c908f1fe3ea671c7178c9270 SearchBuilder/Union.pm
+SHA1 772cc5877b1575823a404222ffb028b176177661 SearchBuilder/Union.pm
 SHA1 1eb4e838ff1d8d927bfe177bf578df246802b03d SearchBuilder/Unique.pm
 SHA1 e7c7c7c91025072d25da78c93cefa2bc0aaf2b35 ex/Example/Model/Address.pm
 SHA1 f821661849153c21ad99393b6a3ea6720fdaf581 ex/Example/Model/Employee.pm
 SHA1 9689368197327e7b38af7f3d1f863e918ed4fa98 ex/create_tables.pl
 SHA1 603bb9de29fb8cba7f13409c546750972eff645d inc/Module/AutoInstall.pm
-SHA1 9b2f9d83bcf77860f53a0c07c90a4a59ad9f5df1 inc/Module/Install.pm
-SHA1 ad955f51ad2c40d4ba35395c27f5ed899a80bf7a inc/Module/Install/AutoInstall.pm
-SHA1 abe32855d75ab13747cf65765af9947b7a8c3057 inc/Module/Install/Base.pm
-SHA1 0606a8b02a420600bc3e2b65ab82f70266784926 inc/Module/Install/Include.pm
-SHA1 2249171a2b72cd73ff2c0a06597d29f86e5df456 inc/Module/Install/Makefile.pm
-SHA1 381bb98ea3877bba49ae85e7a7ea130645fd3dbf inc/Module/Install/Metadata.pm
+SHA1 78edb89a439463e44c33a72bbee84c54d0dc8aaf inc/Module/Install.pm
+SHA1 ae32c02b539901de91f06366ce9bdbb7a7bd040b inc/Module/Install/AutoInstall.pm
+SHA1 8ea4e37df83fd0c1c050be5c8da75545c3828d9b inc/Module/Install/Base.pm
+SHA1 6bf0d0d100b94d1a2ce64d010c8813dec26ac480 inc/Module/Install/Include.pm
+SHA1 2054450e1e9c1dd8056362bf4a64ae70d5d71476 inc/Module/Install/Makefile.pm
+SHA1 5d6189b2cad15cf9932a28faafd55130c8247e83 inc/Module/Install/Metadata.pm
 SHA1 e59ea21b9407644714a5f67c7132a11916c25133 t/00.load.t
 SHA1 a7ed1ee359ebe2842b354b5652a441403e802080 t/01basics.t
 SHA1 2b2dc6f72370f60e1d233f2f8c12bb87414e825c t/01nocap_api.t
-SHA1 812aede3c0fd6e3cfb895f8190b9ee427189f35f t/01records.t
-SHA1 b21cfbf17b537f564510d06bf30a8fcd0f20dc69 t/01searches.t
-SHA1 48e092e60073801d12cefceb61ee303ec62f6bc2 t/02records_cachable.t
-SHA1 bae8ad859dccd45f6c6386a1596eb76e6940177e t/02records_integers.t
-SHA1 5e4b2bcef304c827e566f29d67b2d2184ff3f61f t/02records_object.t
-SHA1 c19ab98f9fda6c7f495b5cb8669b8c6a23bf4aae t/02searches_joins.t
-SHA1 a1808be8dd28bd176ae0243876de36691afefefb t/03rebless.t
-SHA1 b1dc1178e2f52a175d95ee7dd6218740087dc9fb t/03transactions.t
-SHA1 ff8bfffa9e14d8fd492bdd3c0858ffc87de09df4 t/03versions.t
+SHA1 92f07d6d6c3a098f7c5e3524204522f2ec960f75 t/01records.t
+SHA1 049fa2ff4a443b27ca64dfa6e50d4fdcfc8c0edb t/01searches.t
+SHA1 67d4c0dca9d1914eadba64460f3a2da4e074ae14 t/02records_cachable.t
+SHA1 e791bc2dc9ebcfe194f00eb9d0d61c391200b589 t/02records_integers.t
+SHA1 6e50e77f1b54fe28fd6bcbb6eb104527f25d2601 t/02records_object.t
+SHA1 1398226c92dac259a3178e273b6674e45df8225e t/02searches_joins.t
+SHA1 fdc1ebd0353a4483f9a64a1b6558fd8c22b6a0e4 t/03rebless.t
+SHA1 0832f29ca227de8b962b74788e1e1637dc110ddc t/03transactions.t
+SHA1 1fe8ef579aa7e503f3227d42674c2218e4400ab5 t/03versions.t
 SHA1 f8f5634e7dc28068722347f47d7e05d06435e22c t/10schema.t
-SHA1 8afb80e49acc3ef8258929e06ad1bdaf1da680cd t/11schema_records.t
+SHA1 b22ee88495de953e688cda8d0959511864aa936b t/11schema_records.t
 SHA1 e9c6a5881fc60173fbc8d479c1afd2ce3b43bef1 t/pod.t
 SHA1 afd320ea000cbe83b08691cc37bea45da20002d3 t/testmodels.pl
-SHA1 4788496012998da32d01aef7e74d2070931290e0 t/utils.pl
+SHA1 50bd534c8ee459d9e28fd51843dd1ad70fd5c9b1 t/utils.pl
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.3 (Darwin)
 
-iD8DBQFFGUKcEi9d9xCOQEYRAqHQAKCsWgCDMW+VflysRFk2D8HCXI75LgCfYcm3
-M3f0LJfE8Sn4dtx66F41jXU=
-=OxlK
+iD8DBQFGkBf2Ei9d9xCOQEYRAklJAJ95tcXfOc6IFaKoNQW9cos0s36u3wCguaUU
+ypSNFRuSemtNhEXbHQacPPA=
+=RsYX
 -----END PGP SIGNATURE-----

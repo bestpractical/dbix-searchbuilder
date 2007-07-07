@@ -1,5 +1,9 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.49 Sat Jul  7 18:45:41 EDT 2007
+
+* Fix a CPAN signature issue
+
 1.48 Sun Mar 11 05:24:40 UTC 2007
 
 * Fix a problem when left joins optimizer fails to calculate a boolean
