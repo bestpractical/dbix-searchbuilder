@@ -1,10 +1,13 @@
 --- 
+abstract: Encapsulate SQL queries and rows in simple perl objects
+author: 
+  - Jesse Vincent <jesse@bestpractical.com>
 build_requires: 
   DBD::SQLite: 0
   File::Temp: 0
   Test::More: 0.52
 distribution_type: module
-generated_by: Module::Install version 0.67
+generated_by: Module::Install version 0.68
 license: perl
 meta-spec: 
   url: http://module-build.sourceforge.net/META-spec-v1.3.html
