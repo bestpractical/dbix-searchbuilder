@@ -1,5 +1,11 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.50 Fri Nov 23 23:24:00 UTC 2007
+
+* Oracle: Don't DISTINCT query when there is a group by cluse
+* Fix a problem when we have more then two collections in a union
+  and some of them are empty
+
 1.49 Sat Jul  7 18:45:41 EDT 2007
 
 * Fix a CPAN signature issue
