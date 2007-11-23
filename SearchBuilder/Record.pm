@@ -386,8 +386,7 @@ Returns this row's primary key.
 
 sub Id  {
     my $pkey = $_[0]->_PrimaryKey();
-    my $ret = $_[0]->{'values'}->{$pkey};
-    return $ret;
+    return $_[0]->{'values'}->{ $pkey };
 }
 
 
