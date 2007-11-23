@@ -103,22 +103,22 @@ Return the next element in the Union.
 =cut
 
 sub Next {
-  my $self=shift;
+    my $self=shift;
 
-  return undef unless defined  $self->{data}[ $self->{curp} ];
-    
-  my $cur =  $self->{data}[ $self->{curp} ];
-  # do the search to avoid the count query and the search
-  $cur->_DoSearch if $cur->{'must_redo_search'};
-  if ( $cur->_ItemsCounter == $cur->Count ) {
-	# move to the next element
-	$self->{curp}++;
-	return undef unless defined   $self->{data}[ $self->{curp} ];
-	$cur =  $self->{data}[ $self->{curp} ];
-	$self->{data}[ $self->{curp} ]->GotoFirstItem;
-  }
-  $self->{item}++;
-  $cur->Next;
+    my $goto_first = 0;
+    while ( my $cur = $self->{'data'}[ $self->{'curp'} ] ) {
+        $cur->GotoFirstItem if $goto_first;
+
+        my $res = $cur->Next;
+        if ( $res ) {
+            $self->{'item'}++;
+            return $res;
+        }
+
+        $goto_first = 1;
+        $self->{'curp'}++;
+    }
+    return undef;
 }
 
 =head2 Last
