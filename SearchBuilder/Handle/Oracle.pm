@@ -245,6 +245,17 @@ sub DistinctQuery {
     my $self = shift;
     my $statementref = shift;
     my $sb = shift;
+
+    # when we have group by clause then the result set is distinct as
+    # it must contain only columns we group by or results of aggregate
+    # functions which give one result per group, so we can skip DISTINCTing
+    if ( my $group = $sb->_GroupClause ) {
+        $$statementref = "SELECT main.* FROM $$statementref";
+        $$statementref .= $group;
+        $$statementref .= $sb->_OrderClause;
+        return;
+    }
+
     my $table = $sb->Table;
 
     # Wrapp select query in a subselect as Oracle doesn't allow
