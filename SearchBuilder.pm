@@ -1427,11 +1427,17 @@ sub CountAll {
 
     # If we haven't actually got all objects loaded in memory, we
     # really just want to do a quick count from the database.
-    if ( $self->{'must_redo_search'} || !$self->{'count_all'}) {
+    # or if we have paging enabled then we count as well and store it in count_all
+    if ( $self->{'must_redo_search'} || ( $self->RowsPerPage && !$self->{'count_all'} ) ) {
         # If we haven't already asked the database for the row count, do that
-        $self->_DoCount(1) unless ( $self->{'count_all'} );
+        $self->_DoCount(1);
 
         #Report back the raw # of rows in the database
+        return ( $self->{'count_all'} );
+    }
+    
+    # if we have paging enabled and have count_all then return it
+    elsif ( $self->RowsPerPage ) {
         return ( $self->{'count_all'} );
     }
 
