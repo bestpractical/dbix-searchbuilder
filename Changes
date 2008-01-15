@@ -1,5 +1,9 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.51 Tue Jan 15 22:53:56 UTC 2008
+
+* Fix CountAll method when paging is enabled and data is in memory already
+
 1.50 Fri Nov 23 23:24:00 UTC 2007
 
 * Oracle: Don't DISTINCT query when there is a group by cluse
