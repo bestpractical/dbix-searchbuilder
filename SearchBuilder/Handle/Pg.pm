@@ -230,7 +230,14 @@ sub DistinctQuery {
         # If we are ordering by something not in 'main', we need to GROUP
         # BY and adjust the ORDER_BY accordingly
         local $sb->{group_by} = [@{$sb->{group_by} || []}, {FIELD => 'id'}];
-        local $sb->{order_by} = [map {($_->{ALIAS} and $_->{ALIAS} ne "main") ? {%{$_}, FIELD => "min(".$_->{FIELD}.")"}: $_} @{$sb->{order_by}}];
+        local $sb->{'order_by'} = [
+            map {
+                ($_->{'ALIAS'}||'') ne "main"
+                ? { %{$_}, FIELD => ((($_->{'ORDER'}||'') =~ /^des/i)?'MAX':'MIN') ."(".$_->{FIELD}.")" }
+                : $_
+            }
+            @{$sb->{'order_by'}}
+        ];
         my $group = $sb->_GroupClause;
         my $order = $sb->_OrderClause;
         $$statementref = "SELECT main.* FROM ( SELECT main.id FROM $$statementref $group $order ) distinctquery, $table main WHERE (main.id = distinctquery.id)";
