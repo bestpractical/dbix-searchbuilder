@@ -76,6 +76,27 @@ sub BinarySafeBLOBs {
     return undef;
 }
 
+sub DistinctQuery {
+    my $self = shift;
+    my $statementref = shift;
+    my $sb = shift;
+
+    return $self->SUPER::DistinctQuery( $statementref, $sb, @_ )
+        if $sb->_GroupClause || $sb->_OrderClause !~ /(?<!main)\./;
+
+    local $sb->{'group_by'} = [{FIELD => 'id'}];
+    local $sb->{'order_by'} = [
+        map {
+            ($_->{'ALIAS'}||'') ne "main"
+            ? { %{$_}, FIELD => ((($_->{'ORDER'}||'') =~ /^des/i)?'MAX':'MIN') ."(".$_->{FIELD}.")" }
+            : $_
+        }
+        @{$sb->{'order_by'}}
+    ];
+    $$statementref = "SELECT main.* FROM $$statementref";
+    $$statementref .= $sb->_GroupClause;
+    $$statementref .= $sb->_OrderClause;
+}
 
 =head2 DistinctCount STATEMENTREF
 
