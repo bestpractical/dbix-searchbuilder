@@ -109,10 +109,7 @@ sub DistinctCount {
     my $self = shift;
     my $statementref = shift;
 
-    # Wrapper select query in a subselect as Oracle doesn't allow
-    # DISTINCT against CLOB/BLOB column types.
     $$statementref = "SELECT count(*) FROM (SELECT DISTINCT main.id FROM $$statementref )";
-
 }
 
 
