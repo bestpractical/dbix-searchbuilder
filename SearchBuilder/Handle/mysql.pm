@@ -84,7 +84,7 @@ sub DistinctQuery {
     return $self->SUPER::DistinctQuery( $statementref, $sb, @_ )
         if $sb->_GroupClause || $sb->_OrderClause !~ /(?<!main)\./;
 
-    if ( substr($self->DatabaseVersion, 1) == 4 ) {
+    if ( substr($self->DatabaseVersion, 0, 1) == 4 ) {
         local $sb->{'group_by'} = [{FIELD => 'id'}];
 
         my ($idx, @tmp, @specials) = (0, ());
