@@ -26,4 +26,4 @@ requires:
   DBI: 0
   Encode: 0
   Want: 0
-version: 1.51
+version: 1.52

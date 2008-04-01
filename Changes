@@ -1,12 +1,17 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.52 Tue Apr  1 00:48:56 UTC 2008
+
+* Fix order by outer columnon SQLite, mysql, adjust Pg. Add test that
+  cover this.
+
 1.51 Tue Jan 15 22:53:56 UTC 2008
 
 * Fix CountAll method when paging is enabled and data is in memory already
 
 1.50 Fri Nov 23 23:24:00 UTC 2007
 
-* Oracle: Don't DISTINCT query when there is a group by cluse
+* Oracle: Don't DISTINCT query when there is a group by clause
 * Fix a problem when we have more then two collections in a union
   and some of them are empty
 
