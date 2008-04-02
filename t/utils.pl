@@ -131,9 +131,11 @@ sub connect_oracle
 	my $handle = shift;
 	return $handle->Connect(
 		Driver   => 'Oracle',
-#		Database => $ENV{'SB_TEST_ORACLE'},
+		Database => $ENV{'SB_TEST_ORACLE'},
+		Host     => $ENV{'SB_TEST_ORACLE_HOST'},
+		SID      => $ENV{'SB_TEST_ORACLE_SID'},
 		User     => $ENV{'SB_TEST_ORACLE_USER'} || 'test',
-		Password => $ENV{'SB_TEST_RACLE_PASS'} || 'test',
+		Password => $ENV{'SB_TEST_ORACLE_PASS'} || 'test',
     );
 }
 
