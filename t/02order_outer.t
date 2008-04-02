@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 96;
+use constant TESTS_PER_DRIVER => 98;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -68,6 +68,10 @@ diag "generate data" if $ENV{TEST_VERBOSE};
     );
     ok($tags_alias, "joined tags table");
     $objs->OrderBy( ALIAS => $tags_alias, FIELD => 'Name', ORDER => 'ASC' );
+
+    ok($objs->First, 'ok, we have at least one result');
+    $objs->GotoFirstItem;
+
     my ($order_ok, $last) = (1, '-');
     while ( my $obj = $objs->Next ) {
         if ( (substr($last, 0, 1) cmp substr($obj->Name, 0, 1)) > 0 ) {
@@ -91,6 +95,10 @@ diag "generate data" if $ENV{TEST_VERBOSE};
     );
     ok($tags_alias, "joined tags table");
     $objs->OrderBy( ALIAS => $tags_alias, FIELD => 'Name', ORDER => 'DESC' );
+
+    ok($objs->First, 'ok, we have at least one result');
+    $objs->GotoFirstItem;
+
     my ($order_ok, $last) = (1, 'z');
     while ( my $obj = $objs->Next ) {
         if ( (substr($last, -1, 1) cmp substr($obj->Name, -1, 1)) < 0 ) {
