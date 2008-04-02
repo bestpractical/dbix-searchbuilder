@@ -258,8 +258,6 @@ sub DistinctQuery {
 
     my $table = $sb->Table;
 
-    # Wrapp select query in a subselect as Oracle doesn't allow
-    # DISTINCT against CLOB/BLOB column types.
     if ($sb->_OrderClause =~ /(?<!main)\./) {
         # If we are ordering by something not in 'main', we need to GROUP
         # BY and adjust the ORDER_BY accordingly
@@ -269,6 +267,8 @@ sub DistinctQuery {
         my $order = $sb->_OrderClause;
         $$statementref = "SELECT main.* FROM ( SELECT main.id FROM $$statementref $group $order ) distinctquery, $table main WHERE (main.id = distinctquery.id)";
     } else {
+        # Wrapp select query in a subselect as Oracle doesn't allow
+        # DISTINCT against CLOB/BLOB column types.
         $$statementref = "SELECT main.* FROM ( SELECT DISTINCT main.id FROM $$statementref ) distinctquery, $table main WHERE (main.id = distinctquery.id) ";
         $$statementref .= $sb->_GroupClause;
         $$statementref .= $sb->_OrderClause;
