@@ -6,7 +6,7 @@ author ('Jesse Vincent <jesse@bestpractical.com>');
 all_from('SearchBuilder.pm');
 requires('DBI');
 requires('Want');
-requires('Encode');
+requires('Encode' => '1.99');
 requires('Class::ReturnValue', 0.40);
 requires('Cache::Simple::TimedExpiry' => '0.21');
 requires('Clone');
