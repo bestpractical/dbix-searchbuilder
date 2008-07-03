@@ -132,23 +132,35 @@ sub DistinctCount {
     $$statementref = "SELECT count(*) FROM (SELECT DISTINCT main.id FROM $$statementref )";
 }
 
-=head3 Rollback [FORCE]
+=head3 EndTransaction [Action => 'commit'] [Force => 0]
 
-Tells to abort the current SQL transaction.
+Tells to end the current transaction. Takes C<Action> argument
+that could be C<commit> or C<rollback>, the default value
+is C<commit>.
 
-Method uses C<EndTransaction> method, read its
-L<description|DBIx::SearchBuilder::Handle/EndTransaction>.
+If C<Force> argument is true then all nested transactions
+would be committed or rolled back.
 
-The SQLite Rollback has the flush the Record::Cachable cache because
+If there is no transaction in progress then method throw
+warning unless action is forced.
+
+Method returns true on success or false if error occured.
+
+Rolling back a SQLite transaction flushes the Record::Cachable cache because
 the primarily keys are reused, unlike many other database systems.
 
 =cut
 
-sub Rollback {
+sub EndTransaction {
     my $self = shift;
+    my %args = (Action => 'commit', @_);
+    my $action = lc $args{'Action'} eq 'commit' ? 'commit': 'rollback';
+
     DBIx::SearchBuilder::Record::Cachable->FlushCache
-        if DBIx::SearchBuilder::Record::Cachable->can('FlushCache');
-    $self->SUPER::Rollback(@_);
+        if $action eq 'rollback'
+        && DBIx::SearchBuilder::Record::Cachable->can('FlushCache');
+
+    $self->SUPER::EndTransaction(@_);
 }
 
 1;
