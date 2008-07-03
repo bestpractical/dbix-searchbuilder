@@ -755,8 +755,15 @@ sub EndTransaction {
 
     $self->TransactionDepth( $depth );
     return 1 if $depth;
-    return $self->dbh->rollback unless $action eq 'commit';
-    return $self->dbh->commit;
+
+    if ($action eq 'commit') {
+        return $self->dbh->commit;
+    }
+    else {
+        DBIx::SearchBuilder::Record::Cachable->FlushCache
+            if DBIx::SearchBuilder::Record::Cachable->can('FlushCache');
+        return $self->dbh->rollback;
+    }
 }
 
 =head3 Commit [FORCE]
