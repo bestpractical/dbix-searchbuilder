@@ -112,7 +112,24 @@ sub DistinctCount {
     $$statementref = "SELECT count(*) FROM (SELECT DISTINCT main.id FROM $$statementref )";
 }
 
+=head3 Rollback [FORCE]
 
+Tells to abort the current SQL transaction.
+
+Method uses C<EndTransaction> method, read its
+L<description|DBIx::SearchBuilder::Handle/EndTransaction>.
+
+The SQLite Rollback has the flush the Record::Cachable cache because
+the primarily keys are reused, unlike many other database systems.
+
+=cut
+
+sub Rollback {
+    my $self = shift;
+    DBIx::SearchBuilder::Record::Cachable->FlushCache
+        if DBIx::SearchBuilder::Record::Cachable->can('FlushCache');
+    $self->SUPER::Rollback(@_);
+}
 
 1;
 
