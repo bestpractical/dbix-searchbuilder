@@ -43,17 +43,37 @@ a Class::ReturnValue object with the error reported.
 
 =cut
 
+sub _last_insert_rowid {
+    my $self = shift;
+    my $table = shift;
+
+    return $self->dbh->func('last_insert_rowid');
+
+    # XXX: this is workaround nesty sqlite problem that
+    # last_insert_rowid in transaction is inaccurrate with multiple
+    # inserts.
+
+    return $self->dbh->func('last_insert_rowid')
+        unless $self->TransactionDepth;
+
+    # XXX: is the name of the column always id ?
+
+    my $ret = $self->FetchResult("select max(id) from $table");
+    return $ret;
+}
+
 sub Insert  {
     my $self = shift;
     my $table = shift;
+
     my %args = ( id => undef, @_);
     # We really don't want an empty id
-    
+
     my $sth = $self->SUPER::Insert($table, %args);
     return unless $sth;
 
     # If we have set an id, then we want to use that, otherwise, we want to lookup the last _new_ rowid
-    $self->{'id'}= $args{'id'} || $self->dbh->func('last_insert_rowid');
+    $self->{'id'}= $args{'id'} || $self->_last_insert_rowid($table);
 
     warn "$self no row id returned on row creation" unless ($self->{'id'});
     return( $self->{'id'}); #Add Succeded. return the id
