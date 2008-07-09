@@ -1,5 +1,13 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.54 Wed Jul  9 09:34:25 EDT 2008
+
+  When aborting transactions, we need to flush our cache,
+  because SQLite is reusing the primary id for later inserts and the cache
+  can otherwise become inconsistent.
+
+
+
 1.53 Tue Apr  2 03:06:56 UTC 2008
 
 * Fix mysql version check in DistinctQuery function
