@@ -1,5 +1,9 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.55
+    * Put test suite SQLite databases inside of tempdirs so they get garbage collected properly
+        Nov 30 Andreas Koenig [rt.cpan.org #41322] Cleaning up /tmp directory                                                  
+
 1.54 Wed Jul  9 09:34:25 EDT 2008
 
   When aborting transactions, we need to flush our cache,
