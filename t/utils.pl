@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
 use strict;
-use File::Temp qw/ tempfile /;
-
+use File::Temp qw/ tempdir /;
+use File::Spec;
 =head1 VARIABLES
 
 =head2 @SupportedDrivers
@@ -95,12 +95,12 @@ sub connect_handle_with_driver
 
 sub connect_sqlite {
 
-    my ( $fh, $filename ) = tempfile();
-    close($fh);
+    my $dir = tempdir(CLEANUP => 1);
+    
     my $handle = shift;
     return $handle->Connect(
         Driver   => 'SQLite',
-        Database => $filename
+        Database => File::Spec->catfile($dir => "db.sqlite")
     );
 }
 
