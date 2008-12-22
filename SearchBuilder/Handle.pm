@@ -885,6 +885,7 @@ sub Join {
         ALIAS1        => 'main',
         FIELD1        => undef,
         TABLE2        => undef,
+        COLLECTION2   => undef,
         FIELD2        => undef,
         ALIAS2        => undef,
         EXPRESSION    => undef,
@@ -943,11 +944,37 @@ sub Join {
             return ( $self->_NormalJoin(%args) );
         }
         $args{'SearchBuilder'}->{'aliases'} = \@new_aliases;
-    }
+    } elsif ( $args{'COLLECTION2'} ) {
+        # We're joining to a pre-limited collection.  We need to take
+        # all clauses in the other collection, munge 'main.' to a new
+        # alias, apply them locally, then proceed as usual.
+        my $collection = delete $args{'COLLECTION2'};
+        $alias = $args{ALIAS2} = $args{'SearchBuilder'}->_GetAlias( $collection->Table );
+        $args{TABLE2} = $collection->Table;
 
-    else {
+        eval {$collection->_ProcessRestrictions}; # RT hate
+
+        # Move over unused aliases
+        push @{$args{SearchBuilder}{aliases}}, @{$collection->{aliases}};
+
+        # Move over joins, as well
+        for my $join (keys %{$collection->{left_joins}}) {
+            my %alias = %{$collection->{left_joins}{$join}};
+            $alias{depends_on} = $alias if $alias{depends_on} eq "main";
+            $alias{criteria} = $self->_RenameRestriction(
+                RESTRICTIONS => $alias{criteria},
+                NEW          => $alias
+            );
+            $args{SearchBuilder}{left_joins}{$join} = \%alias;
+        }
+
+        my $restrictions = $self->_RenameRestriction(
+            RESTRICTIONS => $collection->{restrictions},
+            NEW          => $alias
+        );
+        $args{SearchBuilder}{restrictions}{$_} = $restrictions->{$_} for keys %{$restrictions};
+    } else {
         $alias = $args{'SearchBuilder'}->_GetAlias( $args{'TABLE2'} );
-
     }
 
     my $meta = $args{'SearchBuilder'}->{'left_joins'}{"$alias"} ||= {};
@@ -966,6 +993,35 @@ sub Join {
         [ { field => "$alias.$args{'FIELD2'}", op => '=', value => $criterion } ];
 
     return ($alias);
+}
+
+sub _RenameRestriction {
+    my $self = shift;
+    my %args = (
+        RESTRICTIONS => undef,
+        OLD          => "main",
+        NEW          => undef,
+        @_,
+    );
+
+    my %return;
+    for my $key ( keys %{$args{RESTRICTIONS}} ) {
+        my $newkey = $key;
+        $newkey =~ s/^\Q$args{OLD}\E\./$args{NEW}./;
+        my @parts;
+        for my $part ( @{ $args{RESTRICTIONS}{$key} } ) {
+            if ( ref $part ) {
+                my %part = %{$part};
+                $part{field} =~ s/^\Q$args{OLD}\E\./$args{NEW}./;
+                $part{value} =~ s/^\Q$args{OLD}\E\./$args{NEW}./;
+                push @parts, \%part;
+            } else {
+                push @parts, $part;
+            }
+        }
+        $return{$newkey} = \@parts;
+    }
+    return \%return;
 }
 
 sub _NormalJoin {
