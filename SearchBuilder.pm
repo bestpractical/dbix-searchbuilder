@@ -128,8 +128,6 @@ sub CleanSlate {
     my $self = shift;
     $self->RedoSearch();
     $self->{'itemscount'}       = 0;
-    $self->{'tables'}           = "";
-    $self->{'auxillary_tables'} = "";
     $self->{'where_clause'}     = "";
     $self->{'limit_clause'}     = "";
     $self->{'order'}            = "";
