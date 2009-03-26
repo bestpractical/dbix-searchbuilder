@@ -9,7 +9,7 @@ use DBI;
 use Class::ReturnValue;
 use Encode qw();
 
-use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH);
+use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH %FIELDS_IN_TABLE);
 
 
 =head1 NAME
@@ -132,9 +132,10 @@ sub _UpgradeHandle {
     
     my $driver = shift;
     my $class = 'DBIx::SearchBuilder::Handle::' . $driver;
+    local $@;
     eval "require $class";
     return if $@;
-    
+
     bless $self, $class;
     return 1;
 }
@@ -331,7 +332,10 @@ sub dbh {
   my $self=shift;
   
   #If we are setting the database handle, set it.
-  $DBIHandle{$self} = $PrevHandle = shift if (@_);
+  if ( @_ ) {
+      $DBIHandle{$self} = $PrevHandle = shift;
+      %FIELDS_IN_TABLE = ();
+  }
 
   return($DBIHandle{$self} ||= $PrevHandle);
 }
@@ -1308,6 +1312,22 @@ sub DistinctCount {
     # Prepend select query for DBs which allow DISTINCT on all column types.
     $$statementref = "SELECT COUNT(DISTINCT main.id) FROM $$statementref";
 
+}
+
+sub Fields {
+    my $self  = shift;
+    my $table = shift;
+
+    unless ( keys %FIELDS_IN_TABLE ) {
+        my $sth = $self->dbh->column_info( undef, '', '%', '%' )
+            or return ();
+        my $info = $sth->fetchall_arrayref({});
+        foreach my $e ( @$info ) {
+            push @{ $FIELDS_IN_TABLE{ lc $e->{'TABLE_NAME'} } ||= [] }, lc $e->{'COLUMN_NAME'};
+        }
+    }
+
+    return @{ $FIELDS_IN_TABLE{ lc $table } || [] };
 }
 
 
