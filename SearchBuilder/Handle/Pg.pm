@@ -214,6 +214,7 @@ sub _MakeClauseCaseInsensitive {
     }
 }
 
+
 =head2 DistinctQuery STATEMENTREF
 
 takes an incomplete SQL SELECT statement and massages it to return a DISTINCT result set.
@@ -226,26 +227,23 @@ sub DistinctQuery {
     my $sb = shift;
     my $table = $sb->Table;
 
-    if ($sb->_OrderClause =~ /(?<!main)\./) {
-        # If we are ordering by something not in 'main', we need to GROUP
-        # BY and adjust the ORDER_BY accordingly
-        local $sb->{group_by} = [@{$sb->{group_by} || []}, {FIELD => 'id'}];
-        local $sb->{'order_by'} = [
-            map {
-                ($_->{'ALIAS'}||'') ne "main"
-                ? { %{$_}, FIELD => ((($_->{'ORDER'}||'') =~ /^des/i)?'MAX':'MIN') ."(".$_->{FIELD}.")" }
-                : $_
-            }
-            @{$sb->{'order_by'}}
-        ];
-        my $group = $sb->_GroupClause;
-        my $order = $sb->_OrderClause;
-        $$statementref = "SELECT main.* FROM ( SELECT main.id FROM $$statementref $group $order ) distinctquery, $table main WHERE (main.id = distinctquery.id)";
-    } else {
-        $$statementref = "SELECT DISTINCT main.* FROM $$statementref";
-        $$statementref .= $sb->_GroupClause;
-        $$statementref .= $sb->_OrderClause;
-    }
+    return $self->SUPER::DistinctQuery( $statementref, $sb, @_ )
+        if $sb->_GroupClause || $sb->_OrderClause !~ /(?<!main)\./;
+
+    # If we are ordering by something not in 'main', we need to GROUP
+    # BY and adjust the ORDER_BY accordingly
+    local $sb->{group_by} = [ map {+{FIELD => $_}} $self->Fields($table) ];
+    local $sb->{'order_by'} = [
+        map {
+            ($_->{'ALIAS'}||'') ne "main"
+            ? { %{$_}, FIELD => ((($_->{'ORDER'}||'') =~ /^des/i)?'MAX':'MIN') ."(".$_->{FIELD}.")" }
+            : $_
+        }
+        @{$sb->{'order_by'}}
+    ];
+    my $group = $sb->_GroupClause;
+    my $order = $sb->_OrderClause;
+    $$statementref = "SELECT main.* FROM $$statementref $group $order";
 }
 
 1;
