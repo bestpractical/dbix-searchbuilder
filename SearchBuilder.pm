@@ -1557,21 +1557,7 @@ TODO: Why are they lowercased?
 =cut
 
 sub Fields {
-    my $self  = shift;
-    my $table = shift;
-
-    my $dbh = $self->_Handle->dbh;
-
-    # TODO: memoize this
-
-    return map lc( $_->[0] ), @{
-        eval {
-            $dbh->column_info( '', '', $table, '' )->fetchall_arrayref( [3] );
-          }
-          || $dbh->selectall_arrayref("DESCRIBE $table;")
-          || $dbh->selectall_arrayref("DESCRIBE \u$table;")
-          || []
-      };
+    return (shift)->_Handle->Fields( @_ );
 }
 
 
