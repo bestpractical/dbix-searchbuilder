@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 65;
+use constant TESTS_PER_DRIVER => 67;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -30,6 +30,18 @@ SKIP: {
 
 	my $rec = TestApp::Address->new($handle);
 	isa_ok($rec, 'DBIx::SearchBuilder::Record');
+
+# Handle->Fields
+        is_deeply(
+            [$handle->Fields('Address')],
+            [qw(id name phone employeeid)],
+            "listed all columns in the table"
+        );
+        is_deeply(
+            [$handle->Fields('Some')],
+            [],
+            "no table -> no fields"
+        );
 
 # _Accessible testings
 	is( $rec->_Accessible('id' => 'read'), 1, 'id is accessible for read' );
