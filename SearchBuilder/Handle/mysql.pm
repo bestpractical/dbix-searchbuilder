@@ -121,6 +121,23 @@ sub DistinctQuery {
     }
 }
 
+sub Fields {
+    my $self  = shift;
+    my $table = shift;
+
+    my $cache = \%DBIx::SearchBuilder::Handle::FIELDS_IN_TABLE;
+    unless ( $cache->{ lc $table } ) {
+        my $sth = $self->dbh->column_info( undef, undef, $table, '%' )
+            or return ();
+        my $info = $sth->fetchall_arrayref({});
+        foreach my $e ( sort {$a->{'ORDINAL_POSITION'} <=> $b->{'ORDINAL_POSITION'}} @$info ) {
+            push @{ $cache->{ lc $e->{'TABLE_NAME'} } ||= [] }, lc $e->{'COLUMN_NAME'};
+        }
+    }
+    return @{ $cache->{ lc $table } || [] };
+}
+
+
 1;
 
 __END__

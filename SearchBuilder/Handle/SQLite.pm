@@ -132,6 +132,24 @@ sub DistinctCount {
     $$statementref = "SELECT count(*) FROM (SELECT DISTINCT main.id FROM $$statementref )";
 }
 
+sub Fields {
+    my $self  = shift;
+    my $table = shift;
+
+    my $cache = \%DBIx::SearchBuilder::Handle::FIELDS_IN_TABLE;
+    unless ( $cache->{lc $table} ) {
+        my $info = $self->dbh->selectall_arrayref("PRAGMA table_info('$table')")
+            or return ();
+
+        foreach my $e ( @$info ) {
+            push @{ $cache->{ lc $table } ||= [] }, lc $e->[1];
+        }
+    }
+
+    return @{ $cache->{ lc $table } || [] };
+}
+
+
 1;
 
 __END__
