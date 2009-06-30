@@ -14,21 +14,21 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 a6d87fcf148ef11e769aaf26412148880b492264 Changes
+SHA1 cab8b9f83121849261ce384ff84f4a3047e8b074 Changes
 SHA1 ddd4097470d90cd802af26e3da85db40645906b7 MANIFEST
-SHA1 c4d523f038279f020c87130599ced59d0ce9270c META.yml
+SHA1 004d4bb9ebcb996354cb3e8b32bbbd1a7e980155 META.yml
 SHA1 7f3870fd1159dc9ad4c1666a58d89feb0cbfae3a Makefile.PL
 SHA1 d7a41642c368f2a587587e09f9e815d434feebff README
 SHA1 5a53d12d5cccd94845a6a7cc105cd9be34e20f1c ROADMAP
-SHA1 d4a4301baadc675a3fd75abcd770098962a93626 SearchBuilder.pm
+SHA1 f2e5c6257b47f0e5ebd7f96f239083def9d29cf7 SearchBuilder.pm
 SHA1 a19c8ecdc762bcd6f5c34f4d92b66af11d41889b SearchBuilder/Handle.pm
 SHA1 55d337e6dd1ab5aecc39d2ae491bffb12e9ca449 SearchBuilder/Handle/Informix.pm
 SHA1 4efdcaefa5f94d994b052d1b343d2f5164ef4b52 SearchBuilder/Handle/ODBC.pm
-SHA1 23999d3eeea59a589a35bae83ad4d61ad174af34 SearchBuilder/Handle/Oracle.pm
-SHA1 d44219edc07ab29588163d8d622ef7247bc34672 SearchBuilder/Handle/Pg.pm
-SHA1 a15df795395ddaf78314d593776fc3d09e9da992 SearchBuilder/Handle/SQLite.pm
+SHA1 2adeee67cfaaccc3728ca27f5aee9de91d6f2ee7 SearchBuilder/Handle/Oracle.pm
+SHA1 2670dc03ff0676310b042d1422fed4269a1951ae SearchBuilder/Handle/Pg.pm
+SHA1 33300f29f601f259cd483e7cba69938bc133f833 SearchBuilder/Handle/SQLite.pm
 SHA1 ec3fbc03b27c008d93a52b6b7fb0076529e5fcc8 SearchBuilder/Handle/Sybase.pm
-SHA1 1f945f4c96676977adccf3a4288cff7fc9e819ad SearchBuilder/Handle/mysql.pm
+SHA1 1ca13e69a8f02944469f448e72604e5cc9dad162 SearchBuilder/Handle/mysql.pm
 SHA1 877685aaff265e36fa37298c372aa56864f68aa5 SearchBuilder/Handle/mysqlPP.pm
 SHA1 5dd029a91e72614d7aaf201b277a668c540e7dff SearchBuilder/Record.pm
 SHA1 1680fe8c21ca1667c55501c5f0e9b7bef434647f SearchBuilder/Record/Cachable.pm
@@ -38,13 +38,13 @@ SHA1 1eb4e838ff1d8d927bfe177bf578df246802b03d SearchBuilder/Unique.pm
 SHA1 e7c7c7c91025072d25da78c93cefa2bc0aaf2b35 ex/Example/Model/Address.pm
 SHA1 f821661849153c21ad99393b6a3ea6720fdaf581 ex/Example/Model/Employee.pm
 SHA1 9689368197327e7b38af7f3d1f863e918ed4fa98 ex/create_tables.pl
-SHA1 6cc7c33dbf3e1635f38ac2acc983c410cd0da679 inc/Module/AutoInstall.pm
-SHA1 18fcb6b27722fad5e465689f9622b03fd6b7d51c inc/Module/Install.pm
-SHA1 f70c42b0ad50721e6480a41346ccb6781e2e2706 inc/Module/Install/AutoInstall.pm
-SHA1 65bc57bf8257e3b66ec571850570626283ca659c inc/Module/Install/Base.pm
-SHA1 2eef5f385c92c0768b347324d2850fce5a3a39aa inc/Module/Install/Include.pm
-SHA1 c45b2672d8ae49d710343f39f68d00c28cba4b43 inc/Module/Install/Makefile.pm
-SHA1 82e172b951d97f74315af04cb7b909afa546fc07 inc/Module/Install/Metadata.pm
+SHA1 e5fb92ac217988bfc7a6af739b0459627020a27e inc/Module/AutoInstall.pm
+SHA1 2772f6f184cf61c6ae1a75aedabaf779ecb0a563 inc/Module/Install.pm
+SHA1 2a7cda2f9cf0c5171a20df63eb56dc84a5292faf inc/Module/Install/AutoInstall.pm
+SHA1 402b14faf4f3eb375c692d12ac9d0142e3e83a62 inc/Module/Install/Base.pm
+SHA1 b1bb15b1f881421bd05930862db6844d33ea3159 inc/Module/Install/Include.pm
+SHA1 a3676c47b2346f9c0eb14300869b336bbcbcb524 inc/Module/Install/Makefile.pm
+SHA1 6f857cfbe9ec4600f26ffac3e78fce18afd3498a inc/Module/Install/Metadata.pm
 SHA1 e59ea21b9407644714a5f67c7132a11916c25133 t/00.load.t
 SHA1 a7ed1ee359ebe2842b354b5652a441403e802080 t/01basics.t
 SHA1 2b2dc6f72370f60e1d233f2f8c12bb87414e825c t/01nocap_api.t
@@ -66,7 +66,7 @@ SHA1 ceb2fad4e6973b7b30f0e83abc14cfb80ac93efe t/utils.pl
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (Darwin)
 
-iEYEARECAAYFAkoDVlsACgkQvH6dkeDZaS93/QCZAXt9w3MMBFRtG6fI/sYmGM6B
-iBIAn1wsPk14pK1q+yrS4fVQrj6PiXOG
-=rsbS
+iEYEARECAAYFAkpKmWYACgkQvH6dkeDZaS/7XACfajEk9sZyxQ8OiMNsUFF9Le05
+/80An1zbnf9A0IowVZz3sECNuwtzkhWD
+=6Xh3
 -----END PGP SIGNATURE-----

@@ -1,5 +1,10 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.56 Not yet released
+
+* Don't apply DISTINCT on queries with group by, COUNT(DISTINCT x) is
+  different and covered in Column method
+
 1.55 Thu May  7 19:44:47 MSD 2009
 
 * Put test suite SQLite databases inside of tempdirs so they get
@@ -17,8 +22,6 @@ Revision history for Perl extension DBIx::SearchBuilder.
 * When aborting transactions, we need to flush our cache,
   because SQLite is reusing the primary id for later inserts and the cache
   can otherwise become inconsistent.
-
-
 
 1.53 Tue Apr  2 03:06:56 UTC 2008
 
