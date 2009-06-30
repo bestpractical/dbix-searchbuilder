@@ -228,7 +228,7 @@ sub DistinctQuery {
     my $table = $sb->Table;
 
     return $self->SUPER::DistinctQuery( $statementref, $sb, @_ )
-        if $sb->_GroupClause || $sb->_OrderClause !~ /(?<!main)\./;
+        if $sb->_OrderClause !~ /(?<!main)\./;
 
     # If we are ordering by something not in 'main', we need to GROUP
     # BY and adjust the ORDER_BY accordingly
