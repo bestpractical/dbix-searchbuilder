@@ -1,6 +1,6 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
-1.56 Not yet released
+1.56 Fri Jul 17 02:05:32 MSD 2009
 
 * Don't use LOWER/ILIKE with dates, heuristic is used, but shouldn't
   harm other things
