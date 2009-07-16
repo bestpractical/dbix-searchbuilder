@@ -678,7 +678,8 @@ sub _MakeClauseCaseInsensitive {
     my $operator = shift;
     my $value = shift;
 
-    if ($value !~ /^\d+$/) { # don't downcase integer values
+    # don't downcase integer values and things that looks like dates
+    if ($value !~ /^['"]?[-\d: ]+['"]$/) {
         $field = "lower($field)";
         $value = lc($value);
     }
