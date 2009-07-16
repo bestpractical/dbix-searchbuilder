@@ -2,6 +2,8 @@ Revision history for Perl extension DBIx::SearchBuilder.
 
 1.56 Not yet released
 
+* Don't use LOWER/ILIKE with dates, heuristic is used, but shouldn't
+  harm other things
 * Don't apply DISTINCT on queries with group by, COUNT(DISTINCT x) is
   different and covered in Column method
 

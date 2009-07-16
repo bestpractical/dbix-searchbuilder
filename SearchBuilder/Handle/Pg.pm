@@ -188,8 +188,8 @@ sub _MakeClauseCaseInsensitive {
     my $operator = shift;
     my $value    = shift;
 
-
-    if ($value =~ /^['"]?\d+['"]?$/) { # we don't need to downcase numeric values
+    # we don't need to downcase numeric values and dates
+    if ($value =~ /^['"]?[-\d: ]+['"]?$/) {
         	return ( $field, $operator, $value);
     }
 
