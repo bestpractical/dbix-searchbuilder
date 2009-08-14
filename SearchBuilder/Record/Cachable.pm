@@ -122,8 +122,20 @@ sub LoadByCols {
         $self->_store();
         # store alt_key as alias for pk
         $self->_KeyCache->set( $alt_key, $self->_primary_RecordCache_key);
+    } else {
+        # use alternate key for negatives
+        $self->_store_under( $alt_key );
+        $self->_KeyCache->set( $alt_key, $alt_key );
     }
     return ( $rvalue, $msg );
+}
+
+sub Create () {
+    my $self = shift;
+
+    $self->FlushCache;
+
+    return $self->SUPER::Create( @_ );
 }
 
 # Function: __Set
@@ -191,6 +203,13 @@ sub _fetch () {
 sub _store (\$) {
     my $self = shift;
     my $key = $self->_primary_RecordCache_key or return 0;
+    $self->_RecordCache->set( $key, $self->_serialize );
+    return 1;
+}
+
+sub _store_under {
+    my $self = shift;
+    my $key = shift;
     $self->_RecordCache->set( $key, $self->_serialize );
     return 1;
 }
