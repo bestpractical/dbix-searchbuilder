@@ -1209,18 +1209,47 @@ sub Join {
 
 }
 
+=head2 Pages: size and changing
+
+Use L</RowsPerPage> to set size of pages. L</NextPage>,
+L</PrevPage>, L</FirstPage> or L</GotoPage> to change
+pages. L</FirstRow> to do tricky stuff.
+
+=head3 RowsPerPage
+
+Get or set the number of rows returned by the database.
+
+Takes an optional integer which restricts the # of rows returned
+in a result. Zero or undef argument flush back to "return all
+records matching current conditions".
+
+Returns the current page size.
+
+=cut
+
+sub RowsPerPage {
+    my $self = shift;
+    $self->{'show_rows'} = shift if (@_);
+
+    return ( $self->{'show_rows'} );
+}
+
+=head3 NextPage
+
+Turns one page forward.
+
+=cut
 
 sub NextPage {
     my $self = shift;
     $self->FirstRow( $self->FirstRow + $self->RowsPerPage );
 }
 
+=head3 PrevPage
 
-sub FirstPage {
-    my $self = shift;
-    $self->FirstRow(1);
-}
+Turns one page backwards.
 
+=cut
 
 sub PrevPage {
     my $self = shift;
@@ -1232,49 +1261,43 @@ sub PrevPage {
     }
 }
 
+=head3 FirstPage
+
+Jumps to the first page.
+
+=cut
+
+sub FirstPage {
+    my $self = shift;
+    $self->FirstRow(1);
+}
+
+=head3 GotoPage
+
+Takes an integer number and jumps to that page or first page if
+number ommitted. Numbering starts from zero.
+
+=cut
 
 sub GotoPage {
     my $self = shift;
-    my $page = shift;
+    my $page = shift || 0;
 
-    if ( $self->RowsPerPage ) {
-    	$self->FirstRow( 1 + ( $self->RowsPerPage * $page ) );
-    } else {
-        $self->FirstRow(1);
-    }
+    $self->FirstRow( 1 + $self->RowsPerPage * $page );
 }
 
-
-
-=head2 RowsPerPage
-
-Limits the number of rows returned by the database. Optionally, takes
-an integer which restricts the # of rows returned in a result. Zero
-or undef argument flush back to "return all records matching conditions".
-
-Returns the number of rows the database should display.
-
-=cut
-
-sub RowsPerPage {
-    my $self = shift;
-    $self->{'show_rows'} = shift if (@_);
-
-    return ( $self->{'show_rows'} );
-}
-
-
-
-=head2 FirstRow
+=head3 FirstRow
 
 Get or set the first row of the result set the database should return.
 Takes an optional single integer argrument. Returns the currently set integer
-first row that the database should return.
+minus one (this is historical issue).
 
+Usually you don't need this method. Use L</RowsPerPage>, L</NextPage> and other
+methods to walk pages. It only may be helpful to get 10 records starting from
+5th.
 
 =cut
 
-# returns the first row
 sub FirstRow {
     my $self = shift;
     if (@_) {
