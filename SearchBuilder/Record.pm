@@ -1208,7 +1208,7 @@ sub _LoadFromSQL {
 
     #TODO this only gets the first row. we should check if there are more.
 
-    return ( 0, "Couldn't execute query" ) unless $sth;
+    return ( 0, "Couldn't execute query: ".$self->_Handle->dbh->errstr ) unless $sth;
 
     $self->{'values'} = $sth->fetchrow_hashref;
     $self->{'fetched'} = {};

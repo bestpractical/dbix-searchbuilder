@@ -144,7 +144,7 @@ SKIP: {
 		($val, $msg) = $newrec->_LoadFromSQL('SELECT ...');
 	}
 	is($val, 0, "didn't find object");
-	is($msg, "Couldn't execute query", "reason is bad SQL");
+	like($msg, qr/^Couldn't execute query/, "reason is bad SQL");
 
 # test Load* methods
 	$newrec = TestApp::Address->new($handle);
