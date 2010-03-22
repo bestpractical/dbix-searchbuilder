@@ -403,7 +403,7 @@ Return a hash of the values of our primary keys for this function.
 
 sub PrimaryKeys { 
     my $self = shift; 
-    return map { $_ => $self->{'values'}->{$_} } @{$self->_PrimaryKeys};
+    return map { $_ => $self->{'values'}->{lc $_} } @{$self->_PrimaryKeys};
 }
 
 
