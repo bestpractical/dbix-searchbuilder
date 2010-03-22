@@ -1304,7 +1304,7 @@ methods to walk pages. It only may be helpful to get 10 records starting from
 
 sub FirstRow {
     my $self = shift;
-    if (@_) {
+    if (@_ && ($_[0]||1) != ($self->{'first_row'}+1) ) {
         $self->{'first_row'} = shift;
 
         #SQL starts counting at 0
