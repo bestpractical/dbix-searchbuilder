@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 76;
+use constant TESTS_PER_DRIVER => 78;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -207,6 +207,15 @@ SKIP: {
 	$users_obj->Limit( FIELD => 'Phone', OPERATOR => 'IS', VALUE => 'NULL', QOUTEVALUE => 0 );
 	$users_obj->Limit( FIELD => 'Login', OPERATOR => 'LIKE', VALUE => 'r' );
 	is( $users_obj->Count, 2, "found users who has no phone number or login has 'r' char" );
+
+# Let's play with RowsPerPage
+    # RowsPerPage(0)
+    # https://rt.cpan.org/Ticket/Display.html?id=42988
+	$users_obj->CleanSlate;
+    $users_obj->UnLimit;
+    $users_obj->RowsPerPage(0);
+	is( $users_obj->Count, $count_all, "found all users" );
+    ok( $users_obj->First, "fetched first users" );
 
 	$users_obj->CleanSlate;
 	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
