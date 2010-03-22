@@ -230,8 +230,13 @@ sub DistinctQuery {
     return $self->SUPER::DistinctQuery( $statementref, $sb, @_ )
         if $sb->_OrderClause !~ /(?<!main)\./;
 
-    # If we are ordering by something not in 'main', we need to GROUP
-    # BY and adjust the ORDER_BY accordingly
+    # "SELECT main.* FROM ( SELECT id FROM ... ORDER BY ... ) as dist,
+    # X main WHERE (main.id = dist.id);" doesn't work in some cases.
+    # It's hard to show with tests. Pg's optimizer can choose execution
+    # plan not guaranting order
+
+    # So if we are ordering by something that is not in 'main', the we GROUP
+    # BY all columns and adjust the ORDER_BY accordingly
     local $sb->{group_by} = [ map {+{FIELD => $_}} $self->Fields($table) ];
     local $sb->{'order_by'} = [
         map {
