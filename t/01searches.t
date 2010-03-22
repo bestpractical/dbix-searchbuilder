@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 78;
+use constant TESTS_PER_DRIVER => 105;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -212,13 +212,80 @@ SKIP: {
     # RowsPerPage(0)
     # https://rt.cpan.org/Ticket/Display.html?id=42988
 	$users_obj->CleanSlate;
+	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
     $users_obj->UnLimit;
     $users_obj->RowsPerPage(0);
 	is( $users_obj->Count, $count_all, "found all users" );
-    ok( $users_obj->First, "fetched first users" );
+    ok( $users_obj->First, "fetched first user" );
 
+    # walk all pages
 	$users_obj->CleanSlate;
 	is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+    $users_obj->UnLimit;
+	$users_obj->OrderBy(FIELD => 'Login');
+    $users_obj->RowsPerPage(2);
+    {
+        my %seen;
+        my $saw_on_page = 0;
+        my $pages = 0;
+        my $prev_login = '';
+        do {
+            $saw_on_page = 0;
+            while ( my $user = $users_obj->Next ) {
+                $saw_on_page++;
+                $seen{ $user->id }++;
+                ok( $prev_login lt $user->Login, "order is correct" );
+            }
+            last unless $saw_on_page;
+
+            $pages++;
+            if ( $pages * 2 <= $count_all ) {
+                is( $saw_on_page, 2, "saw only two on the page" );
+            } else {
+                is( $saw_on_page, $count_all - ($pages * 2), "saw slightly less users on the last page");
+            }
+            $users_obj->NextPage;
+        } while ( $saw_on_page );
+
+        ok( !grep( $_ != 1, values %seen ), "saw each user only once") or do { use Data::Dumper; diag Dumper(\%seen) };
+        is( scalar keys %seen, $count_all, "saw all users" )
+    }
+
+    # two steps forward, on step back
+    $users_obj = TestApp::Users->new( $handle );
+    $users_obj->UnLimit;
+	$users_obj->OrderBy(FIELD => 'Login');
+    $users_obj->RowsPerPage(1);
+    for ( 1 .. $count_all-1) {
+        my $u = $users_obj->Next;
+        ok( $u, "got a user");
+        ok(!$users_obj->Next, "only on the page");
+
+        $users_obj->NextPage;
+        isnt( $users_obj->Next->id, $u->id, "got a user and he is different");
+        ok(!$users_obj->Next, "only on the page");
+
+        $users_obj->PrevPage;
+        is( $users_obj->Next->id, $u->id, "got a user and he is the same");
+        ok(!$users_obj->Next, "only on the page");
+
+        $users_obj->NextPage;
+    }
+
+    # tricky variant: skip 1, but show 2
+    $users_obj = TestApp::Users->new( $handle );
+    $users_obj->UnLimit;
+	$users_obj->OrderBy(FIELD => 'Login');
+    $users_obj->RowsPerPage(2);
+    $users_obj->FirstRow(2);
+    {
+        my $u = $users_obj->Next;
+        is( $u->Login, 'cubic', "cubic is second in the list");
+    }
+    {
+        my $u = $users_obj->Next;
+        is( $u->Login, 'glasser', "glasser is third in the list");
+    }
 
 	cleanup_schema( 'TestApp', $handle );
 }} # SKIP, foreach blocks
