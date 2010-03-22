@@ -1229,7 +1229,11 @@ Returns the current page size.
 
 sub RowsPerPage {
     my $self = shift;
-    $self->{'show_rows'} = shift if (@_);
+
+    if ( @_ && ($_[0]||0) != $self->{'show_rows'} ) {
+        $self->{'show_rows'} = shift || 0;
+        $self->RedoSearch;
+    }
 
     return ( $self->{'show_rows'} );
 }
