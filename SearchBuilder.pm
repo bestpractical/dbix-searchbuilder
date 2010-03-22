@@ -1313,8 +1313,10 @@ sub GotoPage {
 
 =head2 RowsPerPage
 
-Limits the number of rows returned by the database.
-Optionally, takes an integer which restricts the # of rows returned in a result
+Limits the number of rows returned by the database. Optionally, takes
+an integer which restricts the # of rows returned in a result. Zero
+or undef argument flush back to "return all records matching conditions".
+
 Returns the number of rows the database should display.
 
 =cut
