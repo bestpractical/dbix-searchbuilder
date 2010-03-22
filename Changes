@@ -1,5 +1,10 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.57
+
+* fix Record->PrimaryKeys, field names in values hash are lc'ed
+  https://rt.cpan.org/Ticket/Display.html?id=18280
+
 1.56 Fri Jul 17 02:05:32 MSD 2009
 
 * Don't use LOWER/ILIKE with dates, heuristic is used, but shouldn't
