@@ -1246,7 +1246,7 @@ Turns one page forward.
 
 sub NextPage {
     my $self = shift;
-    $self->FirstRow( $self->FirstRow + $self->RowsPerPage );
+    $self->FirstRow( $self->FirstRow + 1 + $self->RowsPerPage );
 }
 
 =head3 PrevPage
@@ -1257,8 +1257,8 @@ Turns one page backwards.
 
 sub PrevPage {
     my $self = shift;
-    if ( ( $self->FirstRow - $self->RowsPerPage ) > 1 ) {
-        $self->FirstRow( $self->FirstRow - $self->RowsPerPage );
+    if ( ( $self->FirstRow - $self->RowsPerPage ) > 0 ) {
+        $self->FirstRow( 1 + $self->FirstRow - $self->RowsPerPage );
     }
     else {
         $self->FirstRow(1);
