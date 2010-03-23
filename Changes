@@ -2,8 +2,18 @@ Revision history for Perl extension DBIx::SearchBuilder.
 
 1.57
 
+* INCOMPATIBLE CHANGE: NextPage and PrevPage were addind rows from
+  previouse page. Long standing issue, back at those times Jesse
+  was 20 years old and thought that it's good idea.
+* RedoSearch when RowsPerPage is changed
+* don't RedoSearch if FirstRow is called, but is not changed
+  actually
+* document all paging functions and test them
+* make debugging problems easier by passing errors back 
+  https://rt.cpan.org/Ticket/Display.html?id=55203
 * fix Record->PrimaryKeys, field names in values hash are lc'ed
   https://rt.cpan.org/Ticket/Display.html?id=18280
+* doc updates and cleanups
 
 1.56 Fri Jul 17 02:05:32 MSD 2009
 
