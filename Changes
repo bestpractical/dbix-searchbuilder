@@ -1,5 +1,9 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.56
+
+* unify case insensitive characters
+
 1.56_01 Thu Mar 25 03:00:19 UTC 2010
 
 * INCOMPATIBLE CHANGE: NextPage and PrevPage were adding rows from

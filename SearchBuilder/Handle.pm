@@ -672,6 +672,8 @@ Returns a FIELD OPERATOR VALUE triple.
 
 =cut
 
+our $RE_CASE_INSENSITIVE_CHARS = qr/[-'"\d: ]/;
+
 sub _MakeClauseCaseInsensitive {
     my $self = shift;
     my $field = shift;
@@ -679,7 +681,7 @@ sub _MakeClauseCaseInsensitive {
     my $value = shift;
 
     # don't downcase integer values and things that looks like dates
-    if ($value !~ /^['"]?[-\d: ]+['"]$/) {
+    if ($value !~ /^$RE_CASE_INSENSITIVE_CHARS+$/o) {
         $field = "lower($field)";
         $value = lc($value);
     }

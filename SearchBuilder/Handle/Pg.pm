@@ -189,7 +189,7 @@ sub _MakeClauseCaseInsensitive {
     my $value    = shift;
 
     # we don't need to downcase numeric values and dates
-    if ($value =~ /^['"]?[-\d: ]+['"]?$/) {
+    if ($value =~ /^$DBIx::SearchBuilder::RE_CASE_INSENSITIVE_CHARS+$/o) {
         	return ( $field, $operator, $value);
     }
 
