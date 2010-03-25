@@ -8,6 +8,8 @@ Revision history for Perl extension DBIx::SearchBuilder.
 * We now RedoSearch when RowsPerPage is changed
 * No longer RedoSearch if FirstRow is called, but is not actually changed
 * Document all paging functions and test them
+* handle LOWER() in redundant LEFT joins optimizer,
+  for Oracle and may be Pg
 * Make debugging problems easier by passing errors back 
   https://rt.cpan.org/Ticket/Display.html?id=55203
 * fix Record->PrimaryKeys, field names in values hash are lc'ed
