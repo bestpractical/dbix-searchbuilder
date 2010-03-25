@@ -1197,9 +1197,11 @@ sub MayBeNull {
     foreach ( splice @conditions ) {
         unless ( ref $_ ) {
             push @conditions, $_;
-        } elsif ( $_->{'field'} =~ /^\Q$args{'ALIAS'}./ ) {
+        } elsif ( rindex( $_->{'field'}, "$args{'ALIAS'}.", 0 ) == 0 ) {
+            # field is alias.xxx op ... and only IS op allows NULLs
             push @conditions, lc $_->{op} eq 'is';
-        } elsif ( $_->{'value'} && $_->{'value'} =~ /^\Q$args{'ALIAS'}./ ) {
+        } elsif ( $_->{'value'} && rindex( $_->{'value'}, "$args{'ALIAS'}.", 0 ) == 0 ) {
+            # value is alias.xxx so it can not be IS op
             push @conditions, 0;
         } else {
             push @conditions, 1;
