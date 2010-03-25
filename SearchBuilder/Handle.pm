@@ -1203,6 +1203,9 @@ sub MayBeNull {
         } elsif ( $_->{'value'} && rindex( $_->{'value'}, "$args{'ALIAS'}.", 0 ) == 0 ) {
             # value is alias.xxx so it can not be IS op
             push @conditions, 0;
+        } elsif ( $_->{'field'} =~ /^(?i:lower)\(\s*\Q$args{'ALIAS'}\./ ) {
+            # handle 'LOWER(alias.xxx) OP VALUE' we use for case insensetive
+            push @conditions, lc $_->{op} eq 'is';
         } else {
             push @conditions, 1;
         }
