@@ -14,18 +14,18 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 5e4b5e7af63deba638383ea640dc8f1480dff4e6 Changes
+SHA1 398a1df263c8e33552d18361502b2ae09cf1568e Changes
 SHA1 ddd4097470d90cd802af26e3da85db40645906b7 MANIFEST
-SHA1 55f93477247b42b42338ec6a3c37b42b14fab357 META.yml
+SHA1 66ced99e97d703d2f49f3602cbb59b94776ea379 META.yml
 SHA1 7f3870fd1159dc9ad4c1666a58d89feb0cbfae3a Makefile.PL
 SHA1 d7a41642c368f2a587587e09f9e815d434feebff README
 SHA1 5a53d12d5cccd94845a6a7cc105cd9be34e20f1c ROADMAP
-SHA1 7aee8cf3a52cdf59615123f105969380f1b85043 SearchBuilder.pm
-SHA1 178e43af0d69c8d07b763ee80148aa18c6c5ba8e SearchBuilder/Handle.pm
+SHA1 d53082a4c65cde2100a2c677ea8affde549b8259 SearchBuilder.pm
+SHA1 d6e302a2411bc9f54e123f848b0fc7e4cf7a8e3a SearchBuilder/Handle.pm
 SHA1 55d337e6dd1ab5aecc39d2ae491bffb12e9ca449 SearchBuilder/Handle/Informix.pm
 SHA1 4efdcaefa5f94d994b052d1b343d2f5164ef4b52 SearchBuilder/Handle/ODBC.pm
 SHA1 2adeee67cfaaccc3728ca27f5aee9de91d6f2ee7 SearchBuilder/Handle/Oracle.pm
-SHA1 cc166ca8eac288b9963c11faf77fb48d2c53d199 SearchBuilder/Handle/Pg.pm
+SHA1 e0a5ca9e65c4c66237871fdede804327626e6259 SearchBuilder/Handle/Pg.pm
 SHA1 33300f29f601f259cd483e7cba69938bc133f833 SearchBuilder/Handle/SQLite.pm
 SHA1 ec3fbc03b27c008d93a52b6b7fb0076529e5fcc8 SearchBuilder/Handle/Sybase.pm
 SHA1 1ca13e69a8f02944469f448e72604e5cc9dad162 SearchBuilder/Handle/mysql.pm
@@ -66,7 +66,7 @@ SHA1 ceb2fad4e6973b7b30f0e83abc14cfb80ac93efe t/utils.pl
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (Darwin)
 
-iEYEARECAAYFAkuq0nwACgkQvH6dkeDZaS/rUQCeMZpvK8svmWM62JUC4joWNfTP
-EFUAmQHjXIPb0PipYBbwxq3wBqcaSFxD
-=7r8p
+iEYEARECAAYFAku/cbAACgkQvH6dkeDZaS+pfQCeN1T3tk/0fwZtTet8beQS/FNc
+NZMAn0oz8qOqo9ZbZVyqvVu3AiB1zQqS
+=vorK
 -----END PGP SIGNATURE-----
