@@ -1,14 +1,12 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
-1.56
-
-* unify case insensitive characters
-
-1.56_01 Thu Mar 25 03:00:19 UTC 2010
+1.57
 
 * INCOMPATIBLE CHANGE: NextPage and PrevPage were adding rows from
   the previous page. Jesse claims that when he wrote this code, he 
   was 20 years old and it seemed like a good idea at the time.
+* unify case insensitive characters to avoid using LOWER() in some
+  cases
 * We now RedoSearch when RowsPerPage is changed
 * No longer RedoSearch if FirstRow is called, but is not actually changed
 * Document all paging functions and test them
