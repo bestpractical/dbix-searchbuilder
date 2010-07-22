@@ -297,6 +297,26 @@ sub DatabaseVersion {
     return ''. ORA_OCI;
 }
 
+sub Fields {
+    my $self  = shift;
+    my $table = shift;
+
+    my $cache = \%DBIx::SearchBuilder::Handle::FIELDS_IN_TABLE;
+    unless ( $cache->{ lc $table } ) {
+        # uc(table) required as oracle stores UC names in information tables
+        # and lookup clauses are case sensetive
+        my $sth = $self->dbh->column_info( undef, undef, uc($table), '%' )
+            or return ();
+        my $info = $sth->fetchall_arrayref({});
+        # TODO: not sure why results are lower case, probably NAME_ls affects it
+        # we should check it out at some point
+        foreach my $e ( sort {$a->{'ordinal_position'} <=> $b->{'ordinal_position'}} @$info ) {
+            push @{ $cache->{ lc $e->{'table_name'} } ||= [] }, lc $e->{'column_name'};
+        }
+    }
+    return @{ $cache->{ lc $table } || [] };
+}
+
 1;
 
 __END__
