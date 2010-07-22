@@ -5,6 +5,7 @@ Revision history for Perl extension DBIx::SearchBuilder.
 * INCOMPATIBLE CHANGE: NextPage and PrevPage were adding rows from
   the previous page. Jesse claims that when he wrote this code, he 
   was 20 years old and it seemed like a good idea at the time.
+* Implemented 'sub Fields' on Oracle
 * unify case insensitive characters to avoid using LOWER() in some
   cases
 * We now RedoSearch when RowsPerPage is changed
