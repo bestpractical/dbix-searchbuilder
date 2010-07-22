@@ -10,7 +10,7 @@ build_requires:
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: 'Module::Install version 0.95'
+generated_by: 'Module::Install version 1.00'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -23,9 +23,11 @@ no_index:
     - t
 requires:
   Cache::Simple::TimedExpiry: 0.21
+  Class::Accessor: 0
   Class::ReturnValue: 0.4
   Clone: 0
   DBI: 0
+  DBIx::DBSchema: 0
   Encode: 1.99
   Want: 0
 resources:
