@@ -38,7 +38,7 @@ my %_CACHES = ();
 
 sub _SetupCache {
     my ($self, $cache) = @_;
-    $_CACHES{$cache} = new Cache::Simple::TimedExpiry;
+    $_CACHES{$cache} = Cache::Simple::TimedExpiry->new();
     $_CACHES{$cache}->expire_after( $self->_CacheConfig->{'cache_for_sec'} );
     return $_CACHES{$cache};
 }
