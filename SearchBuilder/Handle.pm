@@ -181,9 +181,9 @@ sub BuildDSN {
     Returns the DSN for this database connection.
 
 =cut
+
 sub DSN {
-    my $self = shift;
-    return($self->{'dsn'});
+    return shift->{'dsn'};
 }
 
 
