@@ -4,10 +4,9 @@ package DBIx::SearchBuilder::Record;
 use strict;
 use warnings;
 
-use vars qw($AUTOLOAD);
 use Class::ReturnValue;
 use Encode qw();
-
+our $AUTOLOAD;
 
 
 =head1 NAME
@@ -353,6 +352,7 @@ Instantiate a new record object.
 
 =cut
 
+our $INITTED={};
 
 sub new  {
     my $proto = shift;
@@ -361,10 +361,11 @@ sub new  {
     my $self  = {};
     bless ($self, $class);
     $self->_Init(@_);
-
+    $class->_PregenerateAccessors() unless ($INITTED->{$class}++);
     return $self;
   }
 
+sub DESTROY{}
 
 # Not yet documented here.  Should almost certainly be overloaded.
 sub _Init {
@@ -406,13 +407,100 @@ sub PrimaryKeys {
     return map { $_ => $self->{'values'}->{lc $_} } @{$self->_PrimaryKeys};
 }
 
+sub _inject_sub {
+    my $class       = shift;
+    my $sub         = shift;
+    my $primary_sub = shift;
+    my @aliases     = @_;
 
+    no strict 'refs';
+    if ( !$class->can($primary_sub)) {
+        *{ $class . "::" . $primary_sub } = $sub;
+    }
 
+    for my $alias (@aliases) {
+        if ( !$class->can($alias)){
+            *{ $class . "::" . $alias } = \*{ $class . "::" . $primary_sub };
+        }
+    }
 
-sub DESTROY {
-    return 1;
 }
 
+
+sub _PregenerateAccessors {
+    my $class      = shift;
+    my $attributes = $class->_ClassAccessible();
+
+    no strict 'refs';
+
+    for my $entry ( keys %$attributes ) {
+        next if ( ref($entry) );
+        if ( $attributes->{$entry}->{read} ) {
+            $class->_inject_sub(
+
+                sub { return ( $_[0]->_Value($entry) ) }, $entry
+            );
+        } elsif ( $attributes->{$entry}->{'record-read'} ) {
+
+            $class->_inject_sub(
+                sub { $_[0]->_ToRecord( $entry, $_[0]->__Value($entry) ) }, $entry
+            );
+
+        } elsif ( $attributes->{$entry}->{'foreign-collection'} ) {
+            $class->_inject_sub( sub { $_[0]->_CollectionValue($entry) }, $entry );
+        }
+
+        if ( $attributes->{$entry}->{write} ) {
+            $class->_inject_sub(
+                sub {
+                    return ( $_[0]->_Set( Field => $entry, Value => $_[1] ) );
+                },
+                "Set$entry",
+                "set_$entry"
+            );
+        } elsif ( $attributes->{$entry}->{'record-write'} ) {
+
+            $class->_inject_sub(
+                sub {
+                    my $val = $_[1];
+
+                    $val = $val->id if UNIVERSAL::isa( $val, 'DBIx::SearchBuilder::Record' );
+                    return ( $_[0]->_Set( Field => $entry, Value => $val ) );
+                },
+                "Set$entry",
+                "set_$entry"
+            );
+
+        } elsif ( $attributes->{$entry}->{read}
+            || $attributes->{$entry}->{'record-read'}
+            || $attributes->{$entry}->{'foreign-collection'} )
+        {
+            $class->_inject_sub( sub { return ( 0, 'Immutable field' ) }, "Set$entry", "set_$entry" );
+
+        }
+
+        if ( $attributes->{$entry}->{object} ) {
+
+            $class->_inject_sub(
+                sub {
+                    return (shift)->_Object(
+                        Field => $entry,
+                        Args  => [@_],
+                    )
+                },
+                $entry . "Obj",
+                $entry . "_obj",
+            );
+
+        }
+
+        $class->_inject_sub(
+            sub { return ( $_[0]->_Validate( $entry, $_[1] ) ) },
+            "Validate" . $entry,
+            "validate_" . $entry
+        );
+    }
+}
 
 sub AUTOLOAD {
     my $self = $_[0];
@@ -496,8 +584,6 @@ sub AUTOLOAD {
     }
 
 }
-
-
 
 =head2 _Accessible KEY MODE
 

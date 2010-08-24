@@ -78,9 +78,10 @@ SKIP: {
 		local $SIG{__WARN__} = sub {return};
 		is( $rec->_Value( 'SomeUnexpectedField' ), undef, "The record has no 'SomeUnexpectedField'");
 	}
-	($val, $msg) = $rec->SetSomeUnexpectedField( 'foo' );
-	ok(!$val, $msg);
-	is($msg, 'Nonexistant field?', "Field doesn't exist");
+	($val, $msg) = eval { $rec->SetSomeUnexpectedField( 'foo' )};
+    my $err = $@;
+	ok($err, $msg. " - $err");
+	ok($err, "Field doesn't exist");
 	($val, $msg) = $rec->_Set('SomeUnexpectedField', 'foo');
 	ok(!$val, "$msg");
 

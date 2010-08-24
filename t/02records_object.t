@@ -46,9 +46,10 @@ SKIP: {
 	is($obj->Name, 'RUZ');
 
 	# tests for no object mapping
-	my ($state, $msg) = $phone->ValueObj($handle);
+	my ($state, $msg) = eval {$phone->ValueObj($handle)};
+    my $err = $@;
 	ok(!$state, "State is false");
-	is( $msg, 'No object mapping for field', 'Error message is correct');
+    ok ($err, "we can't call Obj on a row that doesn't have one");
 
 	cleanup_schema( 'TestApp', $handle );
 }} # SKIP, foreach blocks
