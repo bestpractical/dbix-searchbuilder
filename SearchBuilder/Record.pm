@@ -702,7 +702,7 @@ sub __Value {
     my $self = shift;
     my $field = lc shift;
 
-    $field = $self->_Accessible($field, "column") if $self->_Accessible($field, "column");
+    $field = $self->_Accessible($field, "column") || $field;
 
     return $self->{'values'}{$field} if $self->{'fetched'}{$field};
     $self->{'fetched'}{$field} = 1;
