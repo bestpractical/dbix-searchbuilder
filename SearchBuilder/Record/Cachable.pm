@@ -44,18 +44,6 @@ sub _SetupCache {
 }
 
 
-sub _RecordCacheName {
-   my $self = shift; 
-   return   $self->{_record_cache_name} ||= $self->_Handle->DSN . "-KEYS--" . ($self->{'_Class'} ||= ref $self);
-}
-
-
-sub _KeyCacheName {
-   my $self = shift; 
-   return   $self->{_key_cache_name} ||=  $self->_Handle->DSN . "--" . ($self->{'_Class'} ||= ref $self);
-}
-
-
 =head2 FlushCache
 
 This class method flushes the _global_ DBIx::SearchBuilder::Record::Cachable 
@@ -75,20 +63,20 @@ Blow away this record type's key cache
 
 sub _FlushKeyCache {
     my $self = shift;
-    my $cache = $self->_KeyCacheName();
+    my $cache = ($self->{_class}||= ref($self))."-KEYS";
     return $self->_SetupCache($cache);
 }
 
 sub _KeyCache {
     my $self = shift;
-    my $cache = $self->_KeyCacheName();
-    return $_CACHES{$cache}? $_CACHES{$cache}: $self->_SetupCache($cache);
+    my $cache = ($self->{_class}||= ref($self))."-KEYS";
+    return $_CACHES{$cache} || $self->_SetupCache($cache);
 }
 
 sub _RecordCache {
     my $self = shift;
-    my $cache = $self->_RecordCacheName();
-    return $_CACHES{$cache}? $_CACHES{$cache}: $self->_SetupCache($cache);
+    my $cache = ($self->{_class}||= ref($self));
+    return $_CACHES{$cache} || $self->_SetupCache($cache);
 }
 
 # Function: LoadFromHash
