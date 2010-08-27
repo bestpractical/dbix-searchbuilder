@@ -262,7 +262,7 @@ sub DistinctQuery {
         ];
         my $group = $sb->_GroupClause;
         my $order = $sb->_OrderClause;
-        $$statementref = "SELECT main.* FROM ( SELECT main.id FROM $$statementref $group $order ) distinctquery, $table main WHERE (main.id = distinctquery.id)";
+        $$statementref = "SELECT main.* FROM ( SELECT main.id, row_number() over( $order ) sortorder FROM $$statementref $group ) distinctquery, $table main WHERE (main.id = distinctquery.id) ORDER BY distinctquery.sortorder";
     } else {
         # Wrapp select query in a subselect as Oracle doesn't allow
         # DISTINCT against CLOB/BLOB column types.
