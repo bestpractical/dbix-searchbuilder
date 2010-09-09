@@ -1230,9 +1230,10 @@ sub MayBeNull {
     };
 
     # solve boolean expression we have, an answer is our result
+    my $parens_count = 0;
     my @tmp = ();
     while ( defined ( my $e = shift @conditions ) ) {
-        #warn "@tmp >>>$e<<< @conditions";
+        #print "@tmp >>>$e<<< @conditions\n";
         return $e if !@conditions && !@tmp;
 
         unless ( $e ) {
@@ -1250,7 +1251,7 @@ sub MayBeNull {
                 my $close_p = $closing_paren->(0);
                 splice @conditions, 0, $close_p + 1, (0);
             } else {
-                die "lost @tmp >>>$e $aggreg<<< @conditions";
+                die "unknown aggregator: @tmp $e >>>$aggreg<<< @conditions";
             }
         } elsif ( $e eq '1' ) {
             if ( $conditions[0] eq ')' ) {
@@ -1267,15 +1268,19 @@ sub MayBeNull {
                 # 1 AND x == x
                 next;
             } else {
-                die "lost @tmp >>>$e $aggreg<<< @conditions";
+                die "unknown aggregator: @tmp $e >>>$aggreg<<< @conditions";
             }
         } elsif ( $e eq '(' ) {
             if ( $conditions[1] eq ')' ) {
                 splice @conditions, 1, 1;
             } else {
+                $parens_count++;
                 push @tmp, $e;
             }
         } elsif ( $e eq ')' ) {
+            die "extra closing paren: @tmp >>>$e<<< @conditions"
+                if --$parens_count < 0;
+
             unshift @conditions, @tmp, $e;
             @tmp = ();
         } else {
