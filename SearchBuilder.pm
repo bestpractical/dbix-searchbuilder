@@ -1137,12 +1137,20 @@ or to Limit what gets found by a search.
 sub NewAlias {
     my $self  = shift;
     my $table = shift || die "Missing parameter";
+    my $type = shift;
 
     my $alias = $self->_GetAlias($table);
 
-    my $subclause = "$table $alias";
-
-    push ( @{ $self->{'aliases'} }, $subclause );
+    unless ( $type ) {
+        push @{ $self->{'aliases'} }, "$table $alias";
+    } elsif ( lc $type eq 'left' ) {
+        my $meta = $self->{'left_joins'}{"$alias"} ||= {};
+        $meta->{'alias_string'} = " LEFT JOIN $table $alias ";
+        $meta->{'type'} = 'LEFT';
+        $meta->{'depends_on'} = '';
+    } else {
+        die "Unsupported alias(join) type";
+    }
 
     return $alias;
 }
