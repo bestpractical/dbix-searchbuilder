@@ -1088,9 +1088,11 @@ sub _BuildJoins {
 
     # get a @list of joins that have not been processed yet, but depend on processed join
     my $joins = $sb->{'left_joins'};
-    while ( my @list = grep !$processed{ $_ }
-            && $processed{ $joins->{ $_ }{'depends_on'} }, keys %$joins )
-    {
+    while ( my @list =
+        grep !$processed{ $_ }
+            && (!$joins->{ $_ }{'depends_on'} || $processed{ $joins->{ $_ }{'depends_on'} }),
+        keys %$joins
+    ) {
         foreach my $join ( @list ) {
             $processed{ $join }++;
 
