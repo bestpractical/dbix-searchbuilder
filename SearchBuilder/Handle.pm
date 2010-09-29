@@ -252,7 +252,7 @@ sub _LogSQLStatement {
     my $statement = shift;
     my $duration = shift;
     my @bind = @_;
-    push @{$self->{'StatementLog'}} , ([Time::HiRes::time(), $statement, [@bind], $duration]);
+    push @{$self->{'StatementLog'}} , ([Time::HiRes::time(), $statement, [@bind], $duration, Carp::longmess]);
 
 }
 
