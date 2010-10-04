@@ -1,3 +1,4 @@
+.gitignore
 Changes
 ex/create_tables.pl
 ex/Example/Model/Address.pm
