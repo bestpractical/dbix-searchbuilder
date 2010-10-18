@@ -1,4 +1,3 @@
-#$Header/cvsroot/DBIx/DBIx-SearchBuilder/SearchBuilder/Record.pm,v 1.21 2001/02/28 21:36:27 jesse Exp $
 package DBIx::SearchBuilder::Record;
 
 use strict;
