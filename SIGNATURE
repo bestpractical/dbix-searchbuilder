@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.61.
+signed via the Module::Signature module, version 0.66.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,37 +14,38 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 398a1df263c8e33552d18361502b2ae09cf1568e Changes
-SHA1 ddd4097470d90cd802af26e3da85db40645906b7 MANIFEST
-SHA1 66ced99e97d703d2f49f3602cbb59b94776ea379 META.yml
+SHA1 1176bc1e043a0f1f11333fc4c64a5bc7e3cd4f77 .gitignore
+SHA1 e3c9f834c009301bd4c0ed8862548e9f6f6cb82f Changes
+SHA1 eb2a99b4b1d8f2515cf97d9605d66cea06114c8f MANIFEST
+SHA1 8a977dcda006155529db1fd03a6e2480080cce24 META.yml
 SHA1 7f3870fd1159dc9ad4c1666a58d89feb0cbfae3a Makefile.PL
 SHA1 d7a41642c368f2a587587e09f9e815d434feebff README
 SHA1 5a53d12d5cccd94845a6a7cc105cd9be34e20f1c ROADMAP
-SHA1 d53082a4c65cde2100a2c677ea8affde549b8259 SearchBuilder.pm
-SHA1 d6e302a2411bc9f54e123f848b0fc7e4cf7a8e3a SearchBuilder/Handle.pm
+SHA1 802d88942fe506bb4084158994d38321288eb4f3 SearchBuilder.pm
+SHA1 edd0342c7b45c8b10e4a04caf60d80454b537261 SearchBuilder/Handle.pm
 SHA1 55d337e6dd1ab5aecc39d2ae491bffb12e9ca449 SearchBuilder/Handle/Informix.pm
 SHA1 4efdcaefa5f94d994b052d1b343d2f5164ef4b52 SearchBuilder/Handle/ODBC.pm
-SHA1 2adeee67cfaaccc3728ca27f5aee9de91d6f2ee7 SearchBuilder/Handle/Oracle.pm
+SHA1 ece5517d11f5b5f7f69606f6d2af6ee607fd5aef SearchBuilder/Handle/Oracle.pm
 SHA1 e0a5ca9e65c4c66237871fdede804327626e6259 SearchBuilder/Handle/Pg.pm
 SHA1 33300f29f601f259cd483e7cba69938bc133f833 SearchBuilder/Handle/SQLite.pm
 SHA1 ec3fbc03b27c008d93a52b6b7fb0076529e5fcc8 SearchBuilder/Handle/Sybase.pm
 SHA1 1ca13e69a8f02944469f448e72604e5cc9dad162 SearchBuilder/Handle/mysql.pm
 SHA1 877685aaff265e36fa37298c372aa56864f68aa5 SearchBuilder/Handle/mysqlPP.pm
-SHA1 7f85a6c8d2ac27ce78a90ff3fbb8f4f875c44b9b SearchBuilder/Record.pm
-SHA1 1680fe8c21ca1667c55501c5f0e9b7bef434647f SearchBuilder/Record/Cachable.pm
+SHA1 0354afcfa375ec89e67953c933ceb958235039f6 SearchBuilder/Record.pm
+SHA1 145046df9fcea187d59493a02c62c578fcf75599 SearchBuilder/Record/Cachable.pm
 SHA1 a15065e472797e2bfe8149f04d3bdc58f67a7a6d SearchBuilder/SchemaGenerator.pm
 SHA1 f59ad14464f1520aa4f9dacdf437047081a94741 SearchBuilder/Union.pm
 SHA1 1eb4e838ff1d8d927bfe177bf578df246802b03d SearchBuilder/Unique.pm
 SHA1 e7c7c7c91025072d25da78c93cefa2bc0aaf2b35 ex/Example/Model/Address.pm
 SHA1 f821661849153c21ad99393b6a3ea6720fdaf581 ex/Example/Model/Employee.pm
 SHA1 9689368197327e7b38af7f3d1f863e918ed4fa98 ex/create_tables.pl
-SHA1 8842ca38ce27ccf75e1ce8f5dfb93fa62d933b2e inc/Module/AutoInstall.pm
-SHA1 1ebec4119486a032a5612a403e8d7b7be973e938 inc/Module/Install.pm
-SHA1 bec3c7f9af6e1a3cb4d143249956c98af30f0552 inc/Module/Install/AutoInstall.pm
-SHA1 24038af925a69df41972971356ccce885b0fe2ad inc/Module/Install/Base.pm
-SHA1 01862227830d2547f38275eaee0eb9f5add5a252 inc/Module/Install/Include.pm
-SHA1 0384525d85d51e99532e3ad8729d870113646d14 inc/Module/Install/Makefile.pm
-SHA1 38c657de4d91f5a60ff8e6c6f6a5547daf7c4ab2 inc/Module/Install/Metadata.pm
+SHA1 20c73697e1713638140c719d8eaa19a275ed43a5 inc/Module/AutoInstall.pm
+SHA1 7305dbe2904416e28decb05396988a5d51d578be inc/Module/Install.pm
+SHA1 ca13d9875e1249f6e84f7070be8152c34837955e inc/Module/Install/AutoInstall.pm
+SHA1 129960509127732258570c122042bc48615222e1 inc/Module/Install/Base.pm
+SHA1 b501b0df59a5cd235cca473889f82c3d3429f39e inc/Module/Install/Include.pm
+SHA1 b721c93ca5bc9a6aa863b49af15f1b1de6125935 inc/Module/Install/Makefile.pm
+SHA1 026cc0551a0ad399d195e395b46bdf842e115192 inc/Module/Install/Metadata.pm
 SHA1 e59ea21b9407644714a5f67c7132a11916c25133 t/00.load.t
 SHA1 a7ed1ee359ebe2842b354b5652a441403e802080 t/01basics.t
 SHA1 2b2dc6f72370f60e1d233f2f8c12bb87414e825c t/01nocap_api.t
@@ -66,7 +67,7 @@ SHA1 ceb2fad4e6973b7b30f0e83abc14cfb80ac93efe t/utils.pl
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (Darwin)
 
-iEYEARECAAYFAku/cbAACgkQvH6dkeDZaS+pfQCeN1T3tk/0fwZtTet8beQS/FNc
-NZMAn0oz8qOqo9ZbZVyqvVu3AiB1zQqS
-=vorK
+iEYEARECAAYFAky+GgwACgkQvH6dkeDZaS8XGQCeNzPSaVOPiJ5kBG+xwJCZdz3b
+OAoAn32y+GHb7Bv5ropPGtJ+RAc9G7W6
+=ErdE
 -----END PGP SIGNATURE-----

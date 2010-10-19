@@ -1,5 +1,10 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.58 Wed Oct 20 02:17:37 MSD 2010
+
+* SIGNATURE fix
+* delete obsolete cvs metadata from a module
+
 1.57 Mon Sep 4 21:21:57 UTC 2010
 
 * INCOMPATIBLE CHANGE: NextPage and PrevPage were adding rows from
