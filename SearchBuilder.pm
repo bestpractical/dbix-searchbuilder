@@ -574,6 +574,36 @@ sub Last {
     return ( $self->Next );
 }
 
+=head2 DistinctColumnValues
+
+=cut
+
+sub DistinctFieldValues {
+    my $self = shift;
+    my %args = (
+        Field  => undef,
+        Sort   => undef,
+        Max    => undef,
+        @_%2 ? (Field => @_) : (@_)
+    );
+
+    my $query_string = $self->_BuildJoins;
+    $query_string .= ' '. $self->_WhereClause
+        if $self->_isLimited > 0;
+
+    my $column = 'main.'. $args{'Field'};
+    $query_string = 'SELECT DISTINCT '. $column .' FROM '. $query_string;
+
+    if ( $args{'Sort'} ) {
+        $query_string .= ' ORDER BY '. $column
+            .' '. ($args{'Sort'} =~ /^des/i ? 'DESC' : 'ASC');
+    }
+
+    my $dbh = $self->_Handle->dbh;
+    my $list = $dbh->selectcol_arrayref( $query_string, { MaxRows => $args{'Max'} } );
+    return $list? @$list : ();
+}
+
 
 
 =head2 ItemsArrayRef
