@@ -36,6 +36,7 @@ t/01basics.t
 t/01nocap_api.t
 t/01records.t
 t/01searches.t
+t/02distinct_values.t
 t/02order_outer.t
 t/02records_cachable.t
 t/02records_integers.t

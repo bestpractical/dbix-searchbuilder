@@ -15,13 +15,13 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 1176bc1e043a0f1f11333fc4c64a5bc7e3cd4f77 .gitignore
-SHA1 e3c9f834c009301bd4c0ed8862548e9f6f6cb82f Changes
-SHA1 eb2a99b4b1d8f2515cf97d9605d66cea06114c8f MANIFEST
-SHA1 8a977dcda006155529db1fd03a6e2480080cce24 META.yml
+SHA1 94f49ca2a2e285c55b274c8897b34740cf1a5d8f Changes
+SHA1 65ec70d561d3269c548a6eeacfe832d5cbfc0d76 MANIFEST
+SHA1 f6e20473637ec59824c5e1af98e0f540e1787b65 META.yml
 SHA1 7f3870fd1159dc9ad4c1666a58d89feb0cbfae3a Makefile.PL
 SHA1 d7a41642c368f2a587587e09f9e815d434feebff README
 SHA1 5a53d12d5cccd94845a6a7cc105cd9be34e20f1c ROADMAP
-SHA1 802d88942fe506bb4084158994d38321288eb4f3 SearchBuilder.pm
+SHA1 da33893e5ddba27d4456a9aeb467fa92aafd45c9 SearchBuilder.pm
 SHA1 edd0342c7b45c8b10e4a04caf60d80454b537261 SearchBuilder/Handle.pm
 SHA1 55d337e6dd1ab5aecc39d2ae491bffb12e9ca449 SearchBuilder/Handle/Informix.pm
 SHA1 4efdcaefa5f94d994b052d1b343d2f5164ef4b52 SearchBuilder/Handle/ODBC.pm
@@ -51,6 +51,7 @@ SHA1 a7ed1ee359ebe2842b354b5652a441403e802080 t/01basics.t
 SHA1 2b2dc6f72370f60e1d233f2f8c12bb87414e825c t/01nocap_api.t
 SHA1 982a982a0e48bea88cb48cea46765e6271c508ed t/01records.t
 SHA1 d3a35118e7e04e2e8bd9d90b2ed01edb563ab829 t/01searches.t
+SHA1 74e758cce9a32fa84d0161d961c20d1d8e01a287 t/02distinct_values.t
 SHA1 af1f5d616e935cd955c2fb55c9595c8d35a3922c t/02order_outer.t
 SHA1 67d4c0dca9d1914eadba64460f3a2da4e074ae14 t/02records_cachable.t
 SHA1 e791bc2dc9ebcfe194f00eb9d0d61c391200b589 t/02records_integers.t
@@ -65,9 +66,9 @@ SHA1 e9c6a5881fc60173fbc8d479c1afd2ce3b43bef1 t/pod.t
 SHA1 afd320ea000cbe83b08691cc37bea45da20002d3 t/testmodels.pl
 SHA1 ceb2fad4e6973b7b30f0e83abc14cfb80ac93efe t/utils.pl
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (Darwin)
+Version: GnuPG v1.4.11 (Darwin)
 
-iEYEARECAAYFAky+GgwACgkQvH6dkeDZaS8XGQCeNzPSaVOPiJ5kBG+xwJCZdz3b
-OAoAn32y+GHb7Bv5ropPGtJ+RAc9G7W6
-=ErdE
+iEYEARECAAYFAkzmVb4ACgkQvH6dkeDZaS86RACfX8TiwCVJr7fElS1Ar+JR3vNV
+vG0An34HlLrpietryryRnzwwZ5/mR8ij
+=oHD1
 -----END PGP SIGNATURE-----

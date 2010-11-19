@@ -1,5 +1,9 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.59 Fri Nov 19 13:45:01 MSK 2010
+
+* DBIx::SearchBuilder->DistinctFieldValues method
+
 1.58 Wed Oct 20 02:17:37 MSD 2010
 
 * SIGNATURE fix

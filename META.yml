@@ -32,4 +32,4 @@ requires:
   Want: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 1.58
+version: 1.59
