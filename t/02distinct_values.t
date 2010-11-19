@@ -38,12 +38,12 @@ SKIP: {
 # unlimit new object and check
     $users_obj->UnLimit;
     is_deeply(
-        [$users_obj->DistinctFieldValues('GroupName', Sort => 'ASC')],
+        [$users_obj->DistinctFieldValues('GroupName', Order => 'ASC')],
         [undef, qw(boss dev sales)],
         'Correct list'
     );
     is_deeply(
-        [$users_obj->DistinctFieldValues('GroupName', Sort => 'DESC')],
+        [$users_obj->DistinctFieldValues('GroupName', Order => 'DESC')],
         [reverse undef, qw(boss dev sales)],
         'Correct list'
     );
@@ -51,12 +51,12 @@ SKIP: {
 
     $users_obj->Limit( FIELD => 'Login', OPERATOR => 'LIKE', VALUE => 'k' );
     is_deeply(
-        [$users_obj->DistinctFieldValues('GroupName', Sort => 'ASC')],
+        [$users_obj->DistinctFieldValues('GroupName', Order => 'ASC')],
         [qw(dev sales)],
         'Correct list'
     );
     is_deeply(
-        [$users_obj->DistinctFieldValues('GroupName', Sort => 'DESC')],
+        [$users_obj->DistinctFieldValues('GroupName', Order => 'DESC')],
         [reverse qw(dev sales)],
         'Correct list'
     );

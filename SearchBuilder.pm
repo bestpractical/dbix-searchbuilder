@@ -582,7 +582,7 @@ sub DistinctFieldValues {
     my $self = shift;
     my %args = (
         Field  => undef,
-        Sort   => undef,
+        Order  => undef,
         Max    => undef,
         @_%2 ? (Field => @_) : (@_)
     );
@@ -594,9 +594,9 @@ sub DistinctFieldValues {
     my $column = 'main.'. $args{'Field'};
     $query_string = 'SELECT DISTINCT '. $column .' FROM '. $query_string;
 
-    if ( $args{'Sort'} ) {
+    if ( $args{'Order'} ) {
         $query_string .= ' ORDER BY '. $column
-            .' '. ($args{'Sort'} =~ /^des/i ? 'DESC' : 'ASC');
+            .' '. ($args{'Order'} =~ /^des/i ? 'DESC' : 'ASC');
     }
 
     my $dbh = $self->_Handle->dbh;
