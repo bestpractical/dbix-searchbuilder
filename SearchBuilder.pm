@@ -574,7 +574,30 @@ sub Last {
     return ( $self->Next );
 }
 
-=head2 DistinctColumnValues
+=head2 DistinctFieldValues
+
+Returns list with distinct values of field. Limits on collection
+are accounted, so collection should be L</UnLimit>ed to get values
+from the whole table.
+
+Takes paramhash with the following keys:
+
+=over 4
+
+=item Field
+
+Field name. Can be first argument without key.
+
+=item Order
+
+'ASC', 'DESC' or undef. Defines whether results should
+be sorted or not. By default results are not sorted.
+
+=item Max
+
+Maximum number of elements to fetch.
+
+=back
 
 =cut
 
