@@ -1281,12 +1281,12 @@ sub Create {
         # Support for databases which don't deal with LOBs automatically
         my $ca = $self->_ClassAccessible();
         foreach $key ( keys %attribs ) {
-            if ( $ca->{$key}->{'type'} =~ /^(text|longtext|clob|blob|lob)$/i ) {
-                my $bhash =
-                  $self->_Handle->BLOBParams( $key, $ca->{$key}->{'type'} );
-                $bhash->{'value'} = $attribs{$key};
-                $attribs{$key} = $bhash;
-            }
+            my $type = $ca->{$key}->{'type'};
+            next unless $type && $type =~ /^(text|longtext|clob|blob|lob)$/i;
+
+            my $bhash = $self->_Handle->BLOBParams( $key, $type );
+            $bhash->{'value'} = $attribs{$key};
+            $attribs{$key} = $bhash;
         }
     }
     return ( $self->_Handle->Insert( $self->Table, %attribs ) );
