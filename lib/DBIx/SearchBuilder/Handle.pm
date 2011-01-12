@@ -136,8 +136,6 @@ sub _UpgradeHandle {
 }
 
 
-
-
 =head2 BuildDSN PARAMHASH
 
 Takes a bunch of parameters:  
@@ -151,24 +149,24 @@ Builds a DSN suitable for a DBI connection
 
 sub BuildDSN {
     my $self = shift;
-  my %args = ( Driver => undef,
-	       Database => undef,
-	       Host => undef,
-	       Port => undef,
-           SID => undef,
-	       RequireSSL => undef,
-	       @_);
-  
-  
-  my $dsn = "dbi:$args{'Driver'}:dbname=$args{'Database'}";
-  $dsn .= ";sid=$args{'SID'}" if ( defined $args{'SID'} && $args{'SID'});
-  $dsn .= ";host=$args{'Host'}" if (defined$args{'Host'} && $args{'Host'});
-  $dsn .= ";port=$args{'Port'}" if (defined $args{'Port'} && $args{'Port'});
-  $dsn .= ";requiressl=1" if (defined $args{'RequireSSL'} && $args{'RequireSSL'});
+    my %args = (
+        Driver     => undef,
+        Database   => undef,
+        Host       => undef,
+        Port       => undef,
+        SID        => undef,
+        RequireSSL => undef,
+        @_
+    );
 
-  $self->{'dsn'}= $dsn;
+    my $dsn = "dbi:$args{'Driver'}:dbname=$args{'Database'}";
+    $dsn .= ";sid=$args{'SID'}"   if $args{'SID'};
+    $dsn .= ";host=$args{'Host'}" if $args{'Host'};
+    $dsn .= ";port=$args{'Port'}" if $args{'Port'};
+    $dsn .= ";requiressl=1"       if $args{'RequireSSL'};
+
+    return $self->{'dsn'} = $dsn;
 }
-
 
 
 =head2 DSN
