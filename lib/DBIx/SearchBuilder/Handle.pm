@@ -75,15 +75,15 @@ sub Connect  {
     my $self = shift;
     my %args = (
         Driver => undef,
-	Database => undef,
-	Host => undef,
+        Database => undef,
+        Host => undef,
         SID => undef,
-	Port => undef,
-	User => undef,
-	Password => undef,
-	RequireSSL => undef,
+        Port => undef,
+        User => undef,
+        Password => undef,
+        RequireSSL => undef,
         DisconnectHandleOnDestroy => undef,
-	@_
+        @_
     );
 
     if ( $args{'Driver'} && !$self->isa( __PACKAGE__ .'::'. $args{'Driver'} ) ) {
@@ -171,7 +171,7 @@ sub BuildDSN {
 
 =head2 DSN
 
-    Returns the DSN for this database connection.
+Returns the DSN for this database connection.
 
 =cut
 
@@ -236,7 +236,7 @@ sub LogSQLStatements {
 
 =head2 _LogSQLStatement STATEMENT DURATION
 
-add an SQL statement to our query log
+Add an SQL statement to our query log
 
 =cut
 
