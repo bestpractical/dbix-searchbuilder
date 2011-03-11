@@ -3,7 +3,7 @@ use inc::Module::Install;
 name ('DBIx-SearchBuilder');
 license ('perl');
 author ('Jesse Vincent <jesse@bestpractical.com>');
-all_from('SearchBuilder.pm');
+all_from('lib/DBIx/SearchBuilder.pm');
 requires('DBI');
 requires('Want');
 requires('Encode' => '1.99');
