@@ -118,6 +118,17 @@ sub Insert  {
   }
 
 
+=head2 InsertFromSelect
+
+Customization of L<DBIx::SearchBuilder::Handle/InsertFromSelect>.
+unlike other DBs Oracle needs select query to be in parens.
+
+=cut
+
+sub InsertFromSelect {
+    my ($self, $table, $columns, $query, @binds) = @_;
+    return $self->SUPER::InsertFromSelect( $table, $columns, "($query)", @binds);
+}
 
 =head2  BuildDSN PARAMHASH
 

@@ -384,6 +384,26 @@ sub InsertQueryString {
     return ($QueryString, @bind);
 }
 
+=head2 InsertFromSelect
+
+Takes table name, array reference with columns, select query
+and list of bind values. Inserts data select by the query
+into the table.
+
+=cut
+
+sub InsertFromSelect {
+    my ($self, $table, $columns, $query, @binds) = @_;
+
+    $columns = join ', ', @$columns
+        if $columns;
+
+    my $full_query = "INSERT INTO $table";
+    $full_query .= " ($columns)" if $columns;
+    $full_query .= ' '. $query;
+    return $self->SimpleQuery( $full_query, @binds );
+}
+
 =head2 UpdateRecordValue 
 
 Takes a hash with fields: Table, Column, Value PrimaryKeys, and 
