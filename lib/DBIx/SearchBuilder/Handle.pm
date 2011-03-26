@@ -473,6 +473,35 @@ sub UpdateTableValue  {
     return $self->UpdateRecordValue(%args)
 }
 
+=head1 SimpleUpdateFromSelect
+
+Takes table name, hash reference with (column, value) pairs,
+select query and list of bind values.
+
+Updates the table, but only records with IDs returned by the
+selected query, eg:
+
+    UPDATE $table SET %values WHERE id IN ( $query )
+
+It's simple as values are static and search only allowed
+by id.
+
+=cut
+
+sub SimpleUpdateFromSelect {
+    my ($self, $table, $values, $query, @query_binds) = @_;
+
+    my @columns; my @binds;
+    while ( my ($k, $v) = each %$values ) {
+        push @columns, $k;
+        push @binds, $v;
+    }
+
+    my $full_query = "UPDATE $table SET ";
+    $full_query .= join ' AND ', map "$_ = ?", @columns;
+    $full_query .= ' WHERE id IN ('. $query .')';
+    return $self->SimpleQuery( $full_query, @binds );
+}
 
 =head2 SimpleQuery QUERY_STRING, [ BIND_VALUE, ... ]
 

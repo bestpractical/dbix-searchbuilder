@@ -50,6 +50,50 @@ sub Insert  {
   }
 
 
+=head2 SimpleUpdateFromSelect
+
+Customization of L<DBIx::SearchBuilder::Handle/SimpleUpdateFromSelect>.
+Mysql doesn't support update with subqueries when those fetch data from
+the table that is updated.
+
+=cut
+
+sub SimpleUpdateFromSelect {
+    my ($self, $table, $values, $query, @query_binds) = @_;
+
+    return $self->SUPER::SimpleUpdateFromSelect(
+        $table, $values, $query, @query_binds
+    ) unless $query =~ /\b\Q$table\E\b/i;
+
+    my $sth = $self->SimpleQuery( $query, @query_binds );
+    return $sth unless $sth;
+
+    my (@binds, @columns);
+    while ( my ($k, $v) = each %$values ) {
+        push @columns, $k;
+        push @binds, $v;
+    }
+
+    my $update_query = "UPDATE $table SET "
+        . join( ' AND ', map "$_ = ?", @columns )
+        .' WHERE ID IN ';
+
+    my @ids;
+    while ( my $id = ($sth->fetchrow_array)[0] ) {
+        push @ids, $id;
+        next if @ids < 100;
+
+        my $q = $update_query .'('. join( ',', ('?')x@ids ) .')';
+        my $sth = $self->SimpleQuery( $q, @binds, splice @ids );
+        return $sth unless $sth;
+    }
+    if ( @ids ) {
+        my $q = $update_query .'('. join( ',', ('?')x@ids ) .')';
+        my $sth = $self->SimpleQuery( $q, @binds, splice @ids );
+        return $sth unless $sth;
+    }
+    return 1;
+}
 
 =head2 DatabaseVersion
 
