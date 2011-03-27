@@ -401,7 +401,11 @@ sub InsertFromSelect {
     my $full_query = "INSERT INTO $table";
     $full_query .= " ($columns)" if $columns;
     $full_query .= ' '. $query;
-    return $self->SimpleQuery( $full_query, @binds );
+    my $sth = $self->SimpleQuery( $full_query, @binds );
+    return $sth unless $sth;
+
+    my $rows = $sth->rows;
+    return $rows == 0? '0E0' : $rows;
 }
 
 =head2 UpdateRecordValue 
@@ -500,7 +504,11 @@ sub SimpleUpdateFromSelect {
     my $full_query = "UPDATE $table SET ";
     $full_query .= join ' AND ', map "$_ = ?", @columns;
     $full_query .= ' WHERE id IN ('. $query .')';
-    return $self->SimpleQuery( $full_query, @binds );
+    my $sth = $self->SimpleQuery( $full_query, @binds );
+    return $sth unless $sth;
+
+    my $rows = $sth->rows;
+    return $rows == 0? '0E0' : $rows;
 }
 
 =head1 DeleteFromSelect
