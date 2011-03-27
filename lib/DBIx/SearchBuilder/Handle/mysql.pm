@@ -78,21 +78,56 @@ sub SimpleUpdateFromSelect {
         . join( ' AND ', map "$_ = ?", @columns )
         .' WHERE ID IN ';
 
+    return $self->SimpleMassChangeFromSelect(
+        $update_query, \@binds,
+        $query, @query_binds
+    );
+}
+
+
+sub DeleteFromSelect {
+    my ($self, $table, $query, @query_binds) = @_;
+
+    return $self->SUPER::DeleteFromSelect(
+        $table, $query, @query_binds
+    ) unless $query =~ /\b\Q$table\E\b/i;
+
+    my $sth = $self->SimpleQuery( $query, @query_binds );
+    return $sth unless $sth;
+
+    return $self->SimpleMassChangeFromSelect(
+        "DELETE FROM $table WHERE id IN ", [],
+        $query, @query_binds
+    );
+}
+
+sub SimpleMassChangeFromSelect {
+    my ($self, $update_query, $update_binds, $search, @search_binds) = @_;
+
+    my $sth = $self->SimpleQuery( $search, @search_binds );
+    return $sth unless $sth;
+
+    my $res = 0;
+
     my @ids;
     while ( my $id = ($sth->fetchrow_array)[0] ) {
         push @ids, $id;
-        next if @ids < 100;
+        next if @ids < 1000;
 
         my $q = $update_query .'('. join( ',', ('?')x@ids ) .')';
-        my $sth = $self->SimpleQuery( $q, @binds, splice @ids );
+        my $sth = $self->SimpleQuery( $q, @$update_binds, splice @ids );
         return $sth unless $sth;
+
+        $res += @ids;
     }
     if ( @ids ) {
         my $q = $update_query .'('. join( ',', ('?')x@ids ) .')';
-        my $sth = $self->SimpleQuery( $q, @binds, splice @ids );
+        my $sth = $self->SimpleQuery( $q, @$update_binds, splice @ids );
         return $sth unless $sth;
+
+        $res += @ids;
     }
-    return 1;
+    return $res == 0? '0E0': $res;
 }
 
 =head2 DatabaseVersion
