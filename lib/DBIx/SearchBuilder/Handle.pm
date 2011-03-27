@@ -503,6 +503,29 @@ sub SimpleUpdateFromSelect {
     return $self->SimpleQuery( $full_query, @binds );
 }
 
+=head1 DeleteFromSelect
+
+Takes table name, select query and list of bind values.
+
+Deletes from the table, but only records with IDs returned by the
+select query, eg:
+
+    DELETE FROM $table WHERE id IN ($query)
+
+=cut
+
+sub DeleteFromSelect {
+    my ($self, $table, $query, @binds) = @_;
+    my $sth = $self->SimpleQuery(
+        "DELETE FROM $table WHERE id IN ($query)",
+        @binds
+    );
+    return $sth unless $sth;
+
+    my $rows = $sth->rows;
+    return $rows == 0? '0E0' : $rows;
+}
+
 =head2 SimpleQuery QUERY_STRING, [ BIND_VALUE, ... ]
 
 Execute the SQL string specified in QUERY_STRING
