@@ -107,6 +107,10 @@ sub SimpleMassChangeFromSelect {
     my $sth = $self->SimpleQuery( $search, @search_binds );
     return $sth unless $sth;
 
+
+    # tried TEMPORARY tables, much slower than fetching and delete
+    # also size of ENGINE=MEMORY is limitted by option, on disk
+    # tables more slower than in memory
     my $res = 0;
 
     my @ids;
