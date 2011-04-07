@@ -92,9 +92,6 @@ sub DeleteFromSelect {
         $table, $query, @query_binds
     ) unless $query =~ /\b\Q$table\E\b/i;
 
-    my $sth = $self->SimpleQuery( $query, @query_binds );
-    return $sth unless $sth;
-
     return $self->SimpleMassChangeFromSelect(
         "DELETE FROM $table WHERE id IN ", [],
         $query, @query_binds
@@ -122,14 +119,14 @@ sub SimpleMassChangeFromSelect {
         my $sth = $self->SimpleQuery( $q, @$update_binds, splice @ids );
         return $sth unless $sth;
 
-        $res += @ids;
+        $res += $sth->rows;
     }
     if ( @ids ) {
         my $q = $update_query .'('. join( ',', ('?')x@ids ) .')';
         my $sth = $self->SimpleQuery( $q, @$update_binds, splice @ids );
         return $sth unless $sth;
 
-        $res += @ids;
+        $res += $sth->rows;
     }
     return $res == 0? '0E0': $res;
 }
