@@ -20,11 +20,3 @@ BEGIN { use_ok("DBIx::SearchBuilder::Handle::SQLite"); }
 BEGIN { use_ok("DBIx::SearchBuilder::Record"); }
 BEGIN { use_ok("DBIx::SearchBuilder::Record::Cachable"); }
 
-# Commented out until ruslan sends code.
-#BEGIN {
-#    SKIP: {
-#        skip "Cache::Memcached is not installed", 1
-#          unless eval { require Cache::Memcached };
-#        use_ok("DBIx::SearchBuilder::Record::Memcached");
-#    }
-#}
