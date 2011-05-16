@@ -1,0 +1,34 @@
+---
+abstract: 'Encapsulate SQL queries and rows in simple perl objects'
+author:
+  - 'Jesse Vincent <jesse@bestpractical.com>'
+build_requires:
+  DBD::SQLite: 0
+  ExtUtils::MakeMaker: 6.42
+  File::Temp: 0
+  Test::More: 0.52
+configure_requires:
+  ExtUtils::MakeMaker: 0
+distribution_type: module
+dynamic_config: 0
+generated_by: 'ExtUtils::MakeMaker version 6.57_05'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: DBIx-SearchBuilder
+no_index:
+  directory:
+    - t
+    - inc
+requires:
+  Cache::Simple::TimedExpiry: 0.21
+  Class::Accessor: 0
+  Class::ReturnValue: 0.4
+  Clone: 0
+  DBI: 0
+  DBIx::DBSchema: 0
+  Encode: 1.99
+  Want: 0
+  capitalization: 0.03
+version: 1.59
