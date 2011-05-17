@@ -149,6 +149,15 @@ sub Fields {
     return @{ $cache->{ lc $table } || [] };
 }
 
+sub SimpleDateTimeFunctions {
+    my $self = shift;
+    return $self->{'_simple_date_time_functions'} ||= {
+        %{ $self->SUPER::SimpleDateTimeFunctions(@_) },
+        dayofweek  => "strftime('%w', ?)",
+        dayofyear  => "strftime('%j', ?)",
+        weekofyear => "strftime('%W', ?)",
+    };
+}
 
 1;
 
