@@ -98,7 +98,7 @@ sub Connect  {
     my $new_dsn = $self->BuildDSN( %args );
 
     # Only connect if we're not connected to this source already
-    return undef if $self->dbh && $self->dbh->ping && $new_dsn ne $old_dsn;
+    return undef if $self->dbh && $self->dbh->ping && $new_dsn eq $old_dsn;
 
     my $handle = DBI->connect(
         $new_dsn, $args{'User'}, $args{'Password'}
