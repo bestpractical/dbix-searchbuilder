@@ -1501,13 +1501,61 @@ sub IsLast {
 }
 
 
-=head2 Column { FIELD => undef } 
+=head2 Column
 
-Specify that we want to load the column  FIELD. 
+Call to specify which columns should be loaded from
+the table. Each calls adds one column to the set.
+Takes a hash with the following named arguments:
 
-Other parameters are TABLE ALIAS AND FUNCTION.
+=over 4
 
-Autrijus and Ruslan owe docs.
+=item FIELD
+
+Optional column name to fetch or apply function
+to.
+
+=item ALIAS
+
+Alias of a table the field is in. main by default.
+
+=item FUNCTION
+
+An SQL function that should be selected as result.
+If FIELD is provided then it's inserted into
+function according to the following rules:
+
+=over 4
+
+=item * if text of the function contains '?' (a question mark),
+then it's replaced with qualified FIELD
+
+=item * if text of the function has no '(' (opening parenthesis)
+then qualified FIELD appended in parentheses to the text
+
+=back
+
+Only one rule applies.
+
+=back
+
+If FIELD is provided and it's this table (ALIAS
+is 'main') then column named as FIELD and can be
+accessed by accessors, for example:
+
+    $articles->Column(FIELD => 'id');
+    $articles->Column(FIELD => 'Subject', FUNCTION => 'SUBSTR(?, 1, 20)');
+    my $article = $articles->First;
+    my $aid = $article->id;
+    my $subject_prefix = $article->Subject;
+
+Returns alias for the column. If FIELD is not provided or
+it's not in this table or it's used more than once then
+use returned alias and L<DBIx::SearchBuilder::Record/_Value>
+method to retrieve result.
+
+    my $time_alias = $articles->Column(FUNCTION => 'NOW()');
+    my $article = $articles->First;
+    my $now = $article->_Value( $time_alias );
 
 =cut
 
