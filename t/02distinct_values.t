@@ -20,6 +20,7 @@ SKIP: {
     unless( should_test( $d ) ) {
             skip "ENV is not defined for driver '$d'", TESTS_PER_DRIVER;
     }
+    diag "testing $d" if $ENV{TEST_VERBOSE};
 
     my $handle = get_handle( $d );
     connect_handle( $handle );
@@ -37,17 +38,25 @@ SKIP: {
 
 # unlimit new object and check
     $users_obj->UnLimit;
-    is_deeply(
-        [$users_obj->DistinctFieldValues('GroupName', Order => 'ASC')],
-        [undef, qw(boss dev sales)],
-        'Correct list'
-    );
-    is_deeply(
-        [$users_obj->DistinctFieldValues('GroupName', Order => 'DESC')],
-        [reverse undef, qw(boss dev sales)],
-        'Correct list'
-    );
-    $users_obj->CleanSlate;
+    {
+        my @list = qw(boss dev sales);
+        if ( $d eq 'Pg' ) {
+            push @list, undef;
+        } else {
+            unshift @list, undef;
+        }
+        is_deeply(
+            [$users_obj->DistinctFieldValues('GroupName', Order => 'ASC')],
+            [@list],
+            'Correct list'
+        );
+        is_deeply(
+            [$users_obj->DistinctFieldValues('GroupName', Order => 'DESC')],
+            [reverse @list],
+            'Correct list'
+        );
+        $users_obj->CleanSlate;
+    }
 
     $users_obj->Limit( FIELD => 'Login', OPERATOR => 'LIKE', VALUE => 'k' );
     is_deeply(
