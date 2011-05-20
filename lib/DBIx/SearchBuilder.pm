@@ -1537,18 +1537,8 @@ sub Column {
         
     }
 
-    my $table = $args{TABLE} || do {
-        if ( my $alias = $args{ALIAS} ) {
-            $alias =~ s/_\d+$//;
-            $alias;
-        }
-        else {
-            $self->Table;
-        }
-    };
-
     my $column = "col" . @{ $self->{columns} ||= [] };
-    $column = $args{FIELD} if $table eq $self->Table and !$args{ALIAS};
+    $column = $args{FIELD} if ($args{'TABLE'}||$self->Table) eq $self->Table && !$args{ALIAS};
     push @{ $self->{columns} }, "$name AS \L$column";
     return $column;
 }
