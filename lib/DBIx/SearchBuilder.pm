@@ -836,6 +836,11 @@ sub Limit {
             $args{'VALUE'}    = "%" . $args{'VALUE'};
         }
         $args{'OPERATOR'} =~ s/(?:MATCHES|ENDSWITH|STARTSWITH)/LIKE/i;
+
+        if ( $args{'OPERATOR'} =~ /IS/i ) {
+            $args{'VALUE'} = 'NULL';
+            $args{'QUOTEVALUE'} = 0;
+        }
     }
 
     {
