@@ -1519,16 +1519,6 @@ sub Column {
                FUNCTION => undef,
                @_);
 
-    my $table = $args{TABLE} || do {
-        if ( my $alias = $args{ALIAS} ) {
-            $alias =~ s/_\d+$//;
-            $alias;
-        }
-        else {
-            $self->Table;
-        }
-    };
-
     my $name = ( $args{ALIAS} || 'main' ) . '.' . $args{FIELD};
     if ( my $func = $args{FUNCTION} ) {
         if ( $func =~ /^DISTINCT\s*COUNT$/i ) {
@@ -1546,6 +1536,16 @@ sub Column {
         }
         
     }
+
+    my $table = $args{TABLE} || do {
+        if ( my $alias = $args{ALIAS} ) {
+            $alias =~ s/_\d+$//;
+            $alias;
+        }
+        else {
+            $self->Table;
+        }
+    };
 
     my $column = "col" . @{ $self->{columns} ||= [] };
     $column = $args{FIELD} if $table eq $self->Table and !$args{ALIAS};
