@@ -1521,8 +1521,11 @@ sub Column {
 
     $args{'ALIAS'} ||= 'main';
 
-    my $name = $args{ALIAS} . '.' . $args{FIELD};
-    if ( my $func = $args{FUNCTION} ) {
+    my $name;
+    if ( $args{FIELD} && $args{FUNCTION} ) {
+        $name = $args{'ALIAS'} .'.'. $args{'FIELD'};
+
+        my $func = $args{FUNCTION};
         if ( $func =~ /^DISTINCT\s*COUNT$/i ) {
             $name = "COUNT(DISTINCT $name)";
         }
@@ -1536,7 +1539,12 @@ sub Column {
         } else {
             $name = $func;
         }
-        
+    }
+    elsif ( $args{FUNCTION} ) {
+        $name = $args{FUNCTION};
+    }
+    else {
+        $name = 'NULL';
     }
 
     my $column = "col" . @{ $self->{columns} ||= [] };
