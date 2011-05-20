@@ -1547,9 +1547,17 @@ sub Column {
         $name = 'NULL';
     }
 
-    my $column = "col" . @{ $self->{columns} ||= [] };
-    $column = $args{FIELD} if ($args{'TABLE'}||$self->Table) eq $self->Table && $args{ALIAS} eq 'main';
-    push @{ $self->{columns} }, "$name AS \L$column";
+    my $column;
+    if (
+        $args{FIELD} && $args{ALIAS} eq 'main'
+        && (!$args{'TABLE'} || $args{'TABLE'} eq $self->Table )
+    ) {
+        $column = $args{FIELD};
+    }
+    else {
+        $column = "col" . @{ $self->{columns} ||= [] };
+    }
+    push @{ $self->{columns} ||= [] }, "$name AS \L$column";
     return $column;
 }
 
