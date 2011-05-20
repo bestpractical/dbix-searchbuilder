@@ -1519,7 +1519,9 @@ sub Column {
                FUNCTION => undef,
                @_);
 
-    my $name = ( $args{ALIAS} || 'main' ) . '.' . $args{FIELD};
+    $args{'ALIAS'} ||= 'main';
+
+    my $name = $args{ALIAS} . '.' . $args{FIELD};
     if ( my $func = $args{FUNCTION} ) {
         if ( $func =~ /^DISTINCT\s*COUNT$/i ) {
             $name = "COUNT(DISTINCT $name)";
@@ -1538,7 +1540,7 @@ sub Column {
     }
 
     my $column = "col" . @{ $self->{columns} ||= [] };
-    $column = $args{FIELD} if ($args{'TABLE'}||$self->Table) eq $self->Table && !$args{ALIAS};
+    $column = $args{FIELD} if ($args{'TABLE'}||$self->Table) eq $self->Table && $args{ALIAS} eq 'main';
     push @{ $self->{columns} }, "$name AS \L$column";
     return $column;
 }
