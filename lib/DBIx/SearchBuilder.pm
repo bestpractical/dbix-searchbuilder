@@ -842,13 +842,11 @@ sub Limit {
         }
     }
 
-    {
+    if ( $args{'QUOTEVALUE'} ) {
         #if we're explicitly told not to to quote the value or
         # we're doing an IS or IS NOT (null), don't quote the operator.
 
-        if ( $args{'QUOTEVALUE'} && $args{'OPERATOR'} !~ /IS/i ) {
-            $args{'VALUE'} = $self->_Handle->dbh->quote( $args{'VALUE'} );
-        }
+        $args{'VALUE'} = $self->_Handle->dbh->quote( $args{'VALUE'} );
     }
 
     my $Alias = $self->_GenericRestriction(%args);
