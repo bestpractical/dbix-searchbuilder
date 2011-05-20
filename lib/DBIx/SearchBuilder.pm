@@ -823,8 +823,7 @@ sub Limit {
     #since we're changing the search criteria, we need to redo the search
     $self->RedoSearch();
 
-    if ( $args{'FIELD'} ) {
-
+    if ( $args{'OPERATOR'} ) {
         #If it's a like, we supply the %s around the search term
         if ( $args{'OPERATOR'} =~ /LIKE/i ) {
             $args{'VALUE'} = "%" . $args{'VALUE'} . "%";
@@ -836,7 +835,9 @@ sub Limit {
             $args{'VALUE'}    = "%" . $args{'VALUE'};
         }
         $args{'OPERATOR'} =~ s/(?:MATCHES|ENDSWITH|STARTSWITH)/LIKE/i;
+    }
 
+    {
         #if we're explicitly told not to to quote the value or
         # we're doing an IS or IS NOT (null), don't quote the operator.
 
