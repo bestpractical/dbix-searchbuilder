@@ -1,5 +1,11 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.60
+
+* custom BuildDSN for Oracle
+** Database is treated as SID if SID is not provided
+** Build 'dbi:Oracle:<SID>' instead of 'dbi:Oracle:sid=<SID>'
+
 1.59 Fri Nov 19 13:45:01 MSK 2010
 
 * DBIx::SearchBuilder->DistinctFieldValues method
