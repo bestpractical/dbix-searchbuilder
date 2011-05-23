@@ -1503,44 +1503,49 @@ sub IsLast {
 
 =head2 Column
 
-Call to specify which columns should be loaded from
-the table. Each calls adds one column to the set.
-Takes a hash with the following named arguments:
+Call to specify which columns should be loaded from the table. Each
+calls adds one column to the set.  Takes a hash with the following named
+arguments:
 
 =over 4
 
 =item FIELD
 
-Optional column name to fetch or apply function
-to.
+Column name to fetch or apply function to.  This can be omitted if a
+FUNCTION is given which is not a function of a field.
 
 =item ALIAS
 
-Alias of a table the field is in. main by default.
+Alias of a table the field is in; defaults to C<main>
 
 =item FUNCTION
 
-An SQL function that should be selected as result.
-If FIELD is provided then it's inserted into
-function according to the following rules:
+A SQL function that should be selected as the result.  If a FIELD is
+provided, then it is inserted into the function according to the
+following rules:
 
 =over 4
 
-=item * if text of the function contains '?' (a question mark),
-then it's replaced with qualified FIELD
+=item *
 
-=item * if text of the function has no '(' (opening parenthesis)
-then qualified FIELD appended in parentheses to the text
+If the text of the function contains a '?' (question mark), then it is
+replaced with qualified FIELD.
+
+=item *
+
+If the text of the function has no '(' (opening parenthesis), then the
+qualified FIELD is appended in parentheses to the text.
+
+=item *
+
+Otherwise, the function is inserted verbatim, with no substitution.
 
 =back
 
-Only one rule applies.
-
 =back
 
-If FIELD is provided and it's this table (ALIAS
-is 'main') then column named as FIELD and can be
-accessed by accessors, for example:
+If a FIELD is provided and it is in this table (ALIAS is 'main'), then
+the column named FIELD and can be accessed as usual by accessors:
 
     $articles->Column(FIELD => 'id');
     $articles->Column(FIELD => 'Subject', FUNCTION => 'SUBSTR(?, 1, 20)');
@@ -1548,10 +1553,10 @@ accessed by accessors, for example:
     my $aid = $article->id;
     my $subject_prefix = $article->Subject;
 
-Returns alias for the column. If FIELD is not provided or
-it's not in this table or it's used more than once then
-use returned alias and L<DBIx::SearchBuilder::Record/_Value>
-method to retrieve result.
+Returns the alias used for the column. If FIELD was not provided, or was
+from another table, then the returned column alias should be passed to
+the L<DBIx::SearchBuilder::Record/_Value> method to retrieve the
+column's result:
 
     my $time_alias = $articles->Column(FUNCTION => 'NOW()');
     my $article = $articles->First;
