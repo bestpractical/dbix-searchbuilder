@@ -1596,6 +1596,9 @@ sub Column {
     elsif ( $args{FUNCTION} ) {
         $name = $args{FUNCTION};
     }
+    elsif ( $args{FIELD} ) {
+        $name = $args{'ALIAS'} .'.'. $args{'FIELD'};
+    }
     else {
         $name = 'NULL';
     }
