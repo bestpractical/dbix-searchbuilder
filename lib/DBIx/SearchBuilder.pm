@@ -814,10 +814,9 @@ sub Limit {
     unless ( $args{'ENTRYAGGREGATOR'} ) {
         if ( $args{'LEFTJOIN'} ) {
             $args{'ENTRYAGGREGATOR'} = 'AND';
-            } else {
-
+        } else {
             $args{'ENTRYAGGREGATOR'} = 'OR';
-            }
+        }
     }
 
 
