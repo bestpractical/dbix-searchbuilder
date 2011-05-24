@@ -1570,26 +1570,8 @@ sub Column {
     $args{'ALIAS'} ||= 'main';
 
     my $name;
-    if ( $args{FIELD} && $args{FUNCTION} ) {
-        $name = $args{'ALIAS'} .'.'. $args{'FIELD'};
-
-        my $func = $args{FUNCTION};
-        if ( $func =~ /^DISTINCT\s*COUNT$/i ) {
-            $name = "COUNT(DISTINCT $name)";
-        }
-        # If we want to substitute 
-        elsif ($func =~ s/\?/$name/g) {
-            $name = $func;
-        }
-        # If we want to call a simple function on the column
-        elsif ($func !~ /\(/)  {
-            $name = "\U$func\E($name)";
-        } else {
-            $name = $func;
-        }
-    }
-    elsif ( $args{FUNCTION} ) {
-        $name = $args{FUNCTION};
+    if ( $args{FUNCTION} ) {
+        $name = $self->CombineFunctionWithField( %args );
     }
     elsif ( $args{FIELD} ) {
         $name = $args{'ALIAS'} .'.'. $args{'FIELD'};
@@ -1618,6 +1600,37 @@ sub Column {
     }
     push @{ $self->{columns} ||= [] }, "$name AS \L$column";
     return $column;
+}
+
+sub CombineFunctionWithField {
+    my $self = shift;
+    my %args = (
+        FUNCTION => undef,
+        ALIAS    => undef,
+        FIELD    => undef,
+        @_
+    );
+
+    my $func = $args{'FUNCTION'};
+    return $func unless $args{'FIELD'};
+
+    my $field = ($args{'ALIAS'} || 'main') .'.'. $args{'FIELD'};
+
+    if ( $func =~ /^DISTINCT\s*COUNT$/i ) {
+        $func = "COUNT(DISTINCT $field)";
+    }
+
+    # If we want to substitute
+    elsif ( $func =~ s/\?/$field/g ) {
+        # no need to do anything, we already replaced
+    }
+
+    # If we want to call a simple function on the column
+    elsif ( $func !~ /\(/ )  {
+        $func = "\U$func\E($field)";
+    }
+
+    return $func;
 }
 
 
