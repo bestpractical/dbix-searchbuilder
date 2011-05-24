@@ -798,9 +798,10 @@ sub Limit {
     my $self = shift;
     my %args = (
         TABLE           => $self->Table,
-        FIELD           => undef,
-        VALUE           => undef,
         ALIAS           => undef,
+        FIELD           => undef,
+        FUNCTION        => undef,
+        VALUE           => undef,
         QUOTEVALUE      => 1,
         ENTRYAGGREGATOR => undef,
         CASESENSITIVE   => undef,
@@ -871,6 +872,7 @@ sub _GenericRestriction {
     my $self = shift;
     my %args = ( TABLE           => $self->Table,
                  FIELD           => undef,
+                 FUNCTION        => undef,
                  VALUE           => undef,
                  ALIAS           => undef,
                  LEFTJOIN        => undef,
@@ -942,6 +944,10 @@ sub _GenericRestriction {
                 $args{'OPERATOR'}, $args{'VALUE'} );
         }
 
+    }
+
+    if ( $args{'FUNCTION'} ) {
+        $QualifiedField = $self->CombineFunctionWithField( %args );
     }
 
     my $clause = {
