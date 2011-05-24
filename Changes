@@ -5,6 +5,10 @@ Revision history for Perl extension DBIx::SearchBuilder.
 * custom BuildDSN for Oracle
 ** Database is treated as SID if SID is not provided
 ** Build 'dbi:Oracle:<SID>' instead of 'dbi:Oracle:sid=<SID>'
+* changes in DBIx::SearchBuilder->Column method
+** complete documentation
+** support for empty FIELD argument
+** column naming fix when explicit ALIAS => 'main' passed
 
 1.59 Fri Nov 19 13:45:01 MSK 2010
 
