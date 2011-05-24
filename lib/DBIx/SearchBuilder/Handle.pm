@@ -72,51 +72,46 @@ the handle will be automatically "upgraded" into that subclass.
 =cut
 
 sub Connect  {
-  my $self = shift;
-  
-  my %args = ( Driver => undef,
-	       Database => undef,
-	       Host => undef,
-           SID => undef,
-	       Port => undef,
-	       User => undef,
-	       Password => undef,
-	       RequireSSL => undef,
-           DisconnectHandleOnDestroy => undef,
-	       @_);
+    my $self = shift;
+    my %args = (
+        Driver => undef,
+        Database => undef,
+        Host => undef,
+        SID => undef,
+        Port => undef,
+        User => undef,
+        Password => undef,
+        RequireSSL => undef,
+        DisconnectHandleOnDestroy => undef,
+        @_
+    );
 
-   if( $args{'Driver'} && !$self->isa( 'DBIx::SearchBuilder::Handle::'. $args{'Driver'} ) ) {
-      if ( $self->_UpgradeHandle($args{Driver}) ) {
-          return ($self->Connect( %args ));
-      }
-   }
-
-
-    my $dsn = $self->DSN || '';
-
-    # Setting this actually breaks old RT versions in subtle ways. So we need to explicitly call it
-
-    $self->{'DisconnectHandleOnDestroy'} = $args{'DisconnectHandleOnDestroy'};
-    
-
-  $self->BuildDSN(%args);
-
-    # Only connect if we're not connected to this source already
-   if ((! $self->dbh ) || (!$self->dbh->ping) || ($self->DSN ne $dsn) ) { 
-     my $handle = DBI->connect($self->DSN, $args{'User'}, $args{'Password'}) || croak "Connect Failed $DBI::errstr\n" ;
- 
-  #databases do case conversion on the name of columns returned. 
-  #actually, some databases just ignore case. this smashes it to something consistent 
-  $handle->{FetchHashKeyName} ='NAME_lc';
-
-  #Set the handle 
-  $self->dbh($handle);
-  
-  return (1); 
+    if ( $args{'Driver'} && !$self->isa( __PACKAGE__ .'::'. $args{'Driver'} ) ) {
+        return $self->Connect( %args ) if $self->_UpgradeHandle( $args{'Driver'} );
     }
 
-    return(undef);
+    # Setting this actually breaks old RT versions in subtle ways.
+    # So we need to explicitly call it
+    $self->{'DisconnectHandleOnDestroy'} = $args{'DisconnectHandleOnDestroy'};
 
+    my $old_dsn = $self->DSN || '';
+    my $new_dsn = $self->BuildDSN( %args );
+
+    # Only connect if we're not connected to this source already
+    return undef if $self->dbh && $self->dbh->ping && $new_dsn eq $old_dsn;
+
+    my $handle = DBI->connect(
+        $new_dsn, $args{'User'}, $args{'Password'}
+    ) or croak "Connect Failed $DBI::errstr\n";
+
+    # databases do case conversion on the name of columns returned.
+    # actually, some databases just ignore case. this smashes it to something consistent
+    $handle->{FetchHashKeyName} ='NAME_lc';
+
+    # Set the handle
+    $self->dbh($handle);
+
+    return 1;
 }
 
 
@@ -141,8 +136,6 @@ sub _UpgradeHandle {
 }
 
 
-
-
 =head2 BuildDSN PARAMHASH
 
 Takes a bunch of parameters:  
@@ -156,29 +149,29 @@ Builds a DSN suitable for a DBI connection
 
 sub BuildDSN {
     my $self = shift;
-  my %args = ( Driver => undef,
-	       Database => undef,
-	       Host => undef,
-	       Port => undef,
-           SID => undef,
-	       RequireSSL => undef,
-	       @_);
-  
-  
-  my $dsn = "dbi:$args{'Driver'}:dbname=$args{'Database'}";
-  $dsn .= ";sid=$args{'SID'}" if ( defined $args{'SID'} && $args{'SID'});
-  $dsn .= ";host=$args{'Host'}" if (defined$args{'Host'} && $args{'Host'});
-  $dsn .= ";port=$args{'Port'}" if (defined $args{'Port'} && $args{'Port'});
-  $dsn .= ";requiressl=1" if (defined $args{'RequireSSL'} && $args{'RequireSSL'});
+    my %args = (
+        Driver     => undef,
+        Database   => undef,
+        Host       => undef,
+        Port       => undef,
+        SID        => undef,
+        RequireSSL => undef,
+        @_
+    );
 
-  $self->{'dsn'}= $dsn;
+    my $dsn = "dbi:$args{'Driver'}:dbname=$args{'Database'}";
+    $dsn .= ";sid=$args{'SID'}"   if $args{'SID'};
+    $dsn .= ";host=$args{'Host'}" if $args{'Host'};
+    $dsn .= ";port=$args{'Port'}" if $args{'Port'};
+    $dsn .= ";requiressl=1"       if $args{'RequireSSL'};
+
+    return $self->{'dsn'} = $dsn;
 }
-
 
 
 =head2 DSN
 
-    Returns the DSN for this database connection.
+Returns the DSN for this database connection.
 
 =cut
 
@@ -243,7 +236,7 @@ sub LogSQLStatements {
 
 =head2 _LogSQLStatement STATEMENT DURATION
 
-add an SQL statement to our query log
+Add an SQL statement to our query log
 
 =cut
 
