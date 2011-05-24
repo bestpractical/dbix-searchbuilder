@@ -891,7 +891,7 @@ sub _GenericRestriction {
         $args{'ALIAS'} = $args{'LEFTJOIN'};
     }
 
-    # {{{ if there's no alias set, we need to set it
+    # if there's no alias set, we need to set it
 
     unless ( $args{'ALIAS'} ) {
 
@@ -905,16 +905,11 @@ sub _GenericRestriction {
             $args{'ALIAS'} = 'main';
         }
 
-        # {{{ if we're joining, we need to work out the table alias
-
+        # if we're joining, we need to work out the table alias
         else {
             $args{'ALIAS'} = $self->NewAlias( $args{'TABLE'} );
         }
-
-        # }}}
     }
-
-    # }}}
 
     # Set this to the name of the field and the alias, unless we've been
     # handed a subclause name
