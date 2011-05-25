@@ -40,7 +40,7 @@ SKIP: {
     $users_obj->UnLimit;
     {
         my @list = qw(boss dev sales);
-        if ( $d eq 'Pg' ) {
+        if ( $d eq 'Pg' || $d eq 'Oracle' ) {
             push @list, undef;
         } else {
             unshift @list, undef;
