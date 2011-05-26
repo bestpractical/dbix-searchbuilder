@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 67;
+use constant TESTS_PER_DRIVER => 66;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -194,11 +194,9 @@ SKIP: {
 	isa_ok( $val, 'Class::ReturnValue', "couldn't set invalid value, error returned");
 	is( ($val->as_array)[1], 'Illegal value for Name', "correct error message" );
 	is( $rec->Name, 'Obra', "old value is still there");
-# XXX TODO FIXME: this test cover current implementation that is broken //RUZ
-	$val = $rec->SetName( );
-	isa_ok( $val, 'Class::ReturnValue', "couldn't set empty/undef value, error returned");
-	is( ($val->as_array)[1], "No value passed to _Set", "correct error message" );
-	is( $rec->Name, 'Obra', "old value is still there");
+	( $val, $msg ) = $rec->SetName();
+    ok( $val, $msg );
+	is( $rec->Name, undef, "no value means null");
 
 # deletes
 	$newrec = TestApp::Address->new($handle);
@@ -231,6 +229,7 @@ sub _Init {
 sub ValidateName
 {
 	my ($self, $value) = @_;
+    return 1 unless defined $value;
 	return 0 if $value =~ /invalid/i;
 	return 1;
 }

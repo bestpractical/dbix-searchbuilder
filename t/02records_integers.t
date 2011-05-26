@@ -63,19 +63,17 @@ SKIP: {
         ok($status, "status ok") or diag $status->error_message;
         is($rec->Optional, 1, 'set optional field to 1');
 
+        $status = $rec->SetOptional( undef );
+        ok($status, "status ok") or diag $status->error_message;
+        is($rec->Optional, undef, 'undef equal to NULL');
+
         $status = $rec->SetOptional( '' );
         ok($status, "status ok") or diag $status->error_message;
         is($rec->Optional, 0, 'empty string should be threated as zero');
 
-        TODO: {
-            local $TODO = 'we have no way to set NULL value';
-            $status = $rec->SetOptional( undef );
-            ok($status, "status ok") or diag $status->error_message;
-            is($rec->Optional, undef, 'undef equal to NULL');
-            $status = $rec->SetOptional;
-            ok($status, "status ok") or diag $status->error_message;
-            is($rec->Optional, undef, 'no value is NULL too');
-        }
+        $status = $rec->SetOptional;
+        ok($status, "status ok") or diag $status->error_message;
+        is($rec->Optional, undef, 'no value is NULL too');
 
         # set operations on mandatory field
         $status = $rec->SetMandatory( 2 );
