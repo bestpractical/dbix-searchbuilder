@@ -782,17 +782,14 @@ sub __Set {
         }
     }
 
-    unless ( defined $args{'Value'} ) {
-        $ret->as_array( 0, "No value passed to _Set" );
-        $ret->as_error(
-            errno        => 2,
-            do_backtrace => 0,
-            message      => "No value passed to _Set"
-        );
-        return ( $ret->return_value );
-    }
-    elsif (    ( defined $self->__Value($column) )
-        and ( $args{'Value'} eq $self->__Value($column) ) )
+    my $current_value = $self->__Value($column);
+
+    if (
+        ( !defined $args{'Value'} && !defined $current_value )
+        || (   defined $args{'Value'}
+            && defined $current_value
+            && ( $args{'Value'} eq $current_value ) )
+      )
     {
         $ret->as_array( 0, "That is already the current value" );
         $ret->as_error(
@@ -844,8 +841,10 @@ sub __Set {
 
     my $val = $self->_Handle->UpdateRecordValue(%args);
     unless ($val) {
-        my $message = 
-            $args{'Column'} . " could not be set to " . $args{'Value'} . "." ;
+        my $message =
+            $args{'Column'}
+          . " could not be set to "
+          . ( defined $args{'Value'} ? $args{'Value'} : 'undef' ) . ".";
         $ret->as_array( 0, $message);
         $ret->as_error(
             errno        => 4,
