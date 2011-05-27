@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 105;
+use constant TESTS_PER_DRIVER => 114;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -285,6 +285,34 @@ SKIP: {
     {
         my $u = $users_obj->Next;
         is( $u->Login, 'glasser', "glasser is third in the list");
+    }
+
+# Let's play with Column
+    $users_obj = TestApp::Users->new( $handle );
+    $users_obj->UnLimit;
+    {
+        is( $users_obj->Column(FIELD => 'id'), 'id' );
+        isnt( my $id_alias = $users_obj->Column(FIELD => 'id'), 'id' );
+        my $u = $users_obj->Next;
+        is ( $u->_Value($id_alias), $u->id, "fetched id twice" );
+    }
+
+    $users_obj = TestApp::Users->new( $handle );
+    $users_obj->UnLimit;
+    {
+        is( $users_obj->Column(FIELD => 'id'), 'id' );
+        isnt( my $id_alias = $users_obj->Column(FIELD => 'id', FUNCTION => '? + 1'), 'id' );
+        my $u = $users_obj->Next;
+        is ( $u->_Value($id_alias), $u->id + 1, "fetched id and function based on id" );
+    }
+
+    $users_obj = TestApp::Users->new( $handle );
+    $users_obj->UnLimit;
+    {
+        is( $users_obj->Column(FIELD => 'id'), 'id' );
+        isnt( my $id_alias = $users_obj->Column(FUNCTION => 'id + 1'), 'id' );
+        my $u = $users_obj->Next;
+        is ( $u->_Value($id_alias), $u->id + 1, "fetched id and function based on id" );
     }
 
 	cleanup_schema( 'TestApp', $handle );
