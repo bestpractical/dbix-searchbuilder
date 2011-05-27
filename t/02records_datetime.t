@@ -7,10 +7,12 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 42;
+use constant TESTS_PER_DRIVER => 21;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
+
+my $handle;
 
 foreach my $d ( @AvailableDrivers ) {
 SKIP: {
@@ -21,9 +23,11 @@ SKIP: {
         skip "ENV is not defined for driver '$d'", TESTS_PER_DRIVER;
     }
 
-    my $handle = get_handle( $d );
+    $handle = get_handle( $d );
     connect_handle( $handle );
     isa_ok($handle->dbh, 'DBI::db');
+
+    diag "testing $d" if $ENV{'TEST_VERBOSE'};
 
     my $ret = init_schema( 'TestApp', $handle );
     isa_ok($ret,'DBI::st', "Inserted the schema. got a statement handle back");
@@ -31,20 +35,9 @@ SKIP: {
     my $count_all = init_data( 'TestApp::User', $handle );
     ok( $count_all,  "init users data" );
 
-    my $users_obj = TestApp::Users->new( $handle );
-    isa_ok( $users_obj, 'DBIx::SearchBuilder' );
-    is( $users_obj->_Handle, $handle, "same handle as we used in constructor");
-
-# try to use $users_obj for all tests, after each call to CleanSlate it should look like new obj.
-# and test $obj->new syntax
-    my $clean_obj = $users_obj->new( $handle );
-    isa_ok( $clean_obj, 'DBIx::SearchBuilder' );
-
     foreach my $type ('date time', 'DateTime', 'date_time', 'Date-Time') {
-        $users_obj->CleanSlate;
-        is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-        is_deeply(
-            get_data( $users_obj, Type => $type ),
+        run_test(
+            { Type => $type },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '2011-05-20 19:53:23',
@@ -52,30 +45,24 @@ SKIP: {
         );
     }
 
-    $users_obj->CleanSlate;
-    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-    is_deeply(
-        get_data( $users_obj, Type => 'time' ),
+    run_test(
+        { Type => 'time' },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '19:53:23',
         },
     );
 
-    $users_obj->CleanSlate;
-    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-    is_deeply(
-        get_data( $users_obj, Type => 'hourly' ),
+    run_test( 
+        { Type => 'hourly' },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '2011-05-20 19',
         },
     );
 
-    $users_obj->CleanSlate;
-    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-    is_deeply(
-        get_data( $users_obj, Type => 'hour' ),
+    run_test(
+        { Type => 'hour' },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '19',
@@ -83,10 +70,8 @@ SKIP: {
     );
 
     foreach my $type ( 'date', 'daily' ) {
-        $users_obj->CleanSlate;
-        is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-        is_deeply(
-            get_data( $users_obj, Type => $type ),
+        run_test(
+            { Type => $type },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '2011-05-20',
@@ -94,21 +79,19 @@ SKIP: {
         );
     }
 
-    $users_obj->CleanSlate;
-    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-    is_deeply(
-        get_data( $users_obj, Type => 'day of week' ),
+    run_test(
+        { Type => 'day of week' },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '5',
+            '2011-05-21 19:53:23' => '6',
+            '2011-05-22 19:53:23' => '0',
         },
     );
 
     foreach my $type ( 'day', 'DayOfMonth' ) {
-        $users_obj->CleanSlate;
-        is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-        is_deeply(
-            get_data( $users_obj, Type => $type ),
+        run_test(
+            { Type => $type },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '20',
@@ -116,30 +99,24 @@ SKIP: {
         );
     }
 
-    $users_obj->CleanSlate;
-    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-    is_deeply(
-        get_data( $users_obj, Type => 'day of year' ),
+    run_test(
+        { Type => 'day of year' },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '140',
         },
     );
 
-    $users_obj->CleanSlate;
-    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-    is_deeply(
-        get_data( $users_obj, Type => 'month' ),
+    run_test(
+        { Type => 'month' },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '05',
         },
     );
 
-    $users_obj->CleanSlate;
-    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-    is_deeply(
-        get_data( $users_obj, Type => 'monthly' ),
+    run_test(
+        { Type => 'monthly' },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '2011-05',
@@ -147,10 +124,8 @@ SKIP: {
     );
 
     foreach my $type ( 'year', 'annually' ) {
-        $users_obj->CleanSlate;
-        is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-        is_deeply(
-            get_data( $users_obj, Type => $type ),
+        run_test(
+            { Type => $type },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '2011',
@@ -158,10 +133,8 @@ SKIP: {
         );
     }
 
-    $users_obj->CleanSlate;
-    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-    is_deeply(
-        get_data( $users_obj, Type => 'week of year' ),
+    run_test(
+        { Type => 'week of year' },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '20',
@@ -172,21 +145,29 @@ SKIP: {
 }} # SKIP, foreach blocks
 
 
-sub get_data {
-    my $users = shift;
+sub run_test {
+    my $props = shift;
+    my $expected = shift;
+
+    my $users = TestApp::Users->new( $handle );
     $users->UnLimit;
     $users->Column( FIELD => 'Expires' );
     my $column = $users->Column(
         ALIAS => 'main',
         FIELD => 'Expires',
-        FUNCTION => $users->_Handle->DateTimeFunction( @_ ),
+        FUNCTION => $users->_Handle->DateTimeFunction( %$props ),
     );
 
-    my %res;
+    my %got;
     while ( my $user = $users->Next ) {
-        $res{ $user->Expires || '' } = $user->__Value( $column );
+        $got{ $user->Expires || '' } = $user->__Value( $column );
     }
-    return \%res;
+    foreach my $key ( keys %got ) {
+        delete $got{ $key } unless exists $expected->{ $key };
+    }
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    is_deeply( \%got, $expected, "correct ". $props->{'Type'} ." function" )
+        or diag "wrong SQL: ". $users->BuildSelectQuery;
 }
 
 1;
@@ -225,18 +206,18 @@ EOF
 
 }
 
-#sub schema_oracle { [
-#    "CREATE SEQUENCE Users_seq",
-#    "CREATE TABLE Users (
-#        id integer CONSTRAINT Users_Key PRIMARY KEY,
-#        Login varchar(18) NOT NULL,
-#    )",
-#] }
-#
-#sub cleanup_schema_oracle { [
-#    "DROP SEQUENCE Users_seq",
-#    "DROP TABLE Users", 
-#] }
+sub schema_oracle { [
+    "CREATE SEQUENCE Users_seq",
+    "CREATE TABLE Users (
+        id integer CONSTRAINT Users_Key PRIMARY KEY,
+        Expires DATE NULL
+    )",
+] }
+
+sub cleanup_schema_oracle { [
+    "DROP SEQUENCE Users_seq",
+    "DROP TABLE Users",
+] }
 
 
 1;
@@ -265,9 +246,11 @@ sub _ClassAccessible {
 
 sub init_data {
     return (
-    [ 'Expires' ],
-    [ undef, ],
-    [ '2011-05-20 19:53:23',     ],
+    [ 'Expires'             ],
+    [  undef                ],
+    [ '2011-05-20 19:53:23' ], # friday
+    [ '2011-05-21 19:53:23' ], # saturday
+    [ '2011-05-22 19:53:23' ], # sunday
     );
 }
 
