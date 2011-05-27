@@ -1605,6 +1605,14 @@ sub Column {
         && (!$args{'TABLE'} || $args{'TABLE'} eq $self->Table )
     ) {
         $column = $args{FIELD};
+
+        # make sure we don't fetch columns with duplicate aliases
+        if ( $self->{columns} ) {
+            my $suffix = " AS \L$column";
+            if ( grep index($_, $suffix, -length $suffix) >= 0, @{ $self->{columns} } ) {
+                $column .= scalar @{ $self->{columns} };
+            }
+        }
     }
     else {
         $column = "col" . @{ $self->{columns} ||= [] };
