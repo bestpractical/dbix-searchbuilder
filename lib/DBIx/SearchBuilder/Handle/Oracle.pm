@@ -317,6 +317,22 @@ sub Fields {
     return @{ $cache->{ lc $table } || [] };
 }
 
+sub SimpleDateTimeFunctions {
+    my $self = shift;
+    return $self->{'_simple_date_time_functions'}
+        if $self->{'_simple_date_time_functions'};
+
+    my %res = %{ $self->SUPER::SimpleDateTimeFunctions(@_) };
+
+    return $self->{'_simple_date_time_functions'} ||= {
+        %res,
+        dayofweek  => "TO_CHAR(?, 'D') - 1", # 1-7, 1 - Sunday
+        dayofyear  => "TO_CHAR(?, 'DDD')", # 1-366
+        # no idea about props
+        weekofyear => "TO_CHAR(?, 'WW')",
+    };
+}
+
 1;
 
 __END__
