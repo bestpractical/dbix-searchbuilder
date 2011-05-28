@@ -1579,8 +1579,8 @@ sub Column {
             $name = "COUNT(DISTINCT $name)";
         }
         # If we want to substitute 
-        elsif ($func =~ /\?/) {
-            $name = join($name,split(/\?/,$func));
+        elsif ($func =~ s/\?/$name/g) {
+            $name = $func;
         }
         # If we want to call a simple function on the column
         elsif ($func !~ /\(/)  {
