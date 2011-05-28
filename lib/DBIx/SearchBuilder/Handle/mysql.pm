@@ -137,6 +137,49 @@ sub Fields {
     return @{ $cache->{ lc $table } || [] };
 }
 
+sub SimpleDateTimeFunctions {
+    my $self = shift;
+    return $self->{'_simple_date_time_functions'} ||= {
+        %{ $self->SUPER::SimpleDateTimeFunctions(@_) },
+        datetime   => '?',
+        time       => 'TIME(?)',
+
+        hourly     => "DATE_FORMAT(?, '%Y-%m-%d %H')",
+        hour       => 'HOUR(?)',
+
+        date       => 'DATE(?)',
+        daily      => 'DATE(?)',
+
+        day        => 'DAYOFMONTH(?)',
+        dayofmonth => 'DAYOFMONTH(?)',
+
+        monthly    => "DATE_FORMAT(?, '%Y-%m')",
+        month      => 'MONTH(?)',
+
+        annually   => 'YEAR(?)',
+        year       => 'YEAR(?)',
+
+        dayofweek  => "DAYOFWEEK(?) - 1", # 1-7, 1 - Sunday
+        dayofyear  => "DAYOFYEAR(?)", # 1-366
+        weekofyear => "WEEK(?)", # skip mode argument, so it can be controlled in mysql config
+    };
+}
+
+
+sub ConvertTimezoneFunction {
+    my $self = shift;
+    my %args = (
+        From  => 'UTC',
+        To    => undef,
+        Field => '',
+        @_
+    );
+    return $args{'Field'} unless $args{From} && $args{'To'};
+    return $args{'Field'} if $args{From} eq $args{'To'};
+    my $dbh = $self->dbh;
+    $_ = $dbh->quote( $_ ) foreach @args{'From', 'To'};
+    return "CONVERT_TZ( $args{'Field'}, $args{'From'}, $args{'To'} )";
+}
 
 1;
 
