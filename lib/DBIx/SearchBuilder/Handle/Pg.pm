@@ -260,8 +260,27 @@ sub SimpleDateTimeFunctions {
     my %res = %{ $self->SUPER::SimpleDateTimeFunctions(@_) };
     s/SUBSTR\s*\(\s*\?/SUBSTR( CAST(? AS text)/ig for values %res;
 
+    # everything else we should implement through date_trunc that
+    # does SUBSTR(?, 1, X) on a date, but leaves trailing values
+    # when we don't need them
+
     return $self->{'_simple_date_time_functions'} ||= {
         %res,
+        datetime   => '?',
+        time       => 'CAST(? AS time)',
+
+        hour       => 'EXTRACT(HOUR FROM ?)',
+
+        date       => 'CAST(? AS date)',
+        daily      => 'CAST(? AS date)',
+
+        day        => 'EXTRACT(DAY FROM ?)',
+
+        month      => 'EXTRACT(MONTH FROM ?)',
+
+        annually   => 'EXTRACT(YEAR FROM ?)',
+        year       => 'EXTRACT(YEAR FROM ?)',
+
         dayofweek  => "EXTRACT(DOW  FROM ?)", # 0-6, 0 - Sunday
         dayofyear  => "EXTRACT(DOY  FROM ?)", # 1-366
         # 1-53, 1st week January 4, week starts on Monay

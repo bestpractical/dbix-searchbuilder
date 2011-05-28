@@ -326,6 +326,24 @@ sub SimpleDateTimeFunctions {
 
     return $self->{'_simple_date_time_functions'} ||= {
         %res,
+        datetime   => "?",
+        time       => "TO_CHAR(?, 'HH24:MI:SS')",
+
+        hourly     => "TO_CHAR(?, 'YYYY-MM-DD HH24')",
+        hour       => "TO_CHAR(?, 'HH24')",
+
+        date       => "TO_CHAR(?, 'YYYY-MM-DD')",
+        daily      => "TO_CHAR(?, 'YYYY-MM-DD')",
+
+        day        => "TO_CHAR(?, 'DD')",
+        dayofmonth => "TO_CHAR(?, 'DD')",
+
+        monthly    => "TO_CHAR(?, 'YYYY-MM')",
+        month      => "TO_CHAR(?, 'MM')",
+
+        annually   => "TO_CHAR(?, 'YYYY')",
+        year       => "TO_CHAR(?, 'YYYY')",
+
         dayofweek  => "TO_CHAR(?, 'D') - 1", # 1-7, 1 - Sunday
         dayofyear  => "TO_CHAR(?, 'DDD')", # 1-366
         # no idea about props

@@ -153,6 +153,24 @@ sub SimpleDateTimeFunctions {
     my $self = shift;
     return $self->{'_simple_date_time_functions'} ||= {
         %{ $self->SUPER::SimpleDateTimeFunctions(@_) },
+        datetime   => 'datetime(?)',
+        time       => 'time(?)',
+
+        hourly     => "strftime('%Y-%m-%d %H', ?)",
+        hour       => "strftime('%H', ?)",
+
+        date       => 'date(?)',
+        daily      => 'date(?)',
+
+        day        => "strftime('%d', ?)",
+        dayofmonth => "strftime('%d', ?)",
+
+        monthly    => "strftime('%Y-%m', ?)",
+        month      => "strftime('%m', ?)",
+
+        annually   => "strftime('%Y', ?)",
+        year       => "strftime('%Y', ?)",
+
         dayofweek  => "strftime('%w', ?)",
         dayofyear  => "strftime('%j', ?)",
         weekofyear => "strftime('%W', ?)",
