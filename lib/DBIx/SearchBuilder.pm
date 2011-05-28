@@ -798,9 +798,10 @@ sub Limit {
     my $self = shift;
     my %args = (
         TABLE           => $self->Table,
-        FIELD           => undef,
-        VALUE           => undef,
         ALIAS           => undef,
+        FIELD           => undef,
+        FUNCTION        => undef,
+        VALUE           => undef,
         QUOTEVALUE      => 1,
         ENTRYAGGREGATOR => undef,
         CASESENSITIVE   => undef,
@@ -813,18 +814,16 @@ sub Limit {
     unless ( $args{'ENTRYAGGREGATOR'} ) {
         if ( $args{'LEFTJOIN'} ) {
             $args{'ENTRYAGGREGATOR'} = 'AND';
-            } else {
-
+        } else {
             $args{'ENTRYAGGREGATOR'} = 'OR';
-            }
+        }
     }
 
 
     #since we're changing the search criteria, we need to redo the search
     $self->RedoSearch();
 
-    if ( $args{'FIELD'} ) {
-
+    if ( $args{'OPERATOR'} ) {
         #If it's a like, we supply the %s around the search term
         if ( $args{'OPERATOR'} =~ /LIKE/i ) {
             $args{'VALUE'} = "%" . $args{'VALUE'} . "%";
@@ -837,12 +836,17 @@ sub Limit {
         }
         $args{'OPERATOR'} =~ s/(?:MATCHES|ENDSWITH|STARTSWITH)/LIKE/i;
 
+        if ( $args{'OPERATOR'} =~ /IS/i ) {
+            $args{'VALUE'} = 'NULL';
+            $args{'QUOTEVALUE'} = 0;
+        }
+    }
+
+    if ( $args{'QUOTEVALUE'} ) {
         #if we're explicitly told not to to quote the value or
         # we're doing an IS or IS NOT (null), don't quote the operator.
 
-        if ( $args{'QUOTEVALUE'} && $args{'OPERATOR'} !~ /IS/i ) {
-            $args{'VALUE'} = $self->_Handle->dbh->quote( $args{'VALUE'} );
-        }
+        $args{'VALUE'} = $self->_Handle->dbh->quote( $args{'VALUE'} );
     }
 
     my $Alias = $self->_GenericRestriction(%args);
@@ -868,6 +872,7 @@ sub _GenericRestriction {
     my $self = shift;
     my %args = ( TABLE           => $self->Table,
                  FIELD           => undef,
+                 FUNCTION        => undef,
                  VALUE           => undef,
                  ALIAS           => undef,
                  LEFTJOIN        => undef,
@@ -888,7 +893,7 @@ sub _GenericRestriction {
         $args{'ALIAS'} = $args{'LEFTJOIN'};
     }
 
-    # {{{ if there's no alias set, we need to set it
+    # if there's no alias set, we need to set it
 
     unless ( $args{'ALIAS'} ) {
 
@@ -902,16 +907,11 @@ sub _GenericRestriction {
             $args{'ALIAS'} = 'main';
         }
 
-        # {{{ if we're joining, we need to work out the table alias
-
+        # if we're joining, we need to work out the table alias
         else {
             $args{'ALIAS'} = $self->NewAlias( $args{'TABLE'} );
         }
-
-        # }}}
     }
-
-    # }}}
 
     # Set this to the name of the field and the alias, unless we've been
     # handed a subclause name
@@ -944,6 +944,10 @@ sub _GenericRestriction {
                 $args{'OPERATOR'}, $args{'VALUE'} );
         }
 
+    }
+
+    if ( $args{'FUNCTION'} ) {
+        $QualifiedField = $self->CombineFunctionWithField( %args );
     }
 
     my $clause = {
@@ -1571,26 +1575,8 @@ sub Column {
     $args{'ALIAS'} ||= 'main';
 
     my $name;
-    if ( $args{FIELD} && $args{FUNCTION} ) {
-        $name = $args{'ALIAS'} .'.'. $args{'FIELD'};
-
-        my $func = $args{FUNCTION};
-        if ( $func =~ /^DISTINCT\s*COUNT$/i ) {
-            $name = "COUNT(DISTINCT $name)";
-        }
-        # If we want to substitute 
-        elsif ($func =~ s/\?/$name/g) {
-            $name = $func;
-        }
-        # If we want to call a simple function on the column
-        elsif ($func !~ /\(/)  {
-            $name = "\U$func\E($name)";
-        } else {
-            $name = $func;
-        }
-    }
-    elsif ( $args{FUNCTION} ) {
-        $name = $args{FUNCTION};
+    if ( $args{FUNCTION} ) {
+        $name = $self->CombineFunctionWithField( %args );
     }
     elsif ( $args{FIELD} ) {
         $name = $args{'ALIAS'} .'.'. $args{'FIELD'};
@@ -1619,6 +1605,37 @@ sub Column {
     }
     push @{ $self->{columns} ||= [] }, "$name AS \L$column";
     return $column;
+}
+
+sub CombineFunctionWithField {
+    my $self = shift;
+    my %args = (
+        FUNCTION => undef,
+        ALIAS    => undef,
+        FIELD    => undef,
+        @_
+    );
+
+    my $func = $args{'FUNCTION'};
+    return $func unless $args{'FIELD'};
+
+    my $field = ($args{'ALIAS'} || 'main') .'.'. $args{'FIELD'};
+
+    if ( $func =~ /^DISTINCT\s*COUNT$/i ) {
+        $func = "COUNT(DISTINCT $field)";
+    }
+
+    # If we want to substitute
+    elsif ( $func =~ s/\?/$field/g ) {
+        # no need to do anything, we already replaced
+    }
+
+    # If we want to call a simple function on the column
+    elsif ( $func !~ /\(/ )  {
+        $func = "\U$func\E($field)";
+    }
+
+    return $func;
 }
 
 
