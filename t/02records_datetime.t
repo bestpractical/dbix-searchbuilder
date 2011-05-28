@@ -111,7 +111,7 @@ SKIP: {
         { Type => 'month' },
         {
             '' => undef,
-            '2011-05-20 19:53:23' => '05',
+            '2011-05-20 19:53:23' => 5,
         },
     );
 
@@ -164,6 +164,8 @@ sub run_test {
     }
     foreach my $key ( keys %got ) {
         delete $got{ $key } unless exists $expected->{ $key };
+
+        $got{ $key } =~ s/^0+(?!$)// if defined $got{ $key };
     }
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     is_deeply( \%got, $expected, "correct ". $props->{'Type'} ." function" )
