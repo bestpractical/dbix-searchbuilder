@@ -80,20 +80,17 @@ SKIP: {
         ok($status, "status ok") or diag $status->error_message;
         is($rec->Mandatory, 2, 'set optional field to 2');
 
+        $status = $rec->SetMandatory( undef );
+        ok($status, "status ok") or diag $status->error_message;
+        is($rec->Mandatory, 1, 'fallback to default');
+
         $status = $rec->SetMandatory( '' );
         ok($status, "status ok") or diag $status->error_message;
         is($rec->Mandatory, 0, 'empty string should be threated as zero');
 
-        TODO: {
-            local $TODO = 'fallback to default value'
-                .' if field is NOT NULL and we try set it to NULL';
-            $status = $rec->SetMandatory( undef );
-            ok($status, "status ok") or diag $status->error_message;
-            is($rec->Mandatory, 1, 'fallback to default');
-            $status = $rec->SetMandatory;
-            ok($status, "status ok") or diag $status->error_message;
-            is($rec->Mandatory, 1, 'no value on set also fallback');
-        }
+        $status = $rec->SetMandatory;
+        ok($status, "status ok") or diag $status->error_message;
+        is($rec->Mandatory, 1, 'no value on set also fallback');
     }
 
     cleanup_schema( 'TestApp::Address', $handle );

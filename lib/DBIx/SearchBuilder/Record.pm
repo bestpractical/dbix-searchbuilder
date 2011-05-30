@@ -781,6 +781,11 @@ sub __Set {
             $args{'Value'} = 0;
         }
     }
+    else {
+        if ( $self->_Accessible( $args{Column}, 'no_nulls' ) ) {
+            $args{'Value'} = $self->_Accessible( $args{Column}, 'default' );
+        }
+    }
 
     my $current_value = $self->__Value($column);
 
