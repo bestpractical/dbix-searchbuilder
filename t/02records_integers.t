@@ -6,7 +6,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 33;
+use constant TESTS_PER_DRIVER => 36;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -73,6 +73,15 @@ SKIP: {
 
         $status = $rec->SetOptional;
         ok($status, "status ok") or diag $status->error_message;
+        is($rec->Optional, undef, 'no value is NULL too');
+
+        $status = $rec->SetOptional;
+        ok(!$status, 'same null value set');
+        is(
+            ( $status->as_array )[1],
+            "That is already the current value",
+            "correct error message"
+        );
         is($rec->Optional, undef, 'no value is NULL too');
 
         # set operations on mandatory field
