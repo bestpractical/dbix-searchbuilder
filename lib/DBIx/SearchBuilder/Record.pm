@@ -783,7 +783,20 @@ sub __Set {
     }
     else {
         if ( $self->_Accessible( $args{Column}, 'no_nulls' ) ) {
-            $args{'Value'} = $self->_Accessible( $args{Column}, 'default' );
+            my $default = $self->_Accessible( $args{Column}, 'default' );
+
+            if ( defined $default ) {
+                $args{'Value'} = $default;
+            }
+            else {
+                $ret->as_array( 0, 'Illegal value for ' . $args{'Column'} );
+                $ret->as_error(
+                    errno        => 3,
+                    do_backtrace => 0,
+                    message      => "Illegal value for " . $args{'Column'}
+                );
+                return ( $ret->return_value );
+            }
         }
     }
 
