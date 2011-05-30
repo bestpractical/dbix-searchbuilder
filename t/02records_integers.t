@@ -6,7 +6,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 36;
+use constant TESTS_PER_DRIVER => 37;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -67,9 +67,17 @@ SKIP: {
         ok($status, "status ok") or diag $status->error_message;
         is($rec->Optional, undef, 'undef equal to NULL');
 
-        $status = $rec->SetOptional( '' );
-        ok($status, "status ok") or diag $status->error_message;
-        is($rec->Optional, 0, 'empty string should be threated as zero');
+        {
+            my $warn;
+            local $SIG{__WARN__} = sub {
+                $warn++;
+                warn @_;
+            };
+            $status = $rec->SetOptional('');
+            ok( $status, "status ok" ) or diag $status->error_message;
+            is( $rec->Optional, 0, 'empty string should be threated as zero' );
+            ok( !$warn, 'no warning to set value from null to not-null' );
+        }
 
         $status = $rec->SetOptional;
         ok($status, "status ok") or diag $status->error_message;
