@@ -1160,7 +1160,7 @@ sub _GroupClause {
 		      );
         if ($rowhash{'FUNCTION'} ) {
             $clause .= ($clause ? ", " : " ");
-            $clause .= $rowhash{'FUNCTION'};
+            $clause .= $self->CombineFunctionWithField( %rowhash );
 
         }
         elsif ( ($rowhash{'ALIAS'}) and
