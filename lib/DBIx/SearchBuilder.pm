@@ -727,6 +727,11 @@ in the expression. )
 
 Column to be checked against.
 
+=item FUNCTION
+
+Function that should be checked against or applied to the FIELD before
+check. See L</CombineFunctionWithField> for rules.
+
 =item VALUE
 
 Should always be set and will always be quoted. 
@@ -1125,7 +1130,8 @@ sub _OrderClause {
 
 =head2 GroupByCols ARRAY_OF_HASHES
 
-Each hash contains the keys ALIAS and FIELD. ALIAS defaults to 'main' if ignored.
+Each hash contains the keys FIELD, FUNCTION and ALIAS. Hash
+combined into SQL with L</CombineFunctionWithField>.
 
 =cut
 
@@ -1492,8 +1498,7 @@ arguments:
 
 =item FIELD
 
-Column name to fetch or apply function to.  This can be omitted if a
-FUNCTION is given which is not a function of a field.
+Column name to fetch or apply function to.
 
 =item ALIAS
 
@@ -1501,29 +1506,11 @@ Alias of a table the field is in; defaults to C<main>
 
 =item FUNCTION
 
-A SQL function that should be selected as the result.  If a FIELD is
-provided, then it is inserted into the function according to the
-following rules:
-
-=over 4
-
-=item *
-
-If the text of the function contains a '?' (question mark), then it is
-replaced with qualified FIELD.
-
-=item *
-
-If the text of the function has no '(' (opening parenthesis), then the
-qualified FIELD is appended in parentheses to the text.
-
-=item *
-
-Otherwise, the function is inserted verbatim, with no substitution.
+A SQL function that should be selected instead of FIELD or applied to it.
 
 =back
 
-=back
+Above arguments combined according to L</CombineFunctionWithField>.
 
 If a FIELD is provided and it is in this table (ALIAS is 'main'), then
 the column named FIELD and can be accessed as usual by accessors:
