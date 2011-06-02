@@ -1151,14 +1151,11 @@ sub _GroupClause {
 
     my $clause = '';
     foreach my $row ( @{$self->{'group_by'}} ) {
-        if ( $row->{'FUNCTION'} ) {
-            $clause .= ', ' if $clause;
-            $clause .= $self->CombineFunctionWithField( %$row );
-        }
-        elsif ( $row->{'FIELD'} ) {
-            $clause .= ', ' if $clause;
-            $clause .= ($row->{'ALIAS'}||'main') .'.'. $row->{'FIELD'};
-        }
+        my $part = $self->CombineFunctionWithField( %$row )
+            or next;
+
+        $clause .= ', ' if $clause;
+        $clause .= $part;
     }
 
     return '' unless $clause;
@@ -1560,16 +1557,7 @@ sub Column {
 
     $args{'ALIAS'} ||= 'main';
 
-    my $name;
-    if ( $args{FUNCTION} ) {
-        $name = $self->CombineFunctionWithField( %args );
-    }
-    elsif ( $args{FIELD} ) {
-        $name = $args{'ALIAS'} .'.'. $args{'FIELD'};
-    }
-    else {
-        $name = 'NULL';
-    }
+    my $name = $self->CombineFunctionWithField( %args ) || 'NULL';
 
     my $column;
     if (
