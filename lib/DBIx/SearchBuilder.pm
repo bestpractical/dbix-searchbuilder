@@ -1152,21 +1152,13 @@ sub _GroupClause {
 
     my $clause = '';
     foreach my $row ( @{$self->{'group_by'}} ) {
-        my %rowhash = ( ALIAS => 'main',
-			FIELD => undef,
-			%$row
-		      );
-        if ($rowhash{'FUNCTION'} ) {
+        if ( $row->{'FUNCTION'} ) {
             $clause .= ', ' if $clause;
-            $clause .= $self->CombineFunctionWithField( %rowhash );
-
+            $clause .= $self->CombineFunctionWithField( %$row );
         }
-        elsif ( ($rowhash{'ALIAS'}) and
-             ($rowhash{'FIELD'}) ) {
+        elsif ( $row->{'FIELD'} ) {
             $clause .= ', ' if $clause;
-
-            $clause .= $rowhash{'ALIAS'} . ".";
-            $clause .= $rowhash{'FIELD'};
+            $clause .= ($row->{'ALIAS'}||'main') .'.'. $row->{'FIELD'};
         }
     }
 
