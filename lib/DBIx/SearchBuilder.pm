@@ -1603,11 +1603,14 @@ sub CombineFunctionWithField {
         @_
     );
 
-    my $func = $args{'FUNCTION'};
-    return $func unless $args{'FIELD'};
+    unless ( $args{'FIELD'} ) {
+        return $args{'FUNCTION'} || undef;
+    }
 
     my $field = ($args{'ALIAS'} || 'main') .'.'. $args{'FIELD'};
+    return $field unless $args{'FUNCTION'};
 
+    my $func = $args{'FUNCTION'};
     if ( $func =~ /^DISTINCT\s*COUNT$/i ) {
         $func = "COUNT(DISTINCT $field)";
     }
