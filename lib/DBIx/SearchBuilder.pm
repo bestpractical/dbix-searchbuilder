@@ -1149,33 +1149,28 @@ sub _GroupClause {
     my $self = shift;
     return '' unless $self->{'group_by'};
 
-    my $clause;
-
+    my $clause = '';
     foreach my $row ( @{$self->{'group_by'}} ) {
         my %rowhash = ( ALIAS => 'main',
 			FIELD => undef,
 			%$row
 		      );
         if ($rowhash{'FUNCTION'} ) {
-            $clause .= ($clause ? ", " : " ");
+            $clause .= ', ' if $clause;
             $clause .= $self->CombineFunctionWithField( %rowhash );
 
         }
         elsif ( ($rowhash{'ALIAS'}) and
              ($rowhash{'FIELD'}) ) {
+            $clause .= ', ' if $clause;
 
-            $clause .= ($clause ? ", " : " ");
             $clause .= $rowhash{'ALIAS'} . ".";
             $clause .= $rowhash{'FIELD'};
         }
     }
 
-    if ($clause) {
-	return " GROUP BY" . $clause . " ";
-    }
-    else {
-	return '';
-    }
+    return '' unless $clause;
+    return " GROUP BY $clause ";
 }
 
 =head2 NewAlias
