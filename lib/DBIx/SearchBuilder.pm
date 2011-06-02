@@ -1606,7 +1606,7 @@ sub CombineFunctionWithField {
     }
 
     # If we want to call a simple function on the column
-    elsif ( $func !~ /\(/ )  {
+    elsif ( $func !~ /\(/ && lc($func) ne 'null' )  {
         $func = "\U$func\E($field)";
     }
 
