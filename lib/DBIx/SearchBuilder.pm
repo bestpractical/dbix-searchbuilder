@@ -1570,6 +1570,58 @@ sub Column {
     return $column;
 }
 
+=head2 CombineFunctionWithField
+
+Takes a hash with three optional arguments: FUNCTION, FIELD and ALIAS.
+
+Returns SQL with all three arguments combined according to the following
+rules.
+
+=over 4
+
+=item * FUNCTION or undef returned when FIELD is not provided
+
+=item * 'main' ALIAS is used if not provided
+
+=item * ALIAS.FIELD returned when FUNCTION is not provided
+
+=item * NULL returned if FUNCTION is 'NULL'
+
+=item * If FUNCTION contains '?' (question marks) then they are
+replaced with ALIAS.FIELD and result returned.
+
+=item * If FUNCTION has no '(' (opening parenthesis) then
+ALIAS.FIELD is appended in parentheses and returned.
+
+=back
+
+Examples:
+
+    ()
+    undef
+
+    (FUNCTION => 'FOO')
+    'FOO'
+
+    (FIELD => 'foo')
+    'main.foo'
+
+    (ALIAS => 'bar', FIELD => 'foo')
+    'bar.foo'
+
+    (FUNCTION => 'FOO(?, ?)', FIELD => 'bar')
+    'FOO(main.bar, main.bar)'
+
+    (FUNCTION => 'FOO', FIELD => 'bar')
+    'FOO(main.bar)'
+
+    (FUNCTION => 'NULL', FIELD => 'bar')
+    'NULL'
+
+=cut
+
+
+
 sub CombineFunctionWithField {
     my $self = shift;
     my %args = (
