@@ -917,8 +917,7 @@ sub _GenericRestriction {
     # Set this to the name of the field and the alias, unless we've been
     # handed a subclause name
 
-    my $QualifiedField = $args{'ALIAS'} . "." . $args{'FIELD'};
-    my $ClauseId = $args{'SUBCLAUSE'} || $QualifiedField;
+    my $ClauseId = $args{'SUBCLAUSE'} || ($args{'ALIAS'} . "." . $args{'FIELD'});
 
     # If we're trying to get a leftjoin restriction, lets set
     # $restriction to point htere. otherwise, lets construct normally
@@ -935,6 +934,8 @@ sub _GenericRestriction {
         $restriction = $self->{'restrictions'}{ $ClauseId } ||= [];
     }
 
+    my $QualifiedField = $self->CombineFunctionWithField( %args );
+
     # If it's a new value or we're overwriting this sort of restriction,
 
     if ( $self->_Handle->CaseSensitive && defined $args{'VALUE'} && $args{'VALUE'} ne ''  && $args{'VALUE'} ne "''" && ($args{'OPERATOR'} !~/IS/ && $args{'VALUE'} !~ /^null$/i)) {
@@ -945,10 +946,6 @@ sub _GenericRestriction {
                 $args{'OPERATOR'}, $args{'VALUE'} );
         }
 
-    }
-
-    if ( $args{'FUNCTION'} ) {
-        $QualifiedField = $self->CombineFunctionWithField( %args );
     }
 
     my $clause = {
