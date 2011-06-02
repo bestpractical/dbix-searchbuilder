@@ -1149,10 +1149,9 @@ sub _GroupClause {
     my $self = shift;
     return '' unless $self->{'group_by'};
 
-    my $row;
     my $clause;
 
-    foreach $row ( @{$self->{'group_by'}} ) {
+    foreach my $row ( @{$self->{'group_by'}} ) {
         my %rowhash = ( ALIAS => 'main',
 			FIELD => undef,
 			%$row
