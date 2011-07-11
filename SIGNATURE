@@ -15,48 +15,53 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 1176bc1e043a0f1f11333fc4c64a5bc7e3cd4f77 .gitignore
-SHA1 94f49ca2a2e285c55b274c8897b34740cf1a5d8f Changes
-SHA1 65ec70d561d3269c548a6eeacfe832d5cbfc0d76 MANIFEST
-SHA1 f6e20473637ec59824c5e1af98e0f540e1787b65 META.yml
-SHA1 7f3870fd1159dc9ad4c1666a58d89feb0cbfae3a Makefile.PL
+SHA1 bd09ad733457ce100d763a8394f86b935112161d Changes
+SHA1 da0d2edd28f07b6d8b6db5ba17ad50ff01c48586 MANIFEST
+SHA1 318cf9d374be619076a2d217770d9106ca930054 META.yml
+SHA1 70e01b4bbd8acc02b399160d5ec023a1606e862e Makefile.PL
 SHA1 d7a41642c368f2a587587e09f9e815d434feebff README
 SHA1 5a53d12d5cccd94845a6a7cc105cd9be34e20f1c ROADMAP
-SHA1 da33893e5ddba27d4456a9aeb467fa92aafd45c9 SearchBuilder.pm
-SHA1 edd0342c7b45c8b10e4a04caf60d80454b537261 SearchBuilder/Handle.pm
-SHA1 55d337e6dd1ab5aecc39d2ae491bffb12e9ca449 SearchBuilder/Handle/Informix.pm
-SHA1 4efdcaefa5f94d994b052d1b343d2f5164ef4b52 SearchBuilder/Handle/ODBC.pm
-SHA1 ece5517d11f5b5f7f69606f6d2af6ee607fd5aef SearchBuilder/Handle/Oracle.pm
-SHA1 e0a5ca9e65c4c66237871fdede804327626e6259 SearchBuilder/Handle/Pg.pm
-SHA1 33300f29f601f259cd483e7cba69938bc133f833 SearchBuilder/Handle/SQLite.pm
-SHA1 ec3fbc03b27c008d93a52b6b7fb0076529e5fcc8 SearchBuilder/Handle/Sybase.pm
-SHA1 1ca13e69a8f02944469f448e72604e5cc9dad162 SearchBuilder/Handle/mysql.pm
-SHA1 877685aaff265e36fa37298c372aa56864f68aa5 SearchBuilder/Handle/mysqlPP.pm
-SHA1 0354afcfa375ec89e67953c933ceb958235039f6 SearchBuilder/Record.pm
-SHA1 145046df9fcea187d59493a02c62c578fcf75599 SearchBuilder/Record/Cachable.pm
-SHA1 a15065e472797e2bfe8149f04d3bdc58f67a7a6d SearchBuilder/SchemaGenerator.pm
-SHA1 f59ad14464f1520aa4f9dacdf437047081a94741 SearchBuilder/Union.pm
-SHA1 1eb4e838ff1d8d927bfe177bf578df246802b03d SearchBuilder/Unique.pm
 SHA1 e7c7c7c91025072d25da78c93cefa2bc0aaf2b35 ex/Example/Model/Address.pm
 SHA1 f821661849153c21ad99393b6a3ea6720fdaf581 ex/Example/Model/Employee.pm
 SHA1 9689368197327e7b38af7f3d1f863e918ed4fa98 ex/create_tables.pl
 SHA1 20c73697e1713638140c719d8eaa19a275ed43a5 inc/Module/AutoInstall.pm
-SHA1 7305dbe2904416e28decb05396988a5d51d578be inc/Module/Install.pm
-SHA1 ca13d9875e1249f6e84f7070be8152c34837955e inc/Module/Install/AutoInstall.pm
-SHA1 129960509127732258570c122042bc48615222e1 inc/Module/Install/Base.pm
-SHA1 b501b0df59a5cd235cca473889f82c3d3429f39e inc/Module/Install/Include.pm
-SHA1 b721c93ca5bc9a6aa863b49af15f1b1de6125935 inc/Module/Install/Makefile.pm
-SHA1 026cc0551a0ad399d195e395b46bdf842e115192 inc/Module/Install/Metadata.pm
-SHA1 e59ea21b9407644714a5f67c7132a11916c25133 t/00.load.t
+SHA1 7b4ae50ebac72d20761171c4c2b50c206344ea40 inc/Module/Install.pm
+SHA1 c3cb159acd7618ea662f28deb0d0bf8f24742ebb inc/Module/Install/AutoInstall.pm
+SHA1 d9fe55a427fe2fd75b5029afeeaa61b592e07f79 inc/Module/Install/Base.pm
+SHA1 62d3922826d9f89f20c185e7031ac8f028504745 inc/Module/Install/Can.pm
+SHA1 dc809f64fb70a26b069a36f8d3d353d520dbb7e1 inc/Module/Install/Fetch.pm
+SHA1 d859f2d8048708f16b5fd92f54c988a3c4c1ae30 inc/Module/Install/Include.pm
+SHA1 73ab91490a628452cc140db72ef9d13a1326d211 inc/Module/Install/Makefile.pm
+SHA1 8ce3f2b414e4617e6233dd4ba10830f8c5d672ec inc/Module/Install/Metadata.pm
+SHA1 3b0acd2eeac93a0afe48120f5648f0db362e5bbf inc/Module/Install/Win32.pm
+SHA1 f08924f051e623f8e09fa6a121993c4a9cf7d9eb inc/Module/Install/WriteAll.pm
+SHA1 cb1fc30b7f0ec5ad146a3913ed39f8f343d91766 lib/DBIx/SearchBuilder.pm
+SHA1 6b7e23a0124949d590e93c2da8ad8097565200a6 lib/DBIx/SearchBuilder/Handle.pm
+SHA1 55d337e6dd1ab5aecc39d2ae491bffb12e9ca449 lib/DBIx/SearchBuilder/Handle/Informix.pm
+SHA1 4efdcaefa5f94d994b052d1b343d2f5164ef4b52 lib/DBIx/SearchBuilder/Handle/ODBC.pm
+SHA1 41e941d303be76c2241173b6a8853d0ffe1c91e0 lib/DBIx/SearchBuilder/Handle/Oracle.pm
+SHA1 e0a5ca9e65c4c66237871fdede804327626e6259 lib/DBIx/SearchBuilder/Handle/Pg.pm
+SHA1 33300f29f601f259cd483e7cba69938bc133f833 lib/DBIx/SearchBuilder/Handle/SQLite.pm
+SHA1 ec3fbc03b27c008d93a52b6b7fb0076529e5fcc8 lib/DBIx/SearchBuilder/Handle/Sybase.pm
+SHA1 1ca13e69a8f02944469f448e72604e5cc9dad162 lib/DBIx/SearchBuilder/Handle/mysql.pm
+SHA1 877685aaff265e36fa37298c372aa56864f68aa5 lib/DBIx/SearchBuilder/Handle/mysqlPP.pm
+SHA1 b7523cc56eebe1e0f0840bda00bb6c3c8422585c lib/DBIx/SearchBuilder/Record.pm
+SHA1 145046df9fcea187d59493a02c62c578fcf75599 lib/DBIx/SearchBuilder/Record/Cachable.pm
+SHA1 a15065e472797e2bfe8149f04d3bdc58f67a7a6d lib/DBIx/SearchBuilder/SchemaGenerator.pm
+SHA1 f59ad14464f1520aa4f9dacdf437047081a94741 lib/DBIx/SearchBuilder/Union.pm
+SHA1 1eb4e838ff1d8d927bfe177bf578df246802b03d lib/DBIx/SearchBuilder/Unique.pm
+SHA1 b7c82b550346f85678591966871bd47d6775bb70 t/00.load.t
 SHA1 a7ed1ee359ebe2842b354b5652a441403e802080 t/01basics.t
 SHA1 2b2dc6f72370f60e1d233f2f8c12bb87414e825c t/01nocap_api.t
 SHA1 982a982a0e48bea88cb48cea46765e6271c508ed t/01records.t
-SHA1 d3a35118e7e04e2e8bd9d90b2ed01edb563ab829 t/01searches.t
-SHA1 74e758cce9a32fa84d0161d961c20d1d8e01a287 t/02distinct_values.t
+SHA1 18460596f6597ed0cf4134e6a47925368b819dbe t/01searches.t
+SHA1 764771341b46b2da833ee2ddaa5c4d3191619e89 t/02distinct_values.t
 SHA1 af1f5d616e935cd955c2fb55c9595c8d35a3922c t/02order_outer.t
 SHA1 67d4c0dca9d1914eadba64460f3a2da4e074ae14 t/02records_cachable.t
 SHA1 e791bc2dc9ebcfe194f00eb9d0d61c391200b589 t/02records_integers.t
 SHA1 6e50e77f1b54fe28fd6bcbb6eb104527f25d2601 t/02records_object.t
 SHA1 1398226c92dac259a3178e273b6674e45df8225e t/02searches_joins.t
+SHA1 277100711a9adc634e2db7bc3701c7a927d689dc t/03compatibility.t
 SHA1 fdc1ebd0353a4483f9a64a1b6558fd8c22b6a0e4 t/03rebless.t
 SHA1 0832f29ca227de8b962b74788e1e1637dc110ddc t/03transactions.t
 SHA1 1fe8ef579aa7e503f3227d42674c2218e4400ab5 t/03versions.t
@@ -68,7 +73,7 @@ SHA1 ceb2fad4e6973b7b30f0e83abc14cfb80ac93efe t/utils.pl
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (Darwin)
 
-iEYEARECAAYFAkzmVb4ACgkQvH6dkeDZaS86RACfX8TiwCVJr7fElS1Ar+JR3vNV
-vG0An34HlLrpietryryRnzwwZ5/mR8ij
-=oHD1
+iEYEARECAAYFAk4bT8IACgkQvH6dkeDZaS9ZhwCfYmXNDz8WfECj1na99DJELZlv
+EjIAnjDAev2yE93prUuHb870rYgfP+nl
+=6DGd
 -----END PGP SIGNATURE-----
