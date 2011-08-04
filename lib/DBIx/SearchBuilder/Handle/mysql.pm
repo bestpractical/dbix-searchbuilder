@@ -75,7 +75,7 @@ sub SimpleUpdateFromSelect {
     }
 
     my $update_query = "UPDATE $table SET "
-        . join( ' AND ', map "$_ = ?", @columns )
+        . join( ', ', map "$_ = ?", @columns )
         .' WHERE ID IN ';
 
     return $self->SimpleMassChangeFromSelect(

@@ -502,7 +502,7 @@ sub SimpleUpdateFromSelect {
     }
 
     my $full_query = "UPDATE $table SET ";
-    $full_query .= join ' AND ', map "$_ = ?", @columns;
+    $full_query .= join ', ', map "$_ = ?", @columns;
     $full_query .= ' WHERE id IN ('. $query .')';
     my $sth = $self->SimpleQuery( $full_query, @binds );
     return $sth unless $sth;
