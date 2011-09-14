@@ -1,6 +1,6 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
-1.60
+1.60 Thu Sep 15 01:01:15 MSD 2011
 
 * custom BuildDSN for Oracle
 ** Database is treated as SID if SID is not provided
