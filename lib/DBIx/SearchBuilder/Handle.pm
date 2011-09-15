@@ -390,6 +390,11 @@ Takes table name, array reference with columns, select query
 and list of bind values. Inserts data select by the query
 into the table.
 
+To make sure call is portable every column in result of
+the query should have unique name or should be aliased.
+See L<DBIx::SearchBuilder::Handle::Oracle/InsertFromSelect> for
+details.
+
 =cut
 
 sub InsertFromSelect {
