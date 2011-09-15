@@ -1,5 +1,10 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.61
+
+* New methods in Handle for mass changes from select statements:
+  InsertFromSelect, DeleteFromSelect and SimpleUpdateFromSelect
+
 1.60 Thu Sep 15 01:01:15 MSD 2011
 
 * custom BuildDSN for Oracle
