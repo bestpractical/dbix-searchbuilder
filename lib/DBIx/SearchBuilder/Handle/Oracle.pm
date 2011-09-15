@@ -127,6 +127,10 @@ unlike other DBs Oracle needs select query to be in parens.
 
 sub InsertFromSelect {
     my ($self, $table, $columns, $query, @binds) = @_;
+    if ( $columns && !grep lc($_) eq 'id', @$columns ) {
+        unshift @$columns, 'id';
+        $query = "SELECT ${table}_seq.nextval, insert_from.* FROM ($query) insert_from";
+    }
     return $self->SUPER::InsertFromSelect( $table, $columns, "($query)", @binds);
 }
 
