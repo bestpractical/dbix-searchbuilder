@@ -6,7 +6,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 11;
+use constant TESTS_PER_DRIVER => 14;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -46,11 +46,11 @@ diag "insert into table from other tables only" if $ENV{'TEST_VERBOSE'};
     is_deeply( [ sort map $_->Login, @{ $users->ItemsArrayRef } ], ['bob', 'john'] );
 }
 
-diag "insert into table we select from" if $ENV{'TEST_VERBOSE'};
+diag "insert into table from two tables" if $ENV{'TEST_VERBOSE'};
 {
     my $res = $handle->InsertFromSelect(
         'UsersToGroups' => ['UserId', 'GroupId'],
-        'SELECT u.id, g.id FROM Users u, Groups g WHERE u.Login LIKE ? AND g.Name = ?',
+        'SELECT u.id as col1, g.id as col2 FROM Users u, Groups g WHERE u.Login LIKE ? AND g.Name = ?',
         '%a%', 'Support'
     );
     is( $res, 2 );
@@ -93,6 +93,38 @@ diag "insert into table we select from" if $ENV{'TEST_VERBOSE'};
     $u2gs->Limit( FIELD => 'GroupId', VALUE => 2 );
     is( $u2gs->Count, 1 );
 }
+
+diag "insert into table from the same table" if $ENV{'TEST_VERBOSE'};
+{
+    my $res = $handle->InsertFromSelect(
+        'UsersToGroups' => ['UserId', 'GroupId'],
+        'SELECT GroupId, UserId FROM UsersToGroups',
+    );
+    is( $res, 2 );
+}
+
+diag "insert into table from two tables" if $ENV{'TEST_VERBOSE'};
+{ TODO: {
+    local $TODO;
+    $TODO = "No idea how to make it work on Oracle" if $d eq 'Oracle';
+    my $res = do {
+        local $handle->dbh->{'PrintError'} = 0;
+        local $SIG{__WARN__} = sub {};
+        $handle->InsertFromSelect(
+            'UsersToGroups' => ['UserId', 'GroupId'],
+            'SELECT u.id, g.id FROM Users u, Groups g WHERE u.Login LIKE ? AND g.Name = ?',
+            '%a%', 'Support'
+        );
+    };
+    is( $res, 2 );
+    my $users = TestApp::Users->new( $handle );
+    my $u2g_alias = $users->Join( FIELD1 => 'id', TABLE2 => 'UsersToGroups', FIELD2 => 'UserId' );
+    my $g_alias = $users->Join(
+        ALIAS1 => $u2g_alias, FIELD1 => 'GroupId', TABLE2 => 'Groups', FIELD2 => 'id',
+    );
+    $users->Limit( ALIAS => $g_alias, FIELD => 'Name', VALUE => 'Support' );
+    is_deeply( [ sort map $_->Login, @{ $users->ItemsArrayRef } ], ['aurelia', 'ivan'] );
+} }
 
     cleanup_schema( 'TestApp', $handle );
 
