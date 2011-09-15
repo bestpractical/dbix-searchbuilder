@@ -50,6 +50,86 @@ sub Insert  {
   }
 
 
+=head2 SimpleUpdateFromSelect
+
+Customization of L<DBIx::SearchBuilder::Handle/SimpleUpdateFromSelect>.
+Mysql doesn't support update with subqueries when those fetch data from
+the table that is updated.
+
+=cut
+
+sub SimpleUpdateFromSelect {
+    my ($self, $table, $values, $query, @query_binds) = @_;
+
+    return $self->SUPER::SimpleUpdateFromSelect(
+        $table, $values, $query, @query_binds
+    ) unless $query =~ /\b\Q$table\E\b/i;
+
+    my $sth = $self->SimpleQuery( $query, @query_binds );
+    return $sth unless $sth;
+
+    my (@binds, @columns);
+    while ( my ($k, $v) = each %$values ) {
+        push @columns, $k;
+        push @binds, $v;
+    }
+
+    my $update_query = "UPDATE $table SET "
+        . join( ', ', map "$_ = ?", @columns )
+        .' WHERE ID IN ';
+
+    return $self->SimpleMassChangeFromSelect(
+        $update_query, \@binds,
+        $query, @query_binds
+    );
+}
+
+
+sub DeleteFromSelect {
+    my ($self, $table, $query, @query_binds) = @_;
+
+    return $self->SUPER::DeleteFromSelect(
+        $table, $query, @query_binds
+    ) unless $query =~ /\b\Q$table\E\b/i;
+
+    return $self->SimpleMassChangeFromSelect(
+        "DELETE FROM $table WHERE id IN ", [],
+        $query, @query_binds
+    );
+}
+
+sub SimpleMassChangeFromSelect {
+    my ($self, $update_query, $update_binds, $search, @search_binds) = @_;
+
+    my $sth = $self->SimpleQuery( $search, @search_binds );
+    return $sth unless $sth;
+
+
+    # tried TEMPORARY tables, much slower than fetching and delete
+    # also size of ENGINE=MEMORY is limitted by option, on disk
+    # tables more slower than in memory
+    my $res = 0;
+
+    my @ids;
+    while ( my $id = ($sth->fetchrow_array)[0] ) {
+        push @ids, $id;
+        next if @ids < 1000;
+
+        my $q = $update_query .'('. join( ',', ('?')x@ids ) .')';
+        my $sth = $self->SimpleQuery( $q, @$update_binds, splice @ids );
+        return $sth unless $sth;
+
+        $res += $sth->rows;
+    }
+    if ( @ids ) {
+        my $q = $update_query .'('. join( ',', ('?')x@ids ) .')';
+        my $sth = $self->SimpleQuery( $q, @$update_binds, splice @ids );
+        return $sth unless $sth;
+
+        $res += $sth->rows;
+    }
+    return $res == 0? '0E0': $res;
+}
 
 =head2 DatabaseVersion
 

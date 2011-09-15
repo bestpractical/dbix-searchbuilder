@@ -162,6 +162,42 @@ sub Insert  {
     return( $self->{'id'}); #Add Succeded. return the id
   }
 
+=head2 InsertFromSelect
+
+Customization of L<DBIx::SearchBuilder::Handle/InsertFromSelect>.
+
+Unlike other DBs Oracle needs:
+
+=over 4
+
+=item * id generated from sequences for every new record.
+
+=item * query wrapping in parens.
+
+=back
+
+B<NOTE> that on Oracle there is a limitation on the query. Every
+column in the result should have unique name or alias, for example the
+following query would generate "ORA-00918: column ambiguously defined"
+error:
+
+    SELECT g.id, u.id FROM ...
+
+Solve with aliases:
+
+    SELECT g.id AS group_id, u.id AS user_id FROM ...
+
+=cut
+
+sub InsertFromSelect {
+    my ($self, $table, $columns, $query, @binds) = @_;
+    if ( $columns && !grep lc($_) eq 'id', @$columns ) {
+        unshift @$columns, 'id';
+        $query = "SELECT ${table}_seq.nextval, insert_from.* FROM ($query) insert_from";
+    }
+    return $self->SUPER::InsertFromSelect( $table, $columns, "($query)", @binds);
+}
+
 =head2 KnowsBLOBs     
 
 Returns 1 if the current database supports inserts of BLOBs automatically.      
