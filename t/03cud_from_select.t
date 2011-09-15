@@ -123,6 +123,8 @@ CREATE TABLE Groups (
 ]
 }
 
+# TEMPORARY tables can not be referenced more than once
+# in the same query, use real table for UsersToGroups
 sub schema_mysql {
 [
 q{
@@ -131,7 +133,7 @@ CREATE TEMPORARY TABLE Users (
     Login varchar(36)
 ) },
 q{
-CREATE TEMPORARY TABLE UsersToGroups (
+CREATE TABLE UsersToGroups (
     id integer primary key AUTO_INCREMENT,
     UserId  integer,
     GroupId integer
@@ -143,6 +145,10 @@ CREATE TEMPORARY TABLE Groups (
 ) },
 ]
 }
+
+sub cleanup_schema_mysql { [
+    "DROP TABLE UsersToGroups", 
+] }
 
 sub schema_pg {
 [
