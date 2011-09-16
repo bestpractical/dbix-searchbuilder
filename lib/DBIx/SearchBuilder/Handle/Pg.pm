@@ -251,6 +251,80 @@ sub DistinctQuery {
     $$statementref = "SELECT main.* FROM $$statementref $group $order";
 }
 
+=head2 SimpleDateTimeFunctions
+
+Returns hash reference with specific date time functions of this
+database for L<DBIx::SearchBuilder::Handle/DateTimeFunction>.
+
+=cut
+
+sub SimpleDateTimeFunctions {
+    my $self = shift;
+    return $self->{'_simple_date_time_functions'}
+        if $self->{'_simple_date_time_functions'};
+
+    my %res = %{ $self->SUPER::SimpleDateTimeFunctions(@_) };
+    s/SUBSTR\s*\(\s*\?/SUBSTR( CAST(? AS text)/ig for values %res;
+
+    # everything else we should implement through date_trunc that
+    # does SUBSTR(?, 1, X) on a date, but leaves trailing values
+    # when we don't need them
+
+    return $self->{'_simple_date_time_functions'} ||= {
+        %res,
+        datetime   => '?',
+        time       => 'CAST(? AS time)',
+
+        hour       => 'EXTRACT(HOUR FROM ?)',
+
+        date       => 'CAST(? AS date)',
+        daily      => 'CAST(? AS date)',
+
+        day        => 'EXTRACT(DAY FROM ?)',
+
+        month      => 'EXTRACT(MONTH FROM ?)',
+
+        annually   => 'EXTRACT(YEAR FROM ?)',
+        year       => 'EXTRACT(YEAR FROM ?)',
+
+        dayofweek  => "EXTRACT(DOW  FROM ?)", # 0-6, 0 - Sunday
+        dayofyear  => "EXTRACT(DOY  FROM ?)", # 1-366
+        # 1-53, 1st week January 4, week starts on Monay
+        weekofyear => "EXTRACT(WEEK FROM ?)",
+    };
+}
+
+=head2 ConvertTimezoneFunction
+
+Custom implementation of L<DBIx::SearchBuilder::Handle/ConvertTimezoneFunction>.
+
+In Pg time and timestamp data types may be "with time zone" or "without time zone".
+So if Field argument is timestamp "with time zone" then From argument is not
+required and is useless. Otherwise From argument identifies time zone of the Field
+argument that is "without time zone".
+
+For consistency with other DBs use timestamp columns without time zones and provide
+From argument.
+
+=cut
+
+sub ConvertTimezoneFunction {
+    my $self = shift;
+    my %args = (
+        From  => 'UTC',
+        To    => undef,
+        Field => '',
+        @_
+    );
+    return $args{'Field'} unless $args{From} && $args{'To'};
+    return $args{'Field'} if lc $args{From} eq lc $args{'To'};
+
+    my $dbh = $self->dbh;
+    my $res = $args{'Field'};
+    $res = "TIMEZONE($_, $res)" foreach map $dbh->quote( $_ ), grep $_, @args{'From', 'To'};
+    return $res;
+}
+
 1;
 
 __END__

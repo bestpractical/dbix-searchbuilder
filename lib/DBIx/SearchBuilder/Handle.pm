@@ -1439,6 +1439,159 @@ sub Log {
 
 }
 
+=head2 SimpleDateTimeFunctions
+
+See L</DateTimeFunction> for details on supported functions.
+This method is for implementers of custom DB connectors.
+
+Returns hash reference with (function name, sql template) pairs.
+
+=cut
+
+sub SimpleDateTimeFunctions {
+    my $self = shift;
+    return {
+        datetime       => 'SUBSTR(?, 1,  19)',
+        time           => 'SUBSTR(?, 12,  8)',
+
+        hourly         => 'SUBSTR(?, 1,  13)',
+        hour           => 'SUBSTR(?, 12, 2 )',
+
+        date           => 'SUBSTR(?, 1,  10)',
+        daily          => 'SUBSTR(?, 1,  10)',
+
+        day            => 'SUBSTR(?, 9,  2 )',
+        dayofmonth     => 'SUBSTR(?, 9,  2 )',
+
+        monthly        => 'SUBSTR(?, 1,  7 )',
+        month          => 'SUBSTR(?, 6,  2 )',
+
+        annually       => 'SUBSTR(?, 1,  4 )',
+        year           => 'SUBSTR(?, 1,  4 )',
+    };
+}
+
+=head2 DateTimeFunction
+
+Takes named arguments:
+
+=over 4
+
+=item * Field - SQL expression date/time function should be applied
+to. Note that this argument is used as is without any kind of quoting.
+
+=item * Type - name of the function, see supported values below.
+
+=item * Timezone - optional hash reference with From and To values,
+see L</ConvertTimezoneFunction> for details.
+
+=back
+
+Returns SQL statement. Returns NULL if function is not supported.
+
+=head3 Supported functions
+
+Type value in L</DateTimeFunction> is case insesitive. Spaces,
+underscores and dashes are ignored. So 'date time', 'DateTime'
+and 'date_time' are all synonyms. The following functions are
+supported:
+
+=over 4
+
+=item * date time - as is, no conversion, except applying timezone
+conversion if it's provided.
+
+=item * time - time only
+
+=item * hourly - datetime prefix up to the hours, e.g. '2010-03-25 16'
+
+=item * hour - hour, 0 - 23
+
+=item * date - date only
+
+=item * daily - synonym for date
+
+=item * day of week - 0 - 6, 0 - Sunday
+
+=item * day - day of month, 1 - 31
+
+=item * day of month - synonym for day
+
+=item * day of year - 1 - 366, support is database dependent
+
+=item * month - 1 - 12
+
+=item * monthly - year and month prefix, e.g. '2010-11'
+
+=item * year - e.g. '2023'
+
+=item * annually - synonym for year
+
+=item * week of year - 0-53, presence of zero week, 1st week meaning
+and whether week starts on Monday or Sunday heavily depends on database.
+
+=back
+
+=cut
+
+sub DateTimeFunction {
+    my $self = shift;
+    my %args = (
+        Field => undef,
+        Type => undef,
+        Timezone => undef,
+        @_
+    );
+
+    my $res = $args{'Field'} || '?';
+    if ( $args{'Timezone'} ) {
+        $res = $self->ConvertTimezoneFunction(
+            %{ $args{'Timezone'} },
+            Field => $res,
+        );
+    }
+
+    my $norm_type = lc $args{'Type'};
+    $norm_type =~ s/[ _-]//g;
+    if ( my $template = $self->SimpleDateTimeFunctions->{ $norm_type } ) {
+        $template =~ s/\?/$res/;
+        $res = $template;
+    }
+    else {
+        return 'NULL';
+    }
+    return $res;
+}
+
+=head2 ConvertTimezoneFunction
+
+Generates a function applied to Field argument that converts timezone.
+By default converts from UTC. Examples:
+
+    # UTC => Moscow
+    $handle->ConvertTimezoneFunction( Field => '?', To => 'Europe/Moscow');
+
+If there is problem with arguments or timezones are equal
+then Field returned without any function applied. Field argument
+is not escaped in any way, it's your job.
+
+Implementation is very database specific. To be portable convert
+from UTC or to UTC. Some databases have internal storage for
+information about timezones that should be kept up to date.
+Read documentation for your DB.
+
+=cut
+
+sub ConvertTimezoneFunction {
+    my $self = shift;
+    my %args = (
+        From  => 'UTC',
+        To    => undef,
+        Field => '',
+        @_
+    );
+    return $args{'Field'};
+}
 
 
 =head2 DESTROY

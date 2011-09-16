@@ -217,6 +217,70 @@ sub Fields {
     return @{ $cache->{ lc $table } || [] };
 }
 
+=head2 SimpleDateTimeFunctions
+
+Returns hash reference with specific date time functions of this
+database for L<DBIx::SearchBuilder::Handle/DateTimeFunction>.
+
+=cut
+
+sub SimpleDateTimeFunctions {
+    my $self = shift;
+    return $self->{'_simple_date_time_functions'} ||= {
+        %{ $self->SUPER::SimpleDateTimeFunctions(@_) },
+        datetime   => '?',
+        time       => 'TIME(?)',
+
+        hourly     => "DATE_FORMAT(?, '%Y-%m-%d %H')",
+        hour       => 'HOUR(?)',
+
+        date       => 'DATE(?)',
+        daily      => 'DATE(?)',
+
+        day        => 'DAYOFMONTH(?)',
+        dayofmonth => 'DAYOFMONTH(?)',
+
+        monthly    => "DATE_FORMAT(?, '%Y-%m')",
+        month      => 'MONTH(?)',
+
+        annually   => 'YEAR(?)',
+        year       => 'YEAR(?)',
+
+        dayofweek  => "DAYOFWEEK(?) - 1", # 1-7, 1 - Sunday
+        dayofyear  => "DAYOFYEAR(?)", # 1-366
+        weekofyear => "WEEK(?)", # skip mode argument, so it can be controlled in mysql config
+    };
+}
+
+
+=head2 ConvertTimezoneFunction
+
+Custom implementation of L<DBIx::SearchBuilder::Handle/ConvertTimezoneFunction>.
+
+Use the following query to get list of timezones:
+
+    SELECT Name FROM mysql.time_zone_name;
+
+Read docs about keeping timezone data up to date:
+
+    http://dev.mysql.com/doc/refman/5.5/en/time-zone-upgrades.html
+
+=cut
+
+sub ConvertTimezoneFunction {
+    my $self = shift;
+    my %args = (
+        From  => 'UTC',
+        To    => undef,
+        Field => '',
+        @_
+    );
+    return $args{'Field'} unless $args{From} && $args{'To'};
+    return $args{'Field'} if lc $args{From} eq lc $args{'To'};
+    my $dbh = $self->dbh;
+    $_ = $dbh->quote( $_ ) foreach @args{'From', 'To'};
+    return "CONVERT_TZ( $args{'Field'}, $args{'From'}, $args{'To'} )";
+}
 
 1;
 
