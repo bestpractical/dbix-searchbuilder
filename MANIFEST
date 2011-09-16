@@ -43,10 +43,12 @@ t/01searches.t
 t/02distinct_values.t
 t/02order_outer.t
 t/02records_cachable.t
+t/02records_datetime.t
 t/02records_integers.t
 t/02records_object.t
 t/02searches_joins.t
 t/03compatibility.t
+t/03cud_from_select.t
 t/03rebless.t
 t/03transactions.t
 t/03versions.t
