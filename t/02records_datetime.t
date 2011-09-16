@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 
+BEGIN { $ENV{'TZ'} = 'Europe/Moscow' };
 
 use strict;
 use warnings;
@@ -7,7 +8,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 21;
+use constant TESTS_PER_DRIVER => 38;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -35,12 +36,26 @@ SKIP: {
     my $count_all = init_data( 'TestApp::User', $handle );
     ok( $count_all,  "init users data" );
 
+    is( $handle->DateTimeFunction, 'NULL', 'no type' );
+    is( $handle->DateTimeFunction( Type => 'bad function' ), 'NULL', 'bad type' );
+
+    is( $handle->ConvertTimezoneFunction( Field => '?' ), '?', 'no To argument' );
+    is( $handle->ConvertTimezoneFunction( To => 'utc', Field => '?' ), '?', 'From and To equal' );
+
     foreach my $type ('date time', 'DateTime', 'date_time', 'Date-Time') {
         run_test(
             { Type => $type },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '2011-05-20 19:53:23',
+            },
+        );
+        run_test(
+            { Type => $type, Timezone => { To => 'Europe/Moscow' } },
+            {
+                '' => undef,
+                '2011-05-20 19:53:23' => '2011-05-20 23:53:23',
+                '2011-05-20 22:53:23' => '2011-05-21 02:53:23',
             },
         );
     }
@@ -52,12 +67,29 @@ SKIP: {
             '2011-05-20 19:53:23' => '19:53:23',
         },
     );
+    run_test(
+        { Type => 'time', Timezone => { To => 'Europe/Moscow' } },
+        {
+            '' => undef,
+            '2011-05-20 19:53:23' => '23:53:23',
+            '2011-05-20 22:53:23' => '2:53:23',
+        },
+    );
 
     run_test( 
         { Type => 'hourly' },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '2011-05-20 19',
+            '2011-05-20 22:53:23' => '2011-05-20 22',
+        },
+    );
+    run_test( 
+        { Type => 'hourly', Timezone => { To => 'Europe/Moscow' } },
+        {
+            '' => undef,
+            '2011-05-20 19:53:23' => '2011-05-20 23',
+            '2011-05-20 22:53:23' => '2011-05-21 02',
         },
     );
 
@@ -66,6 +98,14 @@ SKIP: {
         {
             '' => undef,
             '2011-05-20 19:53:23' => '19',
+        },
+    );
+    run_test(
+        { Type => 'hour', Timezone => { To => 'Europe/Moscow' } },
+        {
+            '' => undef,
+            '2011-05-20 19:53:23' => '23',
+            '2011-05-20 22:53:23' => '2',
         },
     );
 
@@ -77,6 +117,14 @@ SKIP: {
                 '2011-05-20 19:53:23' => '2011-05-20',
             },
         );
+        run_test(
+            { Type => $type, Timezone => { To => 'Europe/Moscow' } },
+            {
+                '' => undef,
+                '2011-05-20 19:53:23' => '2011-05-20',
+                '2011-05-20 22:53:23' => '2011-05-21',
+            },
+        );
     }
 
     run_test(
@@ -86,8 +134,24 @@ SKIP: {
             '2011-05-20 19:53:23' => '5',
             '2011-05-21 19:53:23' => '6',
             '2011-05-22 19:53:23' => '0',
+            '2011-05-20 22:53:23' => '5',
+            '2011-05-21 22:53:23' => '6',
+            '2011-05-22 22:53:23' => '0',
         },
     );
+    run_test(
+        { Type => 'day of week', Timezone => { To => 'Europe/Moscow' } },
+        {
+            '' => undef,
+            '2011-05-20 19:53:23' => '5',
+            '2011-05-21 19:53:23' => '6',
+            '2011-05-22 19:53:23' => '0',
+            '2011-05-20 22:53:23' => '6',
+            '2011-05-21 22:53:23' => '0',
+            '2011-05-22 22:53:23' => '1',
+        },
+    );
+
 
     foreach my $type ( 'day', 'DayOfMonth' ) {
         run_test(
@@ -95,6 +159,15 @@ SKIP: {
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '20',
+                '2011-05-20 22:53:23' => '20',
+            },
+        );
+        run_test(
+            { Type => $type, Timezone => { To => 'Europe/Moscow' } },
+            {
+                '' => undef,
+                '2011-05-20 19:53:23' => '20',
+                '2011-05-20 22:53:23' => '21',
             },
         );
     }
@@ -104,6 +177,15 @@ SKIP: {
         {
             '' => undef,
             '2011-05-20 19:53:23' => '140',
+            '2011-05-20 22:53:23' => '140',
+        },
+    );
+    run_test(
+        { Type => 'day of year', Timezone => { To => 'Europe/Moscow' } },
+        {
+            '' => undef,
+            '2011-05-20 19:53:23' => '140',
+            '2011-05-20 22:53:23' => '141',
         },
     );
 
@@ -253,6 +335,9 @@ sub init_data {
     [ '2011-05-20 19:53:23' ], # friday
     [ '2011-05-21 19:53:23' ], # saturday
     [ '2011-05-22 19:53:23' ], # sunday
+    [ '2011-05-20 22:53:23' ], # fri in UTC, sat in moscow
+    [ '2011-05-21 22:53:23' ], # sat in UTC, sun in moscow
+    [ '2011-05-22 22:53:23' ], # sun in UTC, mon in moscow
     );
 }
 
