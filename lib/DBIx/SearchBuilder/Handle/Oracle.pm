@@ -321,6 +321,13 @@ sub Fields {
     return @{ $cache->{ lc $table } || [] };
 }
 
+=head2 SimpleDateTimeFunctions
+
+Returns hash reference with specific date time functions of this
+database for L<DBIx::SearchBuilder::Handle/DateTimeFunction>.
+
+=cut
+
 # http://download.oracle.com/docs/cd/B14117_01/server.101/b10749/ch4datetime.htm
 sub SimpleDateTimeFunctions {
     my $self = shift;
@@ -355,6 +362,20 @@ sub SimpleDateTimeFunctions {
         weekofyear => "TO_CHAR(?, 'WW')",
     };
 }
+
+=head2 ConvertTimezoneFunction
+
+Custom implementation of L<DBIx::SearchBuilder::Handle/ConvertTimezoneFunction>.
+
+Use the following query to get list of timezones:
+
+    SELECT tzname FROM v$timezone_names;
+
+Read Oracle's docs about timezone files:
+
+    http://download.oracle.com/docs/cd/B14117_01/server.101/b10749/ch4datetime.htm#i1006667
+
+=cut
 
 sub ConvertTimezoneFunction {
     my $self = shift;

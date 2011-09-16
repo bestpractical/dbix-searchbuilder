@@ -1485,6 +1485,25 @@ sub DateTimeFunction {
     return $res;
 }
 
+=head2 ConvertTimezoneFunction
+
+Generates a function applied to Field argument that converts timezone.
+By default converts from UTC. Examples:
+
+    # UTC => Moscow
+    $handle->ConvertTimezoneFunction( Field => '?', To => 'Europe/Moscow');
+
+If there is problem with arguments or timezones are equal
+then Field returned without any function applied. Field argument
+is not escaped in any way, it's your job.
+
+Implementation is very database specific. To be portable convert
+from UTC or to UTC. Some databases have internal storage for
+information about timezones that should be kept up to date.
+Read documentation for your DB.
+
+=cut
+
 sub ConvertTimezoneFunction {
     my $self = shift;
     my %args = (

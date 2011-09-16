@@ -251,6 +251,12 @@ sub DistinctQuery {
     $$statementref = "SELECT main.* FROM $$statementref $group $order";
 }
 
+=head2 SimpleDateTimeFunctions
+
+Returns hash reference with specific date time functions of this
+database for L<DBIx::SearchBuilder::Handle/DateTimeFunction>.
+
+=cut
 
 sub SimpleDateTimeFunctions {
     my $self = shift;

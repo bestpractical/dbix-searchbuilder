@@ -137,6 +137,13 @@ sub Fields {
     return @{ $cache->{ lc $table } || [] };
 }
 
+=head2 SimpleDateTimeFunctions
+
+Returns hash reference with specific date time functions of this
+database for L<DBIx::SearchBuilder::Handle/DateTimeFunction>.
+
+=cut
+
 sub SimpleDateTimeFunctions {
     my $self = shift;
     return $self->{'_simple_date_time_functions'} ||= {
@@ -165,6 +172,20 @@ sub SimpleDateTimeFunctions {
     };
 }
 
+
+=head2 ConvertTimezoneFunction
+
+Custom implementation of L<DBIx::SearchBuilder::Handle/ConvertTimezoneFunction>.
+
+Use the following query to get list of timezones:
+
+    SELECT Name FROM mysql.time_zone_name;
+
+Read docs about keeping timezone data up to date:
+
+    http://dev.mysql.com/doc/refman/5.5/en/time-zone-upgrades.html
+
+=cut
 
 sub ConvertTimezoneFunction {
     my $self = shift;
