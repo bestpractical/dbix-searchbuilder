@@ -321,6 +321,7 @@ sub Fields {
     return @{ $cache->{ lc $table } || [] };
 }
 
+# http://download.oracle.com/docs/cd/B14117_01/server.101/b10749/ch4datetime.htm
 sub SimpleDateTimeFunctions {
     my $self = shift;
     return $self->{'_simple_date_time_functions'}
