@@ -4,6 +4,7 @@ Revision history for Perl extension DBIx::SearchBuilder.
 
 * New methods in Handle for mass changes from select statements:
   InsertFromSelect, DeleteFromSelect and SimpleUpdateFromSelect
+* New methods in Handle for generation of date time related SQL
 
 1.60 Thu Sep 15 01:01:15 MSD 2011
 
