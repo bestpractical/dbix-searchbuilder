@@ -305,12 +305,13 @@ From argument.
 sub ConvertTimezoneFunction {
     my $self = shift;
     my %args = (
-        From  => undef,
+        From  => 'UTC',
         To    => undef,
         Field => '',
         @_
     );
-    return $args{'Field'} if ($args{From}||'') eq ($args{'To'}||'');
+    return $args{'Field'} unless $args{From} && $args{'To'};
+    return $args{'Field'} if lc $args{From} eq lc $args{'To'};
 
     my $dbh = $self->dbh;
     my $res = $args{'Field'};

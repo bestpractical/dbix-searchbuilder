@@ -175,7 +175,7 @@ sub ConvertTimezoneFunction {
         @_
     );
     return $args{'Field'} unless $args{From} && $args{'To'};
-    return $args{'Field'} if $args{From} eq $args{'To'};
+    return $args{'Field'} if lc $args{From} eq lc $args{'To'};
     my $dbh = $self->dbh;
     $_ = $dbh->quote( $_ ) foreach @args{'From', 'To'};
     return "CONVERT_TZ( $args{'Field'}, $args{'From'}, $args{'To'} )";
