@@ -47,8 +47,12 @@ sub Connect  {
     
     $self->dbh->{LongTruncOk}=1;
     $self->dbh->{LongReadLen}=8000;
-    
-    $self->SimpleQuery("ALTER SESSION set NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+
+    foreach my $setting (qw(DATE TIMESTAMP TIMESTAMP_TZ)) {
+        $self->SimpleQuery(
+            "ALTER SESSION set NLS_${setting}_FORMAT = 'YYYY-MM-DD HH24:MI:SS'"
+        );
+    }
     
     return ($rv); 
 }
