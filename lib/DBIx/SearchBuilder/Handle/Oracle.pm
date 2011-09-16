@@ -356,6 +356,22 @@ sub SimpleDateTimeFunctions {
     };
 }
 
+sub ConvertTimezoneFunction {
+    my $self = shift;
+    my %args = (
+        From  => 'UTC',
+        To    => undef,
+        Field => '',
+        @_
+    );
+    return $args{'Field'} unless $args{From} && $args{'To'};
+    return $args{'Field'} if lc $args{From} eq lc $args{'To'};
+
+    my $dbh = $self->dbh;
+    $_ = $dbh->quote( $_ ) foreach @args{'From', 'To'};
+    return "FROM_TZ( CAST ($args{'Field'} AS TIMESTAMP), $args{'From'}) AT TIME ZONE $args{'To'}";
+}
+
 1;
 
 __END__
