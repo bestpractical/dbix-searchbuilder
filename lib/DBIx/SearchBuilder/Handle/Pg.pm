@@ -314,7 +314,7 @@ sub ConvertTimezoneFunction {
 
     my $dbh = $self->dbh;
     my $res = $args{'Field'};
-    $res = "TIMEZONE($_, $res)" foreach $dbh->quote( $_ ), grep $_, @args{'From', 'To'};
+    $res = "TIMEZONE($_, $res)" foreach map $dbh->quote( $_ ), grep $_, @args{'From', 'To'};
     return $res;
 }
 
