@@ -1336,7 +1336,7 @@ sub FirstPage {
 =head3 GotoPage
 
 Takes an integer number and jumps to that page or first page if
-number ommitted. Numbering starts from zero.
+number omitted. Numbering starts from zero.
 
 =cut
 
