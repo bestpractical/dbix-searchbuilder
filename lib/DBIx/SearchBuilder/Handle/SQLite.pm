@@ -149,6 +149,13 @@ sub Fields {
     return @{ $cache->{ lc $table } || [] };
 }
 
+=head2 SimpleDateTimeFunctions
+
+Returns hash reference with specific date time functions of this
+database for L<DBIx::SearchBuilder::Handle/DateTimeFunction>.
+
+=cut
+
 sub SimpleDateTimeFunctions {
     my $self = shift;
     return $self->{'_simple_date_time_functions'} ||= {
@@ -175,6 +182,31 @@ sub SimpleDateTimeFunctions {
         dayofyear  => "strftime('%j', ?)",
         weekofyear => "strftime('%W', ?)",
     };
+}
+
+sub ConvertTimezoneFunction {
+    my $self = shift;
+    my %args = (
+        From  => 'UTC',
+        To    => undef,
+        Field => '',
+        @_
+    );
+    return $args{'Field'} unless $args{From} && $args{'To'};
+    return $args{'Field'} if lc $args{From} eq lc $args{'To'};
+
+    my $res;
+    if ( lc($args{'To'}||'') eq 'utc' ) {
+        $res = "datetime($args{'Field'}, 'utc')";
+    }
+    elsif ( lc($args{'From'}||'') eq 'utc' ) {
+        $res = "datetime($args{'Field'}, 'localtime')";
+    }
+    else {
+        warn "SQLite only supports TZ convesion from UTC or to UTC";
+        $res = $args{'Field'};
+    }
+    return $res;
 }
 
 1;

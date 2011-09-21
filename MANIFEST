@@ -7,9 +7,13 @@ inc/Module/AutoInstall.pm
 inc/Module/Install.pm
 inc/Module/Install/AutoInstall.pm
 inc/Module/Install/Base.pm
+inc/Module/Install/Can.pm
+inc/Module/Install/Fetch.pm
 inc/Module/Install/Include.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
+inc/Module/Install/Win32.pm
+inc/Module/Install/WriteAll.pm
 lib/DBIx/SearchBuilder.pm
 lib/DBIx/SearchBuilder/Handle.pm
 lib/DBIx/SearchBuilder/Handle/Informix.pm
@@ -39,9 +43,12 @@ t/01searches.t
 t/02distinct_values.t
 t/02order_outer.t
 t/02records_cachable.t
+t/02records_datetime.t
 t/02records_integers.t
 t/02records_object.t
 t/02searches_joins.t
+t/03compatibility.t
+t/03cud_from_select.t
 t/03rebless.t
 t/03transactions.t
 t/03versions.t

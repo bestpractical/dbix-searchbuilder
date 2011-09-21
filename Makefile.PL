@@ -29,5 +29,4 @@ auto_install();
 no_index directory => 't';
 no_index directory => 'ex';
 
-&Makefile->write;
-&Meta->write;
+WriteAll();

@@ -251,6 +251,12 @@ sub DistinctQuery {
     $$statementref = "SELECT main.* FROM $$statementref $group $order";
 }
 
+=head2 SimpleDateTimeFunctions
+
+Returns hash reference with specific date time functions of this
+database for L<DBIx::SearchBuilder::Handle/DateTimeFunction>.
+
+=cut
 
 sub SimpleDateTimeFunctions {
     my $self = shift;
@@ -305,16 +311,17 @@ From argument.
 sub ConvertTimezoneFunction {
     my $self = shift;
     my %args = (
-        From  => undef,
+        From  => 'UTC',
         To    => undef,
         Field => '',
         @_
     );
-    return $args{'Field'} if ($args{From}||'') eq ($args{'To'}||'');
+    return $args{'Field'} unless $args{From} && $args{'To'};
+    return $args{'Field'} if lc $args{From} eq lc $args{'To'};
 
     my $dbh = $self->dbh;
     my $res = $args{'Field'};
-    $res = "TIMEZONE($_, $res)" foreach $dbh->quote( $_ ), grep $_, @args{'From', 'To'};
+    $res = "TIMEZONE($_, $res)" foreach map $dbh->quote( $_ ), grep $_, @args{'From', 'To'};
     return $res;
 }
 

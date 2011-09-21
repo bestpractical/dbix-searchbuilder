@@ -377,6 +377,35 @@ sub InsertQueryString {
     return ($QueryString, @bind);
 }
 
+=head2 InsertFromSelect
+
+Takes table name, array reference with columns, select query
+and list of bind values. Inserts data select by the query
+into the table.
+
+To make sure call is portable every column in result of
+the query should have unique name or should be aliased.
+See L<DBIx::SearchBuilder::Handle::Oracle/InsertFromSelect> for
+details.
+
+=cut
+
+sub InsertFromSelect {
+    my ($self, $table, $columns, $query, @binds) = @_;
+
+    $columns = join ', ', @$columns
+        if $columns;
+
+    my $full_query = "INSERT INTO $table";
+    $full_query .= " ($columns)" if $columns;
+    $full_query .= ' '. $query;
+    my $sth = $self->SimpleQuery( $full_query, @binds );
+    return $sth unless $sth;
+
+    my $rows = $sth->rows;
+    return $rows == 0? '0E0' : $rows;
+}
+
 =head2 UpdateRecordValue 
 
 Takes a hash with fields: Table, Column, Value PrimaryKeys, and 
@@ -446,6 +475,62 @@ sub UpdateTableValue  {
     return $self->UpdateRecordValue(%args)
 }
 
+=head1 SimpleUpdateFromSelect
+
+Takes table name, hash reference with (column, value) pairs,
+select query and list of bind values.
+
+Updates the table, but only records with IDs returned by the
+selected query, eg:
+
+    UPDATE $table SET %values WHERE id IN ( $query )
+
+It's simple as values are static and search only allowed
+by id.
+
+=cut
+
+sub SimpleUpdateFromSelect {
+    my ($self, $table, $values, $query, @query_binds) = @_;
+
+    my @columns; my @binds;
+    while ( my ($k, $v) = each %$values ) {
+        push @columns, $k;
+        push @binds, $v;
+    }
+
+    my $full_query = "UPDATE $table SET ";
+    $full_query .= join ', ', map "$_ = ?", @columns;
+    $full_query .= ' WHERE id IN ('. $query .')';
+    my $sth = $self->SimpleQuery( $full_query, @binds );
+    return $sth unless $sth;
+
+    my $rows = $sth->rows;
+    return $rows == 0? '0E0' : $rows;
+}
+
+=head1 DeleteFromSelect
+
+Takes table name, select query and list of bind values.
+
+Deletes from the table, but only records with IDs returned by the
+select query, eg:
+
+    DELETE FROM $table WHERE id IN ($query)
+
+=cut
+
+sub DeleteFromSelect {
+    my ($self, $table, $query, @binds) = @_;
+    my $sth = $self->SimpleQuery(
+        "DELETE FROM $table WHERE id IN ($query)",
+        @binds
+    );
+    return $sth unless $sth;
+
+    my $rows = $sth->rows;
+    return $rows == 0? '0E0' : $rows;
+}
 
 =head2 SimpleQuery QUERY_STRING, [ BIND_VALUE, ... ]
 
@@ -1477,6 +1562,25 @@ sub DateTimeFunction {
     }
     return $res;
 }
+
+=head2 ConvertTimezoneFunction
+
+Generates a function applied to Field argument that converts timezone.
+By default converts from UTC. Examples:
+
+    # UTC => Moscow
+    $handle->ConvertTimezoneFunction( Field => '?', To => 'Europe/Moscow');
+
+If there is problem with arguments or timezones are equal
+then Field returned without any function applied. Field argument
+is not escaped in any way, it's your job.
+
+Implementation is very database specific. To be portable convert
+from UTC or to UTC. Some databases have internal storage for
+information about timezones that should be kept up to date.
+Read documentation for your DB.
+
+=cut
 
 sub ConvertTimezoneFunction {
     my $self = shift;

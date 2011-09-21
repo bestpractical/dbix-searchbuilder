@@ -47,8 +47,12 @@ sub Connect  {
     
     $self->dbh->{LongTruncOk}=1;
     $self->dbh->{LongReadLen}=8000;
-    
-    $self->SimpleQuery("ALTER SESSION set NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+
+    foreach my $setting (qw(DATE TIMESTAMP TIMESTAMP_TZ)) {
+        $self->SimpleQuery(
+            "ALTER SESSION set NLS_${setting}_FORMAT = 'YYYY-MM-DD HH24:MI:SS'"
+        );
+    }
     
     return ($rv); 
 }
@@ -161,6 +165,42 @@ sub Insert  {
     $self->{'id'} = $unique_id;
     return( $self->{'id'}); #Add Succeded. return the id
   }
+
+=head2 InsertFromSelect
+
+Customization of L<DBIx::SearchBuilder::Handle/InsertFromSelect>.
+
+Unlike other DBs Oracle needs:
+
+=over 4
+
+=item * id generated from sequences for every new record.
+
+=item * query wrapping in parens.
+
+=back
+
+B<NOTE> that on Oracle there is a limitation on the query. Every
+column in the result should have unique name or alias, for example the
+following query would generate "ORA-00918: column ambiguously defined"
+error:
+
+    SELECT g.id, u.id FROM ...
+
+Solve with aliases:
+
+    SELECT g.id AS group_id, u.id AS user_id FROM ...
+
+=cut
+
+sub InsertFromSelect {
+    my ($self, $table, $columns, $query, @binds) = @_;
+    if ( $columns && !grep lc($_) eq 'id', @$columns ) {
+        unshift @$columns, 'id';
+        $query = "SELECT ${table}_seq.nextval, insert_from.* FROM ($query) insert_from";
+    }
+    return $self->SUPER::InsertFromSelect( $table, $columns, "($query)", @binds);
+}
 
 =head2 KnowsBLOBs     
 
@@ -323,6 +363,14 @@ sub Fields {
     return @{ $cache->{ lc $table } || [] };
 }
 
+=head2 SimpleDateTimeFunctions
+
+Returns hash reference with specific date time functions of this
+database for L<DBIx::SearchBuilder::Handle/DateTimeFunction>.
+
+=cut
+
+# http://download.oracle.com/docs/cd/B14117_01/server.101/b10749/ch4datetime.htm
 sub SimpleDateTimeFunctions {
     my $self = shift;
     return $self->{'_simple_date_time_functions'}
@@ -355,6 +403,36 @@ sub SimpleDateTimeFunctions {
         # no idea about props
         weekofyear => "TO_CHAR(?, 'WW')",
     };
+}
+
+=head2 ConvertTimezoneFunction
+
+Custom implementation of L<DBIx::SearchBuilder::Handle/ConvertTimezoneFunction>.
+
+Use the following query to get list of timezones:
+
+    SELECT tzname FROM v$timezone_names;
+
+Read Oracle's docs about timezone files:
+
+    http://download.oracle.com/docs/cd/B14117_01/server.101/b10749/ch4datetime.htm#i1006667
+
+=cut
+
+sub ConvertTimezoneFunction {
+    my $self = shift;
+    my %args = (
+        From  => 'UTC',
+        To    => undef,
+        Field => '',
+        @_
+    );
+    return $args{'Field'} unless $args{From} && $args{'To'};
+    return $args{'Field'} if lc $args{From} eq lc $args{'To'};
+
+    my $dbh = $self->dbh;
+    $_ = $dbh->quote( $_ ) foreach @args{'From', 'To'};
+    return "FROM_TZ( CAST ($args{'Field'} AS TIMESTAMP), $args{'From'}) AT TIME ZONE $args{'To'}";
 }
 
 1;
