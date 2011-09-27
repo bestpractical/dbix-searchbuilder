@@ -813,12 +813,14 @@ sub __Set {
 
 
     my $method = "Validate" . $args{'Column'};
-    unless ( $self->$method( $args{'Value'} ) ) {
-        $ret->as_array( 0, 'Illegal value for ' . $args{'Column'} );
+    my ($val, $msg) = $self->$method( $args{'Value'} );
+    unless ( $val ) {
+        $msg = 'Illegal value for ' . $args{'Column'} unless defined $msg;
+        $ret->as_array( 0, $msg );
         $ret->as_error(
             errno        => 3,
             do_backtrace => 0,
-            message      => "Illegal value for " . $args{'Column'}
+            message      => $msg,
         );
         return ( $ret->return_value );
     }
@@ -842,7 +844,7 @@ sub __Set {
         }
 
 
-    my $val = $self->_Handle->UpdateRecordValue(%args);
+    $val = $self->_Handle->UpdateRecordValue(%args);
     unless ($val) {
         my $message = 
             $args{'Column'} . " could not be set to " . $args{'Value'} . "." ;
