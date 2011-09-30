@@ -50,6 +50,9 @@ sub Insert {
 
         # TODO: Propagate Class::ReturnValue up here.
         unless ( $row[0] ) {
+            @row = $self->FetchResult("SELECT MAX(id) FROM $table");
+        }
+        unless ( $row[0] ) {
             return (undef);
         }
         $self->{'id'} = $row[0];
