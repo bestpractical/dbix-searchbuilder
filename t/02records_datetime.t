@@ -303,6 +303,23 @@ sub cleanup_schema_oracle { [
     "DROP TABLE Users",
 ] }
 
+sub schema_sybase {
+<<EOF;
+create table Users (
+    id integer identity,
+    Expires datetime null
+)
+EOF
+
+}
+
+sub cleanup_schema_sybase {
+<<EOF;
+drop table Users
+EOF
+
+}
+
 
 1;
 

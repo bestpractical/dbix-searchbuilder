@@ -303,4 +303,23 @@ sub cleanup_schema_oracle { [
     "DROP TABLE Address", 
 ] }
 
+sub schema_sybase {
+<<EOF;
+create table Address (
+    id integer identity,
+    Name varchar(36) null,
+    Phone varchar(36) null,
+    EmployeeId int null
+)
+EOF
+
+}
+
+sub cleanup_schema_sybase {
+<<EOF;
+drop table Address
+EOF
+
+}
+
 1;

@@ -7,6 +7,8 @@ use warnings;
 
 use base qw(DBIx::SearchBuilder::Handle);
 
+our %FIELDS_IN_TABLE;
+
 =head1 NAME
 
   DBIx::SearchBuilder::Handle::Sybase -- a Sybase specific Handle object
@@ -92,22 +94,6 @@ sub BuildDSN {
 }
 
 
-
-
-=head2 DatabaseVersion
-
-return the database version, trimming off any -foo identifier
-
-=cut
-
-sub DatabaseVersion {
-    my $self = shift;
-    my $v = $self->SUPER::DatabaseVersion();
-
-   $v =~ s/\-(.*)$//;
-   return ($v);
-
-}
 
 =head2 CaseSensitive 
 
@@ -197,7 +183,6 @@ sub DistinctQuery {
     my $statementref = shift;
     my $sb = shift;
     my $table = $sb->Table;
-
     if ($sb->_OrderClause =~ /(?<!main)\./) {
         # Don't know how to do ORDER BY when the DISTINCT is in a subquery
         warn "Query will contain duplicate rows; don't how how to ORDER BY across DISTINCT";
@@ -212,21 +197,101 @@ sub DistinctQuery {
 }
 
 
-=head2 BinarySafeBLOBs
+=head2 Fields
 
-Return undef, as Oracle doesn't support binary-safe CLOBS
-
+New Fields function because column_info is different in DBD::Sybase
 
 =cut
 
-sub BinarySafeBLOBs {
+sub Fields {
+    my $self  = shift;
+    my $table = shift;
+
+    unless ( keys %FIELDS_IN_TABLE ) {
+        my $sth = $self->dbh->column_info( undef, undef, $table, undef )
+            or return ();
+        my $info = $sth->fetchall_arrayref({});
+        foreach my $e ( @$info ) {
+            push @{ $FIELDS_IN_TABLE{ lc $e->{'TABLE_NAME'} } ||= [] },
+                 lc $e->{'COLUMN_NAME'};
+        }
+    }
+
+    return @{ $FIELDS_IN_TABLE{ lc $table } || [] };
+}
+
+=head2 DatabaseVersion [Short => 1]
+
+Returns the database's version.
+
+If argument C<Short> is true returns short variant, in other
+case returns whatever database handle/driver returns. By default
+returns short version, e.g. 15.0.2.
+
+Returns empty string on error or if database couldn't return version.
+
+=cut
+
+sub DatabaseVersion {
     my $self = shift;
-    return(undef);
+    my %args = ( Short => 1, @_ );
+
+    unless ( defined $self->{'database_version'} ) {
+        # turn off error handling, store old values to restore later
+        my $re = $self->RaiseError;
+        $self->RaiseError(0);
+        my $pe = $self->PrintError;
+        $self->PrintError(0);
+
+        my $statement = 'select @@version';
+        my $sth       = $self->SimpleQuery($statement);
+        my $ver = $sth->fetchrow_arrayref->[0] || '' if $sth;
+        my ($short_ver) = $ver =~ /((?:\d+\.)+\d+)/;
+        $self->{database_version} = $ver;
+        $self->{database_version_short} = $short_ver;
+
+        $self->RaiseError($re);
+        $self->PrintError($pe);
+    }
+
+    return $self->{'database_version_short'} if $args{'Short'};
+    return $self->{'database_version'};
 }
 
 
-
 1;
+
+=head2 SimpleDateTimeFunctions
+
+See L</DateTimeFunction> for details on supported functions.
+This method is for implementers of custom DB connectors.
+
+Returns hash reference with (function name, sql template) pairs.
+
+=cut
+
+sub SimpleDateTimeFunctions {
+    my $self = shift;
+    return {
+        datetime       => 'convert(varchar(19), ?, 23)',
+        time           => 'convert(varchar(8), ?, 8)',
+
+        hourly         => 'convert(varchar(13), ?, 23)',
+        hour           => 'substring(convert(varchar(13), ?, 23), 12, 2)',
+
+        date           => 'convert(varchar(10), ?, 23)',
+        daily          => 'convert(varchar(10), ?, 23)',
+
+        day            => 'substring(convert(varchar(10), ?, 23), 9, 2)',
+        dayofmonth     => 'substring(convert(varchar(10), ?, 23), 9, 2)',
+
+        monthly        => 'convert(varchar(7), ?, 23)',
+        month          => 'substring(convert(varchar(7), ?, 23), 6, 2)',
+
+        annually       => 'convert(varchar(4), ?, 23)',
+        year           => 'convert(varchar(4), ?, 23)',
+    };
+}
 
 __END__
 
