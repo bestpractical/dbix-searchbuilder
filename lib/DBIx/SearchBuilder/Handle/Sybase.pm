@@ -58,6 +58,36 @@ sub Insert {
 }
 
 
+=head2 BuildDSN
+
+In addition to the attributes supported by DBIx::SearchBuilder::Handle, this module
+supports Server, Charset and attributes.
+
+=cut
+
+sub BuildDSN {
+    my $self = shift;
+    my %args = ( Driver => 'Sybase',
+                 Database => undef,
+                 Host => undef,
+                 Port => undef,
+                 Server => undef,
+                 Charset => undef,
+                 @_ );
+
+    my $dsn = "dbi:$args{Driver}(syb_enable_utf8=>1)";
+    if ($args{Server}) {
+        $dsn .= ":server=$args{Server}";
+    }
+    else {
+        $dsn .= ":host=$args{Host}";
+        $dsn .= ";port=$args{Port}" if $args{Port};
+    }
+    $dsn .= ";database=$args{Database}" if $args{Database};
+    $dsn .= ";charset=$args{Charset}"   if $args{Charset};
+    $self->{dsn} = $dsn;
+}
+
 
 
 
@@ -88,6 +118,15 @@ sub CaseSensitive {
 }
 
 
+=head2 ApplyLimits
+
+Sybase does not implement MySQL's LIMIT clause for SELECT statements. So ApplyLimits
+uses a scrollable cursor to achieve the same results. The output of this method can
+only be fed to this object's SimpleQuery() method to do something meaningful, since
+it needs to perform multiple database queries. The corresponding DeallocateCursor()
+method will clean up after ApplyLimits().
+
+=cut
 
 
 sub ApplyLimits {
@@ -96,11 +135,52 @@ sub ApplyLimits {
     my $per_page = shift;
     my $first = shift;
 
+    # Use a random number for the cursor name to avoid clashes.
+    my $cursor_name = 'sb_cursor_' . int(rand(9_000_000) + 1_000_000);
+
+    # Construct the cursor query
+    $$statementref = "declare $cursor_name scroll cursor for $$statement_ref\n"
+                   . "go\n"
+                   . "open $cursor_name\n"
+                   . "set cursor rows $per_page for $cursor_name\n"
+                   . "fetch absolute $first $cursor_name";
+}
+
+sub DeallocateCursor {
+    my $self = shift;
+    my $query = shift;
+    
+    my $cursor_name;
+    if ($query =~ /(sb_cursor_\d+)/) {
+        $cursor_name = $1;
+        $self->dbh->do("close $cursor_name\ndeallocate $cursor_name")
+            or die $self->dbh->errstr;
+    }
 }
 
 
-=head2 DistinctQuery STATEMENTREFtakes an incomplete SQL SELECT statement and massages it to return a DISTINCT result set.
+=head2 SimpleQuery QUERY_STRING, [ BIND_VALUE, ... ]
 
+Decouple the query if there's a cursor to declare. Run the cursor declaration first,
+then run the rest of the query using our superclass' SimpleQuery() method.
+
+=cut
+
+sub SimpleQuery {
+    my $self = shift;
+    my $query = shift;
+
+    my @queries = split /\ngo\n/, $query;
+    while (@queries > 1) {
+        $self->dbh->do(shift @queries) or die $self->dbh->errstr;
+    }
+    return $self->SUPER::SimpleQuery(shift @queries, @_);
+}
+
+
+=head2 DistinctQuery STATEMENTREF
+
+Takes an incomplete SQL SELECT statement and massages it to return a DISTINCT result set.
 
 =cut
 

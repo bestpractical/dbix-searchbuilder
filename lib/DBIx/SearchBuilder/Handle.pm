@@ -946,6 +946,19 @@ sub ApplyLimits {
 }
 
 
+=head2 DeallocateCursor QUERY
+
+If limits are applied by means of using cursors instead of the LIMIT statement, then the
+cursor needs to be deallocated after the query has finished.
+
+=cut
+
+sub DeallocateCursor {
+    my $self = shift;
+    my $query = shift;
+
+}
+
 
 
 

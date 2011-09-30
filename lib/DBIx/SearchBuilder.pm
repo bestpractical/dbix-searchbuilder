@@ -240,6 +240,9 @@ sub _DoSearch {
 	$item->LoadFromHash($row);
 	$self->AddRecord($item);
     }
+
+    $self->_Handle->DeallocateCursor($QueryString);
+
     return $self->_RecordCount if $records->err;
 
     $self->{'must_redo_search'} = 0;
