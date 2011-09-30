@@ -138,15 +138,20 @@ sub ApplyLimits {
     my $per_page = shift;
     my $first = shift;
 
-    # Use a random number for the cursor name to avoid clashes.
-    my $cursor_name = 'sb_cursor_' . int(rand(9_000_000) + 1_000_000);
+    if ($per_page && $first) {
+        # Use a random number for the cursor name to avoid clashes.
+        my $cursor_name = 'sb_cursor_' . int(rand(9_000_000) + 1_000_000);
 
-    # Construct the cursor query
-    $$statementref = "declare $cursor_name scroll cursor for $$statementref\n"
-                   . "go\n"
-                   . "open $cursor_name\n"
-                   . "set cursor rows $per_page for $cursor_name\n"
-                   . "fetch absolute $first $cursor_name";
+        $first++; # Need to get the next one
+        # Construct the cursor query
+        $$statementref = "declare $cursor_name scroll cursor for $$statementref\n"
+                       . "go\n"
+                       . "open $cursor_name\n"
+                       . "set cursor rows $per_page for $cursor_name\n"
+                       . "fetch absolute $first $cursor_name";
+    } elsif ($per_page) {
+        $$statementref =~ s/^select/select top $per_page/i;
+    }
 }
 
 sub DeallocateCursor {
