@@ -273,23 +273,27 @@ Returns hash reference with (function name, sql template) pairs.
 sub SimpleDateTimeFunctions {
     my $self = shift;
     return {
-        datetime       => 'convert(varchar(19), ?, 23)',
+        datetime       => 'str_replace(convert(varchar(19), ?, 23), "T", " ")',
         time           => 'convert(varchar(8), ?, 8)',
 
-        hourly         => 'convert(varchar(13), ?, 23)',
-        hour           => 'substring(convert(varchar(13), ?, 23), 12, 2)',
+        hourly         => 'str_replace(convert(varchar(13), ?, 23), "T", " ")',
+        hour           => 'datepart(hour, ?)',
 
         date           => 'convert(varchar(10), ?, 23)',
         daily          => 'convert(varchar(10), ?, 23)',
 
-        day            => 'substring(convert(varchar(10), ?, 23), 9, 2)',
-        dayofmonth     => 'substring(convert(varchar(10), ?, 23), 9, 2)',
+        day            => 'day(?)',
+        dayofmonth     => 'day(?)',
 
         monthly        => 'convert(varchar(7), ?, 23)',
-        month          => 'substring(convert(varchar(7), ?, 23), 6, 2)',
+        month          => 'month(?)',
 
-        annually       => 'convert(varchar(4), ?, 23)',
-        year           => 'convert(varchar(4), ?, 23)',
+        annually       => 'year(?)',
+        year           => 'year(?)',
+        
+        dayofweek      => 'datepart(weekday, ?) - 1',
+        dayofyear      => 'datepart(dayofyear, ?)',
+        weekofyear     => 'datepart(calweekofyear, ?)',
     };
 }
 
