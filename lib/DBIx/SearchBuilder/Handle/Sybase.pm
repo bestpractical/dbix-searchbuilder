@@ -142,7 +142,7 @@ sub ApplyLimits {
     my $cursor_name = 'sb_cursor_' . int(rand(9_000_000) + 1_000_000);
 
     # Construct the cursor query
-    $$statementref = "declare $cursor_name scroll cursor for $$statement_ref\n"
+    $$statementref = "declare $cursor_name scroll cursor for $$statementref\n"
                    . "go\n"
                    . "open $cursor_name\n"
                    . "set cursor rows $per_page for $cursor_name\n"
