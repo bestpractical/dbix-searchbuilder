@@ -199,7 +199,7 @@ sub _Init {
 sub _ClassAccessible {
     {   
         id =>
-        {read => 1, type => 'int(11)' }, 
+        {read => 1, type => 'int' }, 
         Name =>
         {read => 1, write => 1, type => 'varchar(36)' },
     }
@@ -240,9 +240,9 @@ sub _Init {
 sub _ClassAccessible {
     {   
         id =>
-        {read => 1, type => 'int(11)' },
+        {read => 1, type => 'int' },
         Object =>
-        {read => 1, type => 'int(11)' },
+        {read => 1, type => 'int' },
         Name =>
         {read => 1, write => 1, type => 'varchar(36)' },
     }

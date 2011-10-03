@@ -1436,6 +1436,21 @@ sub Fields {
     return @{ $FIELDS_IN_TABLE{ lc $table } || [] };
 }
 
+=head2 DataType TABLE, FIELD
+
+Get the numeric data type for FIELD in TABLE. Can be fed to $dbh->quote to get
+appropriate quoting behavior.
+
+=cut
+
+sub DataType {
+    my $self  = shift;
+    my $table = shift;
+    my $field = shift;
+
+    return undef;
+}
+
 
 =head2 Log MESSAGE
 

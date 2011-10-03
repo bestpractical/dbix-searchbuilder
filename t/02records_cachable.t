@@ -77,13 +77,13 @@ sub _Init {
 sub _ClassAccessible {
     return {
         id =>
-        {read => 1, type => 'int(11)', default => ''}, 
+        {read => 1, type => 'int', default => ''}, 
         Name => 
         {read => 1, write => 1, type => 'varchar(14)', default => ''},
         Phone => 
         {read => 1, write => 1, type => 'varchar(18)', length => 18, default => ''},
         EmployeeId => 
-        {read => 1, write => 1, type => 'int(8)', default => ''},
+        {read => 1, write => 1, type => 'int', default => ''},
 
     }
 }

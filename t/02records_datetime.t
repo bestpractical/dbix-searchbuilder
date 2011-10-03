@@ -50,14 +50,17 @@ SKIP: {
                 '2011-05-20 19:53:23' => '2011-05-20 19:53:23',
             },
         );
-        run_test(
-            { Type => $type, Timezone => { To => 'Europe/Moscow' } },
-            {
-                '' => undef,
-                '2011-05-20 19:53:23' => '2011-05-20 23:53:23',
-                '2011-05-20 22:53:23' => '2011-05-21 02:53:23',
-            },
-        );
+        SKIP: {
+            skip "Sybase can't deal with timezones", 1 if $d eq 'Sybase';;
+            run_test(
+                { Type => $type, Timezone => { To => 'Europe/Moscow' } },
+                {
+                    '' => undef,
+                    '2011-05-20 19:53:23' => '2011-05-20 23:53:23',
+                    '2011-05-20 22:53:23' => '2011-05-21 02:53:23',
+                },
+            );
+        }
     }
 
     run_test(
@@ -67,14 +70,18 @@ SKIP: {
             '2011-05-20 19:53:23' => '19:53:23',
         },
     );
-    run_test(
-        { Type => 'time', Timezone => { To => 'Europe/Moscow' } },
-        {
-            '' => undef,
-            '2011-05-20 19:53:23' => '23:53:23',
-            '2011-05-20 22:53:23' => '2:53:23',
-        },
-    );
+
+    SKIP: {
+        skip "Sybase can't deal with timezones", 1 if $d eq 'Sybase';;
+        run_test(
+            { Type => 'time', Timezone => { To => 'Europe/Moscow' } },
+            {
+                '' => undef,
+                '2011-05-20 19:53:23' => '23:53:23',
+                '2011-05-20 22:53:23' => '2:53:23',
+            },
+        );
+    }
 
     run_test( 
         { Type => 'hourly' },
@@ -84,14 +91,18 @@ SKIP: {
             '2011-05-20 22:53:23' => '2011-05-20 22',
         },
     );
-    run_test( 
-        { Type => 'hourly', Timezone => { To => 'Europe/Moscow' } },
-        {
-            '' => undef,
-            '2011-05-20 19:53:23' => '2011-05-20 23',
-            '2011-05-20 22:53:23' => '2011-05-21 02',
-        },
-    );
+
+    SKIP: {
+        skip "Sybase can't deal with timezones", 1 if $d eq 'Sybase';;
+        run_test( 
+            { Type => 'hourly', Timezone => { To => 'Europe/Moscow' } },
+            {
+                '' => undef,
+                '2011-05-20 19:53:23' => '2011-05-20 23',
+                '2011-05-20 22:53:23' => '2011-05-21 02',
+            },
+        );
+    }
 
     run_test(
         { Type => 'hour' },
@@ -100,14 +111,18 @@ SKIP: {
             '2011-05-20 19:53:23' => '19',
         },
     );
-    run_test(
-        { Type => 'hour', Timezone => { To => 'Europe/Moscow' } },
-        {
-            '' => undef,
-            '2011-05-20 19:53:23' => '23',
-            '2011-05-20 22:53:23' => '2',
-        },
-    );
+
+    SKIP: {
+        skip "Sybase can't deal with timezones", 1 if $d eq 'Sybase';;
+        run_test(
+            { Type => 'hour', Timezone => { To => 'Europe/Moscow' } },
+            {
+                '' => undef,
+                '2011-05-20 19:53:23' => '23',
+                '2011-05-20 22:53:23' => '2',
+            },
+        );
+    }
 
     foreach my $type ( 'date', 'daily' ) {
         run_test(
@@ -117,14 +132,18 @@ SKIP: {
                 '2011-05-20 19:53:23' => '2011-05-20',
             },
         );
-        run_test(
-            { Type => $type, Timezone => { To => 'Europe/Moscow' } },
-            {
-                '' => undef,
-                '2011-05-20 19:53:23' => '2011-05-20',
-                '2011-05-20 22:53:23' => '2011-05-21',
-            },
-        );
+
+        SKIP: {
+            skip "Sybase can't deal with timezones", 1 if $d eq 'Sybase';;
+            run_test(
+                { Type => $type, Timezone => { To => 'Europe/Moscow' } },
+                {
+                    '' => undef,
+                    '2011-05-20 19:53:23' => '2011-05-20',
+                    '2011-05-20 22:53:23' => '2011-05-21',
+                },
+            );
+        }
     }
 
     run_test(
@@ -139,18 +158,22 @@ SKIP: {
             '2011-05-22 22:53:23' => '0',
         },
     );
-    run_test(
-        { Type => 'day of week', Timezone => { To => 'Europe/Moscow' } },
-        {
-            '' => undef,
-            '2011-05-20 19:53:23' => '5',
-            '2011-05-21 19:53:23' => '6',
-            '2011-05-22 19:53:23' => '0',
-            '2011-05-20 22:53:23' => '6',
-            '2011-05-21 22:53:23' => '0',
-            '2011-05-22 22:53:23' => '1',
-        },
-    );
+
+    SKIP: {
+        skip "Sybase can't deal with timezones", 1 if $d eq 'Sybase';;
+        run_test(
+            { Type => 'day of week', Timezone => { To => 'Europe/Moscow' } },
+            {
+                '' => undef,
+                '2011-05-20 19:53:23' => '5',
+                '2011-05-21 19:53:23' => '6',
+                '2011-05-22 19:53:23' => '0',
+                '2011-05-20 22:53:23' => '6',
+                '2011-05-21 22:53:23' => '0',
+                '2011-05-22 22:53:23' => '1',
+            },
+        );
+    }
 
 
     foreach my $type ( 'day', 'DayOfMonth' ) {
@@ -162,14 +185,17 @@ SKIP: {
                 '2011-05-20 22:53:23' => '20',
             },
         );
-        run_test(
-            { Type => $type, Timezone => { To => 'Europe/Moscow' } },
-            {
-                '' => undef,
-                '2011-05-20 19:53:23' => '20',
-                '2011-05-20 22:53:23' => '21',
-            },
-        );
+        SKIP: {
+            skip "Sybase can't deal with timezones", 1 if $d eq 'Sybase';;
+            run_test(
+                { Type => $type, Timezone => { To => 'Europe/Moscow' } },
+                {
+                    '' => undef,
+                    '2011-05-20 19:53:23' => '20',
+                    '2011-05-20 22:53:23' => '21',
+                },
+            );
+        }
     }
 
     run_test(
@@ -180,14 +206,18 @@ SKIP: {
             '2011-05-20 22:53:23' => '140',
         },
     );
-    run_test(
-        { Type => 'day of year', Timezone => { To => 'Europe/Moscow' } },
-        {
-            '' => undef,
-            '2011-05-20 19:53:23' => '140',
-            '2011-05-20 22:53:23' => '141',
-        },
-    );
+
+    SKIP: {
+        skip "Sybase can't deal with timezones", 1 if $d eq 'Sybase';;
+        run_test(
+            { Type => 'day of year', Timezone => { To => 'Europe/Moscow' } },
+            {
+                '' => undef,
+                '2011-05-20 19:53:23' => '140',
+                '2011-05-20 22:53:23' => '141',
+            },
+        );
+    }
 
     run_test(
         { Type => 'month' },
@@ -233,7 +263,7 @@ sub run_test {
 
     my $users = TestApp::Users->new( $handle );
     $users->UnLimit;
-    $users->Column( FIELD => 'Expires' );
+    $users->Column( FIELD => 'ExpiresRaw' );
     my $column = $users->Column(
         ALIAS => 'main',
         FIELD => 'Expires',
@@ -242,7 +272,7 @@ sub run_test {
 
     my %got;
     while ( my $user = $users->Next ) {
-        $got{ $user->Expires || '' } = $user->__Value( $column );
+        $got{ $user->ExpiresRaw || '' } = $user->__Value( $column );
     }
     foreach my $key ( keys %got ) {
         delete $got{ $key } unless exists $expected->{ $key };
@@ -262,6 +292,7 @@ sub schema_mysql {
 <<EOF;
 CREATE TEMPORARY TABLE Users (
     id integer AUTO_INCREMENT,
+    ExpiresRaw varchar(19),
     Expires DATETIME NULL,
     PRIMARY KEY (id)
 )
@@ -273,6 +304,7 @@ sub schema_pg {
 <<EOF;
 CREATE TEMPORARY TABLE Users (
     id serial PRIMARY KEY,
+    ExpiresRaw varchar,
     Expires TIMESTAMP NULL
 )
 EOF
@@ -284,6 +316,7 @@ sub schema_sqlite {
 <<EOF;
 CREATE TABLE Users (
     id integer primary key,
+    ExpiresRaw varchar(19),
     Expires TEXT NULL
 )
 EOF
@@ -294,6 +327,7 @@ sub schema_oracle { [
     "CREATE SEQUENCE Users_seq",
     "CREATE TABLE Users (
         id integer CONSTRAINT Users_Key PRIMARY KEY,
+        ExpiresRaw varchar(19),
         Expires DATE NULL
     )",
 ] }
@@ -307,6 +341,7 @@ sub schema_sybase {
 <<EOF;
 create table Users (
     id integer identity,
+    ExpiresRaw varchar(19) null,
     Expires datetime null
 )
 EOF
@@ -339,7 +374,9 @@ sub _Init {
 sub _ClassAccessible {
     {   
         id =>
-        {read => 1, type => 'int(11)' }, 
+        {read => 1, type => 'int' }, 
+        ExpiresRaw =>
+        {read => 1, type => 'varchar(19)' },
         Expires =>
         {read => 1, write => 1, type => 'datetime' },
     }
@@ -347,18 +384,16 @@ sub _ClassAccessible {
 
 sub init_data {
     return (
-    [ 'Expires'             ],
-    [  undef                ],
-    [ '2011-05-20 19:53:23' ], # friday
-    [ '2011-05-21 19:53:23' ], # saturday
-    [ '2011-05-22 19:53:23' ], # sunday
-    [ '2011-05-20 22:53:23' ], # fri in UTC, sat in moscow
-    [ '2011-05-21 22:53:23' ], # sat in UTC, sun in moscow
-    [ '2011-05-22 22:53:23' ], # sun in UTC, mon in moscow
+    [ 'ExpiresRaw',          'Expires'             ],
+    [  undef,                undef                 ],
+    [ '2011-05-20 19:53:23', '2011-05-20 19:53:23' ], # friday
+    [ '2011-05-21 19:53:23', '2011-05-21 19:53:23' ], # saturday
+    [ '2011-05-22 19:53:23', '2011-05-22 19:53:23' ], # sunday
+    [ '2011-05-20 22:53:23', '2011-05-20 22:53:23' ], # fri in UTC, sat in moscow
+    [ '2011-05-21 22:53:23', '2011-05-21 22:53:23' ], # sat in UTC, sun in moscow
+    [ '2011-05-22 22:53:23', '2011-05-22 22:53:23' ], # sun in UTC, mon in moscow
     );
 }
-
-1;
 
 package TestApp::Users;
 

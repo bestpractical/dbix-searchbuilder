@@ -7,7 +7,7 @@ use warnings;
 
 use base qw(DBIx::SearchBuilder::Handle);
 
-our %FIELDS_IN_TABLE;
+our (%FIELDS_IN_TABLE, %DATA_TYPES);
 
 =head1 NAME
 
@@ -80,7 +80,7 @@ sub BuildDSN {
                  Charset => undef,
                  @_ );
 
-    my $dsn = "dbi:$args{Driver}(syb_enable_utf8=>1)";
+    my $dsn = "dbi:$args{Driver}(syb_enable_utf8=>1,syb_date_fmt=>ISO)";
     if ($args{Server}) {
         $dsn .= ":server=$args{Server}";
     }
@@ -220,6 +220,28 @@ sub Fields {
     return @{ $FIELDS_IN_TABLE{ lc $table } || [] };
 }
 
+=head2 DataType TABLE, FIELD
+
+Get the numeric data type for FIELD in TABLE. Can be fed to $dbh->quote to get
+appropriate quoting behavior, especially in Sybase.
+
+=cut
+
+sub DataType {
+    my $self  = shift;
+    my $table = shift;
+    my $field = shift;
+    return unless $table && $field;
+
+    unless ( $DATA_TYPES{$table}{$field} ) {
+        my $sth = $self->dbh->column_info( undef, undef, $table, $field )
+                or return;
+        my $info = $sth->fetchrow_hashref or return;
+        $DATA_TYPES{$table}{$field} = $info->{DATA_TYPE};
+    }
+    return $DATA_TYPES{$table}{$field};
+}
+
 =head2 DatabaseVersion [Short => 1]
 
 Returns the database's version.
@@ -259,8 +281,6 @@ sub DatabaseVersion {
 }
 
 
-1;
-
 =head2 SimpleDateTimeFunctions
 
 See L</DateTimeFunction> for details on supported functions.
@@ -297,6 +317,20 @@ sub SimpleDateTimeFunctions {
     };
 }
 
+=head2 _BuildJoins
+
+Sybase does not like CROSS JOIN.
+
+=cut
+
+sub _BuildJoins {
+    my $self = shift;
+    my $join_clause = $self->SUPER::_BuildJoins(@_);
+    $join_clause =~ s/CROSS JOIN /, /g;
+    return $join_clause;
+}
+
+1;
 __END__
 
 =head1 AUTHOR

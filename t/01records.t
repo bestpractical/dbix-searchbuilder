@@ -240,7 +240,7 @@ sub _ClassAccessible {
     {   
         
         id =>
-        {read => 1, type => 'int(11)', default => ''}, 
+        {read => 1, type => 'int', default => ''}, 
         Name => 
         {read => 1, write => 1, type => 'varchar(14)', default => ''},
         Phone => 

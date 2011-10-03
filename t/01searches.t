@@ -420,7 +420,7 @@ sub _Init {
 sub _ClassAccessible {
     {   
         id =>
-        {read => 1, type => 'int(11)' }, 
+        {read => 1, type => 'int' }, 
         Login =>
         {read => 1, write => 1, type => 'varchar(18)' },
         Name =>
