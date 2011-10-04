@@ -41,7 +41,9 @@ sub Insert {
 
     my $table = shift;
     my %pairs = @_;
+    $self->dbh->do("SET IDENTITY_INSERT $table ON") if $pairs{id};
     my $sth   = $self->SUPER::Insert( $table, %pairs );
+    $self->dbh->do("SET IDENTITY_INSERT $table OFF") if $pairs{id};
     if ( !$sth ) {
         return ($sth);
     }
