@@ -332,7 +332,73 @@ sub _BuildJoins {
     return $join_clause;
 }
 
+=head2 InsertQueryString
+
+Sybase does not like dynamic PREPARE statements that refer to
+TEXT, IMAGE or UNITEXT. So we avoid dynamic PREPARE statements
+entirely.
+
+=cut
+
+sub InsertQueryString {
+    my ($self, $table, @pairs) = @_;
+    my (@cols, @vals, @bind);
+
+    while (my $key = shift @pairs) {
+        my $val = shift @pairs;
+        push @cols, $key;
+		my $data_type = $self->DataType($table, $key);
+		my $quotedval = $self->dbh->quote($val, $data_type);
+		push @vals, $quotedval;
+    }
+
+    my $QueryString = "INSERT INTO $table";
+    $QueryString .= " (". join(", ", @cols) .")";
+    $QueryString .= " VALUES (". join(",", @vals). ")";
+    return ($QueryString, @bind);
+}
+
+=head2 UpdateRecordValue
+
+Sybase does not like dynamic PREPARE statements that refer to
+TEXT, IMAGE or UNITEXT. So we avoid dynamic PREPARE statements
+entirely.
+
+=cut
+
+sub UpdateRecordValue {
+    my $self = shift;
+    my %args = (
+		Table			=> undef,
+		Column			=> undef,
+		IsSQLFunction	=> undef,
+		PrimaryKeys		=> undef,
+		@_
+	);
+
+    my @bind = ();
+    my $query = 'UPDATE ' . $args{Table}  . ' SET ' . $args{Column} . ' = ';
+
+	my $data_type = $self->GetDataType(Table => $args{Table}, Column => $args{Column});
+	my $quotedval = $self->dbh->quote($args{Value}, $data_type);
+	$query .= $quotedval;
+	
+	## Constructs the where clause.
+	my $where  = ' WHERE ';
+	foreach my $key (keys %{ $args{PrimaryKeys} }) {
+		my $data_type = $self->DataType($args{Table}, $key);
+		$quotedval = $self->dbh->quote($args{PrimaryKeys}{$key}, $data_type);
+		$where .= "$key = $quotedval AND ";
+	}
+  
+	$where =~ s/\s*AND\s*$//;
+
+	my $query_str = $query . $where;
+	$self->SimpleQuery($query_str, @bind);
+}
+
 1;
+
 __END__
 
 =head1 AUTHOR
