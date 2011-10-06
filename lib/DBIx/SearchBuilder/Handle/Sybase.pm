@@ -379,7 +379,7 @@ sub UpdateRecordValue {
     my @bind = ();
     my $query = 'UPDATE ' . $args{Table}  . ' SET ' . $args{Column} . ' = ';
 
-	my $data_type = $self->GetDataType(Table => $args{Table}, Column => $args{Column});
+	my $data_type = $self->DataType($args{Table}, $args{Column});
 	my $quotedval = $self->dbh->quote($args{Value}, $data_type);
 	$query .= $quotedval;
 	
