@@ -124,6 +124,23 @@ sub cleanup_schema_oracle { [
     "DROP TABLE Phones", 
 ] }
 
+sub schema_sybase { [
+    "create table Employees (
+        id integer identity,
+        Name varchar(36) null
+    )",
+    "create table Phones (
+        id integer identity,
+        Employee integer not null,
+        Phone varchar(18)
+    )",
+] }
+
+sub cleanup_schema_sybase { [
+    "drop table Employees",
+    "drop table Phones",
+] }
+
 
 package TestApp::Employee;
 
@@ -145,7 +162,7 @@ sub _ClassAccessible {
     {   
         
         id =>
-        {read => 1, type => 'int(11)'}, 
+        {read => 1, type => 'int'}, 
         Name => 
         {read => 1, write => 1, type => 'varchar(18)'},
 
@@ -174,9 +191,9 @@ sub _ClassAccessible {
     {   
         
         id =>
-        {read => 1, type => 'int(11)'}, 
+        {read => 1, type => 'int'}, 
         Employee => 
-        {read => 1, write => 1, type => 'int(11)', object => 'TestApp::Employee' },
+        {read => 1, write => 1, type => 'int', object => 'TestApp::Employee' },
         Value => 
         {read => 1, write => 1, type => 'varchar(18)'},
 

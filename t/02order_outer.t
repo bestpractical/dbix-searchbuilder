@@ -57,39 +57,42 @@ diag "generate data" if $ENV{TEST_VERBOSE};
 
 # ASC order
 foreach my $direction ( qw(ASC DESC) ) {
-    my $objs = TestApp::Objects->new($handle);
-    $objs->UnLimit;
-    my $tags_alias = $objs->Join(
-        TYPE   => 'LEFT',
-        ALIAS1 => 'main',
-        FIELD1 => 'id',
-        TABLE2 => 'Tags',
-        FIELD2 => 'Object',
-    );
-    ok($tags_alias, "joined tags table");
-    $objs->OrderBy( ALIAS => $tags_alias, FIELD => 'Name', ORDER => $direction );
+    SKIP: {
+        skip "Sybase can't do this", 3 if $d eq 'Sybase';
+        my $objs = TestApp::Objects->new($handle);
+        $objs->UnLimit;
+        my $tags_alias = $objs->Join(
+            TYPE   => 'LEFT',
+            ALIAS1 => 'main',
+            FIELD1 => 'id',
+            TABLE2 => 'Tags',
+            FIELD2 => 'Object',
+        );
+        ok($tags_alias, "joined tags table");
+        $objs->OrderBy( ALIAS => $tags_alias, FIELD => 'Name', ORDER => $direction );
 
-    ok($objs->First, 'ok, we have at least one result');
-    $objs->GotoFirstItem;
-
-    my ($order_ok, $last) = (1, $direction eq 'ASC'? '-': 'zzzz');
-    while ( my $obj = $objs->Next ) {
-        my $tmp;
-        if ( $direction eq 'ASC' ) {
-            $tmp = (substr($last, 0, 1) cmp substr($obj->Name, 0, 1));
-        } else {
-            $tmp = -(substr($last, -1, 1) cmp substr($obj->Name, -1, 1));
-        }
-        if ( $tmp > 0 ) {
-            $order_ok = 0; last;
-        }
-        $last = $obj->Name;
-    }
-    ok($order_ok, "$direction order is correct") or do {
-        diag "Wrong $direction query: ". $objs->BuildSelectQuery;
+        ok($objs->First, 'ok, we have at least one result');
         $objs->GotoFirstItem;
+
+        my ($order_ok, $last) = (1, $direction eq 'ASC'? '-': 'zzzz');
         while ( my $obj = $objs->Next ) {
-            diag($obj->id .":". $obj->Name);
+            my $tmp;
+            if ( $direction eq 'ASC' ) {
+                $tmp = (substr($last, 0, 1) cmp substr($obj->Name, 0, 1));
+            } else {
+                $tmp = -(substr($last, -1, 1) cmp substr($obj->Name, -1, 1));
+            }
+            if ( $tmp > 0 ) {
+                $order_ok = 0; last;
+            }
+            $last = $obj->Name;
+        }
+        ok($order_ok, "$direction order is correct") or do {
+            diag "Wrong $direction query: ". $objs->BuildSelectQuery;
+            $objs->GotoFirstItem;
+            while ( my $obj = $objs->Next ) {
+                diag($obj->id .":". $obj->Name);
+            }
         }
     }
 }
@@ -160,6 +163,23 @@ sub cleanup_schema_oracle { [
     "DROP TABLE Tags", 
 ] }
 
+sub schema_sybase { [
+    "create table Objects (
+        id integer identity,
+        Name varchar(36) null
+    )",
+    "create table Tags (
+        id integer identity,
+        Object integer not null,
+        Name varchar(36) null
+    )",
+] }
+
+sub cleanup_schema_sybase { [
+    "drop table Objects",
+    "drop table Tags",
+] }
+
 
 1;
 
@@ -179,7 +199,7 @@ sub _Init {
 sub _ClassAccessible {
     {   
         id =>
-        {read => 1, type => 'int(11)' }, 
+        {read => 1, type => 'int' }, 
         Name =>
         {read => 1, write => 1, type => 'varchar(36)' },
     }
@@ -220,9 +240,9 @@ sub _Init {
 sub _ClassAccessible {
     {   
         id =>
-        {read => 1, type => 'int(11)' },
+        {read => 1, type => 'int' },
         Object =>
-        {read => 1, type => 'int(11)' },
+        {read => 1, type => 'int' },
         Name =>
         {read => 1, write => 1, type => 'varchar(36)' },
     }

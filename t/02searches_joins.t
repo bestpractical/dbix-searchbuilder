@@ -148,7 +148,7 @@ diag "main <- alias <- join into main" if $ENV{'TEST_VERBOSE'};
         ),
         "joined table"
     );
-    $users_obj->Limit( ALIAS => $g2u_alias, FIELD => 'GroupId', VALUE => "$groups_alias.id", QUOTEVALUE => 0);
+    $users_obj->Limit( ALIAS => $g2u_alias, FIELD => 'GroupId', VALUE => "$groups_alias.id", QUOTEVALUE => 0 );
     $users_obj->Limit( ALIAS => $groups_alias, FIELD => 'Name', VALUE => 'Developers' );
     #diag $users_obj->BuildSelectQuery;
     is( $users_obj->Count, 3, "three members" );
@@ -307,6 +307,28 @@ sub cleanup_schema_oracle { [
     "DROP TABLE UsersToGroups", 
 ] }
 
+sub schema_sybase { [
+    "create table Users (
+        id integer identity,
+        Login varchar(36) null
+    )",
+    "create table UsersToGroups (
+        id integer identity,
+        UserId integer,
+        GroupId integer
+    )",
+    "create table Groups (
+        id integer identity,
+        Name varchar(36) null
+    )",
+] }
+
+sub cleanup_schema_sybase { [
+    "drop table Users",
+    "drop table UsersToGroups",
+    "drop table Groups",
+] }
+
 package TestApp::User;
 
 use base $ENV{SB_TEST_CACHABLE}?
@@ -324,7 +346,7 @@ sub _ClassAccessible {
     {   
         
         id =>
-        {read => 1, type => 'int(11)'}, 
+        {read => 1, type => 'int'}, 
         Login => 
         {read => 1, write => 1, type => 'varchar(36)'},
 
@@ -376,7 +398,7 @@ sub _Init {
 sub _ClassAccessible {
     {   
         id =>
-        {read => 1, type => 'int(11)'}, 
+        {read => 1, type => 'int'}, 
         Name => 
         {read => 1, write => 1, type => 'varchar(36)'},
     }
@@ -423,11 +445,11 @@ sub _ClassAccessible {
     {   
         
         id =>
-        {read => 1, type => 'int(11)'}, 
+        {read => 1, type => 'int'}, 
         UserId =>
-        {read => 1, type => 'int(11)'}, 
+        {read => 1, type => 'int'}, 
         GroupId =>
-        {read => 1, type => 'int(11)'}, 
+        {read => 1, type => 'int'}, 
     }
 }
 

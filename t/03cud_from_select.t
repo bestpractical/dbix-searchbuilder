@@ -41,7 +41,8 @@ diag "insert into table from other tables only" if $ENV{'TEST_VERBOSE'};
     );
     is( $res, 2 );
     my $users = TestApp::Users->new( $handle );
-    my $alias = $users->Join( FIELD1 => 'id', TABLE2 => 'UsersToGroups', FIELD2 => 'UserId' );
+    my $alias = $users->Join(
+        FIELD1 => 'id', TABLE2 => 'UsersToGroups', FIELD2 => 'UserId' );
     $users->Limit( ALIAS => $alias, FIELD => 'GroupId', VALUE => 1 );
     is_deeply( [ sort map $_->Login, @{ $users->ItemsArrayRef } ], ['bob', 'john'] );
 }
@@ -55,7 +56,8 @@ diag "insert into table from two tables" if $ENV{'TEST_VERBOSE'};
     );
     is( $res, 2 );
     my $users = TestApp::Users->new( $handle );
-    my $u2g_alias = $users->Join( FIELD1 => 'id', TABLE2 => 'UsersToGroups', FIELD2 => 'UserId' );
+    my $u2g_alias = $users->Join(
+        FIELD1 => 'id', TABLE2 => 'UsersToGroups', FIELD2 => 'UserId' );
     my $g_alias = $users->Join(
         ALIAS1 => $u2g_alias, FIELD1 => 'GroupId', TABLE2 => 'Groups', FIELD2 => 'id',
     );
@@ -70,7 +72,8 @@ diag "insert into table from two tables" if $ENV{'TEST_VERBOSE'};
     is( $res, 2 );
 
     my $users = TestApp::Users->new( $handle );
-    my $alias = $users->Join( FIELD1 => 'id', TABLE2 => 'UsersToGroups', FIELD2 => 'UserId' );
+    my $alias = $users->Join(
+        FIELD1 => 'id', TABLE2 => 'UsersToGroups', FIELD2 => 'UserId' );
     $users->Limit( ALIAS => $alias, FIELD => 'GroupId', VALUE => 1 );
     is( $users->Count, 0 );
 }
@@ -118,7 +121,7 @@ diag "insert into table from two tables" if $ENV{'TEST_VERBOSE'};
     };
     is( $res, 2 );
     my $users = TestApp::Users->new( $handle );
-    my $u2g_alias = $users->Join( FIELD1 => 'id', TABLE2 => 'UsersToGroups', FIELD2 => 'UserId' );
+    my $u2g_alias = $users->Join(FIELD1 => 'id', TABLE2 => 'UsersToGroups', FIELD2 => 'UserId' );
     my $g_alias = $users->Join(
         ALIAS1 => $u2g_alias, FIELD1 => 'GroupId', TABLE2 => 'Groups', FIELD2 => 'id',
     );
@@ -229,6 +232,28 @@ sub cleanup_schema_oracle { [
     "DROP TABLE Groups", 
     "DROP SEQUENCE UsersToGroups_seq",
     "DROP TABLE UsersToGroups", 
+] }
+
+sub schema_sybase { [
+    "create table Users (
+        id integer identity,
+        Login varchar(36) null
+    )",
+    "create table UsersToGroups (
+        id integer identity,
+        UserId integer,
+        GroupId integer
+    )",
+    "create table Groups (
+        id integer identity,
+        Name varchar(36) null
+    )",
+] }
+
+sub cleanup_schema_sybase { [
+    "drop table Users",
+    "drop table UsersToGroups",
+    "drop table Groups",
 ] }
 
 package TestApp::Record;

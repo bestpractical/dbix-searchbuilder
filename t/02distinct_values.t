@@ -125,6 +125,24 @@ sub cleanup_schema_oracle { [
     "DROP TABLE Users", 
 ] }
 
+sub schema_sybase {
+<<EOF;
+create table Users (
+    id integer identity,
+    Login varchar(18) not null,
+    GroupName varchar(36) null
+)
+EOF
+
+}
+
+sub cleanup_schema_sybase {
+<<EOF;
+drop table Users
+EOF
+
+}
+
 
 1;
 
@@ -144,7 +162,7 @@ sub _Init {
 sub _ClassAccessible {
     {   
         id =>
-        {read => 1, type => 'int(11)' }, 
+        {read => 1, type => 'int' }, 
         Login =>
         {read => 1, write => 1, type => 'varchar(18)' },
         GroupName =>

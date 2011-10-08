@@ -27,15 +27,20 @@ SKIP: {
     my $ret = init_schema( 'TestApp::Address', $handle );
     isa_ok($ret,'DBI::st', "Inserted the schema. got a statement handle back");
 
-    {
-        my $rec = TestApp::Address->new($handle);
-        isa_ok($rec, 'DBIx::SearchBuilder::Record');
-        my $id = $rec->Create;
-        ok($id, 'created record');
-        $rec->Load( $id );
-        is($rec->id, $id, 'loaded record');
-        is($rec->Optional, undef, 'correct value');
-        is($rec->Mandatory, 1, 'correct value');
+    SKIP: {
+        if ($d eq 'Sybase') {
+            skip "Sybase can't insert empty record.", 5;
+        }
+        else {
+            my $rec = TestApp::Address->new($handle);
+            isa_ok($rec, 'DBIx::SearchBuilder::Record');
+            my $id = $rec->Create;
+            ok($id, 'created record');
+            $rec->Load( $id );
+            is($rec->id, $id, 'loaded record');
+            is($rec->Optional, undef, 'correct value');
+            is($rec->Mandatory, 1, 'correct value');
+        }
     }
     {
         my $rec = TestApp::Address->new($handle);
@@ -117,11 +122,11 @@ sub _Init {
 sub _ClassAccessible {
     {
         id =>
-        { read => 1, type => 'int(11)' },
+        { read => 1, type => 'int' },
         Optional =>
-        { read => 1, write => 1, type => 'int(11)' },
+        { read => 1, write => 1, type => 'int' },
         Mandatory =>
-        { read => 1, write => 1, type => 'int(11)', default => 1, no_nulls => 1 },
+        { read => 1, write => 1, type => 'int', default => 1, no_nulls => 1 },
     }
 }
 
@@ -173,5 +178,22 @@ sub cleanup_schema_oracle { [
     "DROP TABLE MyTable", 
 ] }
 
+sub schema_sybase {
+<<EOF;
+create table MyTable (
+    id integer identity,
+    Optional smallint null,
+    Mandatory integer default 1 not null
+)
+EOF
+
+}
+
+sub cleanup_schema_sybase {
+<<EOF;
+drop table MyTable
+EOF
+
+}
 
 1;

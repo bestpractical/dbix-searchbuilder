@@ -147,6 +147,7 @@ sub CleanSlate {
 	_close_parens
     group_by
     columns
+    alias_map
     );
 
     #we have no limit statements. DoSearch won't work.
@@ -240,6 +241,9 @@ sub _DoSearch {
 	$item->LoadFromHash($row);
 	$self->AddRecord($item);
     }
+
+    $self->_Handle->DeallocateCursor($QueryString);
+
     return $self->_RecordCount if $records->err;
 
     $self->{'must_redo_search'} = 0;
@@ -841,7 +845,16 @@ sub Limit {
         # we're doing an IS or IS NOT (null), don't quote the operator.
 
         if ( $args{'QUOTEVALUE'} && $args{'OPERATOR'} !~ /IS/i ) {
-            $args{'VALUE'} = $self->_Handle->dbh->quote( $args{'VALUE'} );
+            my $table;
+            if ($args{'ALIAS'}) {
+                $table = $self->{alias_map}->{ $args{'ALIAS'} };
+            }
+            else {
+                $table = $args{'TABLE'};
+            }
+            my $data_type = $self->_Handle->DataType($table, $args{'FIELD'});
+            $args{'VALUE'} =
+                    $self->_Handle->dbh->quote($args{'VALUE'}, $data_type);
         }
     }
 
@@ -1217,6 +1230,8 @@ sub _GetAlias {
 
     $self->{'alias_count'}++;
     my $alias = $table . "_" . $self->{'alias_count'};
+
+    $self->{alias_map}->{$alias} = $table;
 
     return ($alias);
 

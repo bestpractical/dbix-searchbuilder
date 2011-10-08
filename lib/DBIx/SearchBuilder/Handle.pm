@@ -946,6 +946,19 @@ sub ApplyLimits {
 }
 
 
+=head2 DeallocateCursor QUERY
+
+If limits are applied by means of using cursors instead of the LIMIT statement, then the
+cursor needs to be deallocated after the query has finished.
+
+=cut
+
+sub DeallocateCursor {
+    my $self = shift;
+    my $query = shift;
+
+}
+
 
 
 
@@ -1421,6 +1434,21 @@ sub Fields {
     }
 
     return @{ $FIELDS_IN_TABLE{ lc $table } || [] };
+}
+
+=head2 DataType TABLE, FIELD
+
+Get the numeric data type for FIELD in TABLE. Can be fed to $dbh->quote to get
+appropriate quoting behavior.
+
+=cut
+
+sub DataType {
+    my $self  = shift;
+    my $table = shift;
+    my $field = shift;
+
+    return undef;
 }
 
 
