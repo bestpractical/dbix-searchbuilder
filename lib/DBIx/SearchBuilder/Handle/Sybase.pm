@@ -142,7 +142,7 @@ sub ApplyLimits {
         $$statementref = "fetch absolute $first $cursor_name";
     }
     elsif ( $per_page ) {
-        $$statement_ref =~ s/^select/select top $per_page/i;
+        $$statementref =~ s/^select/select top $per_page/i;
     }
 }
 
@@ -195,7 +195,7 @@ sub ProcessPostFetch {
     my $records = shift;
     my $query = shift;
     my ( $cursor_name ) = $query =~ /^fetch absolute \d+ (\w+)$/;
-    if $cursor_name {
+    if ( $cursor_name ) {
         $self->dbh->do( "close $cursor_name" );
         $self->dbh->do( "deallocate $cursor_name" );
     }
@@ -211,7 +211,7 @@ server in the interfaces file using Server => "SERVERNAME".
 
 sub BuildDSN {
     my $self = shift;
-    my $args = ( Driver => 'Sybase',
+    my %args = ( Driver => 'Sybase',
                  Database => undef,
                  Host => undef,
                  Port => undef,
