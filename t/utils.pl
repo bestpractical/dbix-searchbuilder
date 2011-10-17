@@ -139,6 +139,22 @@ sub connect_oracle
     );
 }
 
+sub connect_sybase
+{
+    my $handle = shift;
+    return $handle->Connect(
+        Driver => 'Sybase',
+        Database => $ENV{'SB_TEST_SYBASE'} || 'tempdb',
+        User => $ENV{'SB_TEST_SYBASE_USER'} || undef,
+        Password => $ENV{'SB_TEST_SYBASE_PASS'} || undef,
+        Server => $ENV{'SB_TEST_SYBASE_SERVER'}
+               || ($ENV{'SB_TEST_SYBASE_HOST'} ? undef : 'SYBASE'),
+        Host => $ENV{'SB_TEST_SYBASE_HOST'} || undef,
+        Port => $ENV{'SB_TEST_SYBASE_PORT'} || undef,
+        Charset => 'iso_1',
+    );
+}
+
 =head2 should_test
 
 Checks environment for C<SB_TEST_*> variables.

@@ -56,6 +56,8 @@ diag "generate data" if $ENV{TEST_VERBOSE};
 }
 
 # ASC order
+SKIP: {
+skip "Sybase can't order by alias field", 6;
 foreach my $direction ( qw(ASC DESC) ) {
     my $objs = TestApp::Objects->new($handle);
     $objs->UnLimit;
@@ -92,6 +94,7 @@ foreach my $direction ( qw(ASC DESC) ) {
             diag($obj->id .":". $obj->Name);
         }
     }
+}
 }
 
 	cleanup_schema( 'TestApp', $handle );
@@ -159,6 +162,24 @@ sub cleanup_schema_oracle { [
     "DROP SEQUENCE Tags_seq",
     "DROP TABLE Tags", 
 ] }
+
+sub schema_sybase { [
+    "create table Objects (
+id integer identity,
+Name varchar(36) null
+)",
+    "create table Tags (
+id integer identity,
+Object integer not null,
+Name varchar(36) null
+)",
+] }
+
+sub cleanup_schema_sybase { [
+    "drop table Objects",
+    "drop table Tags",
+] }
+
 
 
 1;

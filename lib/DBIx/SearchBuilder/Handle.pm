@@ -9,7 +9,8 @@ use DBI;
 use Class::ReturnValue;
 use Encode qw();
 
-use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH %FIELDS_IN_TABLE);
+use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH %FIELDS_IN_TABLE
+            %DATA_TYPES);
 
 
 =head1 NAME
@@ -638,6 +639,19 @@ sub FetchResult {
   }
 }
 
+=head2 ProcessPostFetch
+
+Perform database-specific operations after records had been fetched,
+for example: deallocate a cursor.
+
+=cut
+
+sub ProcessPostFetch {
+    my $self = shift;
+    my $records = shift;
+    my $query = shift;
+    return undef;
+}
 
 =head2 BinarySafeBLOBs
 
@@ -1591,6 +1605,28 @@ sub ConvertTimezoneFunction {
         @_
     );
     return $args{'Field'};
+}
+
+=head2 FieldDataType TABLE, FIELD
+
+Get the numeric data type for FIELD in TABLE. Can be fed to $dbh->quote to get
+appropriate quoting behavior, especially in Sybase.
+
+=cut
+
+sub FieldDataType {
+    my $self  = shift;
+    my $table = shift;
+    my $field = shift;
+    return unless $table && $field;
+
+    unless ( $DATA_TYPES{$table}{$field} ) {
+        my $sth = $self->dbh->column_info( undef, undef, $table, $field )
+                or return;
+        my $info = $sth->fetchrow_hashref or return;
+        $DATA_TYPES{$table}{$field} = $info->{DATA_TYPE};
+    }
+    return $DATA_TYPES{$table}{$field};
 }
 
 
