@@ -8,6 +8,7 @@ our $VERSION = "1.61_01";
 
 use Clone qw();
 use Encode qw();
+use Scalar::Util qw(blessed);
 
 =head1 NAME
 
@@ -764,6 +765,11 @@ ENDSWITH is like LIKE, except it prepends a % to the beginning of the string
 MATCHES is equivalent to the database's LIKE -- that is, it's actually LIKE, but
 doesn't surround the string in % signs as LIKE does.
 
+=item "IN" and "NOT IN"
+
+VALUE can be array reference or object inherited from this class. If it's not
+then it's treated as any other operator and in most cases SQL would be wrong.
+
 =back
 
 =item ENTRYAGGREGATOR 
@@ -838,6 +844,28 @@ sub Limit {
         }
         elsif ( $args{'OPERATOR'} =~ /ENDSWITH/i ) {
             $args{'VALUE'}    = "%" . $args{'VALUE'};
+        }
+        elsif ( $args{'OPERATOR'} =~ /\bIN$/i ) {
+            if ( blessed $args{'VALUE'} && $args{'VALUE'}->isa(__PACKAGE__) ) {
+                # if no columns selected then select id
+                local $args{'VALUE'}{'columns'} = $args{'VALUE'}{'columns'};
+                $args{'VALUE'}->Column( FIELD => 'id' );
+                $args{'VALUE'} = '('. $args{'VALUE'}->BuildSelectQuery .')';
+                $args{'QUOTEVALUE'} = 0;
+            }
+            elsif ( ref $args{'VALUE'} ) {
+                if ( $args{'QUOTEVALUE'} ) {
+                    my $dbh = $self->_Handle->dbh;
+                    $args{'VALUE'} = join ', ', map $dbh->quote( $_ ), @{ $args{'VALUE'} };
+                } else {
+                    $args{'VALUE'} = join ', ', @{ $args{'VALUE'} };
+                }
+                $args{'VALUE'} = "($args{VALUE})";
+                $args{'QUOTEVALUE'} = 0;
+            }
+            else {
+                # otherwise behave in backwards compatible way
+            }
         }
         $args{'OPERATOR'} =~ s/(?:MATCHES|ENDSWITH|STARTSWITH)/LIKE/i;
 
@@ -1326,7 +1354,7 @@ sub FirstPage {
 =head3 GotoPage
 
 Takes an integer number and jumps to that page or first page if
-number ommitted. Numbering starts from zero.
+number omitted. Numbering starts from zero.
 
 =cut
 

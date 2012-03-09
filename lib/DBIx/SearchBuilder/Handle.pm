@@ -357,7 +357,7 @@ Splits the key value pairs, constructs an INSERT statement
 and returns query string and set of bind values.
 
 This method is more useful for subclassing in DB specific
-handles. L</Insert> method is prefered for end users.
+handles. L</Insert> method is preferred for end users.
 
 =cut
 
