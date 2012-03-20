@@ -65,7 +65,7 @@ diag "insert into table from two tables" if $ENV{'TEST_VERBOSE'};
 
 {
     my $res = $handle->DeleteFromSelect(
-        'UsersToGroups' => 'SELECT id FROM UsersToGroups WHERE GroupId = 1'
+        'UsersToGroups' => 'SELECT id FROM UsersToGroups WHERE GroupId = ?', 1
     );
     is( $res, 2 );
 
@@ -79,7 +79,8 @@ diag "insert into table from two tables" if $ENV{'TEST_VERBOSE'};
     my $res = $handle->SimpleUpdateFromSelect(
         'UsersToGroups',
         { UserId => 2, GroupId => 2 },
-        'SELECT id FROM UsersToGroups WHERE UserId = 1 AND GroupId = 3'
+        'SELECT id FROM UsersToGroups WHERE UserId = ? AND GroupId = ?',
+        1, 3
     );
     is( $res, 1 );
 
