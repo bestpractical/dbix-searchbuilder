@@ -1,5 +1,9 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.62 Mon Mar 26 09:31:05 UTC 2012
+
+* Bind values were ignored in SimpleUpdateFromSelect
+
 1.61 Fri Sep 16 15:47:50 MSD 2011
 
 * New methods in Handle for mass changes from select statements:
