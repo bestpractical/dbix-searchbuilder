@@ -9,7 +9,7 @@ use DBI;
 use Class::ReturnValue;
 use Encode qw();
 
-use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH %FIELDS_IN_TABLE);
+use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH %FIELDS_IN_TABLE $DBSchema);
 
 
 =head1 NAME
@@ -1411,8 +1411,9 @@ sub Fields {
     my $self  = shift;
     my $table = shift;
 
+    my $schema = defined($DBSchema) ? $DBSchema : '';
     unless ( keys %FIELDS_IN_TABLE ) {
-        my $sth = $self->dbh->column_info( undef, '', '%', '%' )
+        my $sth = $self->dbh->column_info( undef, $schema, '%', '%' )
             or return ();
         my $info = $sth->fetchall_arrayref({});
         foreach my $e ( @$info ) {
