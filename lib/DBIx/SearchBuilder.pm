@@ -134,7 +134,7 @@ sub CleanSlate {
     $self->{'first_row'}        = 0;
     $self->{'must_redo_search'} = 1;
     $self->{'show_rows'}        = 0;
-    $self->{'distinct_in_join'} = 1;
+    $self->{'joins_are_distinct'} = 0;
     @{ $self->{'aliases'} } = ();
 
     delete $self->{$_} for qw(
@@ -438,7 +438,7 @@ sub BuildSelectQuery {
         $QueryString .= $clause;
         $QueryString .= $self->_OrderClause;
     }
-    elsif ($self->_isJoined && $self->{'distinct_in_join'}) {
+    elsif ( !$self->{'joins_are_distinct'} && $self->_isJoined ) {
         $self->_DistinctQuery(\$QueryString);
     }
     else {
