@@ -13,3 +13,6 @@
 ^#.*#$
 ^\.#
 \bcover_db\b
+^MYMETA\.
+\.tar\.gz$
+^\.tags
