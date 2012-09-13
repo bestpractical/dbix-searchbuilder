@@ -1538,7 +1538,7 @@ sub DateTimeFunction {
     my $self = shift;
     my %args = (
         Field => undef,
-        Type => undef,
+        Type => '',
         Timezone => undef,
         @_
     );
