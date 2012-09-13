@@ -29,4 +29,5 @@ auto_install();
 no_index directory => 't';
 no_index directory => 'ex';
 
+sign;
 WriteAll();
