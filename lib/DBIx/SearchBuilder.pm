@@ -1649,6 +1649,23 @@ sub Columns {
     $self->Column( FIELD => $_ ) for @_;
 }
 
+=head2 AdditionalColumn
+
+Calls L</Column>, but first ensures that this table's standard columns are
+selected as well.  Thus, each call to this method results in an additional
+column selected instead of replacing the default columns.
+
+Takes a hash of parameters which is the same as L</Column>.  Returns the result
+of calling L</Column>.
+
+=cut
+
+sub AdditionalColumn {
+    my $self = shift;
+    $self->Column( FUNCTION => "main.*", AS => undef )
+        unless grep { /^\Qmain.*\E$/ } @{$self->{columns}};
+    return $self->Column(@_);
+}
 
 =head2 Fields TABLE
 
