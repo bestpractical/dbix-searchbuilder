@@ -1,5 +1,10 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.63 Fri Sep 14 2012 01:19:38 GMT+0400 (MSK)
+
+* joins_are_distinct hint to indicate that distinct is not
+  required for the current set of joins.
+
 1.62 Mon Mar 26 09:31:05 UTC 2012
 
 * Bind values were ignored in SimpleUpdateFromSelect
