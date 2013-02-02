@@ -773,6 +773,17 @@ sub __Set {
     }
     my $column = lc $args{'Column'};
 
+    # XXX: OLD behaviour, no_undefs_in_set will go away
+    if ( !defined $args{'Value'} && $self->{'no_undefs_in_set' } ) {
+        $ret->as_array( 0, "No value passed to _Set" );
+        $ret->as_error(
+            errno        => 2,
+            do_backtrace => 0,
+            message      => "No value passed to _Set"
+        );
+        return ( $ret->return_value );
+    }
+
     if ( defined $args{'Value'} ) {
         if ( $args{'Value'} eq '' &&
              ( $self->_Accessible( $args{'Column'}, 'is_numeric' )
