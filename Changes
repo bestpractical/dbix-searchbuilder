@@ -1,5 +1,12 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.64
+
+* _Set now can take undef as argument to mean default or NULL.
+  Still may result in error if default is not defined and no_nulls
+  is true for the column. If old behaviour is required set
+  $record->{'no_undefs_in_set'} to true value.
+
 1.63 Fri Sep 14 2012 01:19:38 GMT+0400 (MSK)
 
 * joins_are_distinct hint to indicate that distinct is not
