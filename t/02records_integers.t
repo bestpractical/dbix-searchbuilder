@@ -6,7 +6,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 33;
+use constant TESTS_PER_DRIVER => 37;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -63,39 +63,51 @@ SKIP: {
         ok($status, "status ok") or diag $status->error_message;
         is($rec->Optional, 1, 'set optional field to 1');
 
-        $status = $rec->SetOptional( '' );
+        $status = $rec->SetOptional( undef );
         ok($status, "status ok") or diag $status->error_message;
-        is($rec->Optional, 0, 'empty string should be threated as zero');
+        is($rec->Optional, undef, 'undef equal to NULL');
 
-        TODO: {
-            local $TODO = 'we have no way to set NULL value';
-            $status = $rec->SetOptional( undef );
-            ok($status, "status ok") or diag $status->error_message;
-            is($rec->Optional, undef, 'undef equal to NULL');
-            $status = $rec->SetOptional;
-            ok($status, "status ok") or diag $status->error_message;
-            is($rec->Optional, undef, 'no value is NULL too');
+        {
+            my $warn;
+            local $SIG{__WARN__} = sub {
+                $warn++;
+                warn @_;
+            };
+            $status = $rec->SetOptional('');
+            ok( $status, "status ok" ) or diag $status->error_message;
+            is( $rec->Optional, 0, 'empty string should be threated as zero' );
+            ok( !$warn, 'no warning to set value from null to not-null' );
         }
+
+        $status = $rec->SetOptional;
+        ok($status, "status ok") or diag $status->error_message;
+        is($rec->Optional, undef, 'no value is NULL too');
+
+        $status = $rec->SetOptional;
+        ok(!$status, 'same null value set');
+        is(
+            ( $status->as_array )[1],
+            "That is already the current value",
+            "correct error message"
+        );
+        is($rec->Optional, undef, 'no value is NULL too');
 
         # set operations on mandatory field
         $status = $rec->SetMandatory( 2 );
         ok($status, "status ok") or diag $status->error_message;
         is($rec->Mandatory, 2, 'set optional field to 2');
 
+        $status = $rec->SetMandatory( undef );
+        ok($status, "status ok") or diag $status->error_message;
+        is($rec->Mandatory, 1, 'fallback to default');
+
         $status = $rec->SetMandatory( '' );
         ok($status, "status ok") or diag $status->error_message;
         is($rec->Mandatory, 0, 'empty string should be threated as zero');
 
-        TODO: {
-            local $TODO = 'fallback to default value'
-                .' if field is NOT NULL and we try set it to NULL';
-            $status = $rec->SetMandatory( undef );
-            ok($status, "status ok") or diag $status->error_message;
-            is($rec->Mandatory, 1, 'fallback to default');
-            $status = $rec->SetMandatory;
-            ok($status, "status ok") or diag $status->error_message;
-            is($rec->Mandatory, 1, 'no value on set also fallback');
-        }
+        $status = $rec->SetMandatory;
+        ok($status, "status ok") or diag $status->error_message;
+        is($rec->Mandatory, 1, 'no value on set also fallback');
     }
 
     cleanup_schema( 'TestApp::Address', $handle );
