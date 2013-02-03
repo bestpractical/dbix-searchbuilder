@@ -144,7 +144,7 @@ CREATE TEMPORARY TABLE Address (
         Name varchar(36),
         Phone varchar(18),
         EmployeeId int(8),
-  	PRIMARY KEY (id)) TYPE='InnoDB'
+  	PRIMARY KEY (id)) ENGINE='InnoDB'
 EOF
 
 }
