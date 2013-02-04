@@ -44,14 +44,14 @@ SKIP: {
 
     foreach my $type ('date time', 'DateTime', 'date_time', 'Date-Time') {
         run_test(
-            { Type => $type },
+            { Type => $type, Driver => $d },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '2011-05-20 19:53:23',
             },
         );
         run_test(
-            { Type => $type, Timezone => { To => 'Europe/Moscow' } },
+            { Type => $type, Driver => $d, Timezone => { To => 'Europe/Moscow' } },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '2011-05-20 23:53:23',
@@ -61,14 +61,14 @@ SKIP: {
     }
 
     run_test(
-        { Type => 'time' },
+        { Type => 'time', Driver => $d },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '19:53:23',
         },
     );
     run_test(
-        { Type => 'time', Timezone => { To => 'Europe/Moscow' } },
+        { Type => 'time', Driver => $d, Timezone => { To => 'Europe/Moscow' } },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '23:53:23',
@@ -77,7 +77,7 @@ SKIP: {
     );
 
     run_test( 
-        { Type => 'hourly' },
+        { Type => 'hourly', Driver => $d },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '2011-05-20 19',
@@ -85,7 +85,7 @@ SKIP: {
         },
     );
     run_test( 
-        { Type => 'hourly', Timezone => { To => 'Europe/Moscow' } },
+        { Type => 'hourly', Driver => $d, Timezone => { To => 'Europe/Moscow' } },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '2011-05-20 23',
@@ -94,14 +94,14 @@ SKIP: {
     );
 
     run_test(
-        { Type => 'hour' },
+        { Type => 'hour', Driver => $d },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '19',
         },
     );
     run_test(
-        { Type => 'hour', Timezone => { To => 'Europe/Moscow' } },
+        { Type => 'hour', Driver => $d, Timezone => { To => 'Europe/Moscow' } },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '23',
@@ -111,14 +111,14 @@ SKIP: {
 
     foreach my $type ( 'date', 'daily' ) {
         run_test(
-            { Type => $type },
+            { Type => $type, Driver => $d },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '2011-05-20',
             },
         );
         run_test(
-            { Type => $type, Timezone => { To => 'Europe/Moscow' } },
+            { Type => $type, Driver => $d, Timezone => { To => 'Europe/Moscow' } },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '2011-05-20',
@@ -128,7 +128,7 @@ SKIP: {
     }
 
     run_test(
-        { Type => 'day of week' },
+        { Type => 'day of week', Driver => $d },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '5',
@@ -140,7 +140,7 @@ SKIP: {
         },
     );
     run_test(
-        { Type => 'day of week', Timezone => { To => 'Europe/Moscow' } },
+        { Type => 'day of week', Driver => $d, Timezone => { To => 'Europe/Moscow' } },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '5',
@@ -155,7 +155,7 @@ SKIP: {
 
     foreach my $type ( 'day', 'DayOfMonth' ) {
         run_test(
-            { Type => $type },
+            { Type => $type, Driver => $d },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '20',
@@ -163,7 +163,7 @@ SKIP: {
             },
         );
         run_test(
-            { Type => $type, Timezone => { To => 'Europe/Moscow' } },
+            { Type => $type, Driver => $d, Timezone => { To => 'Europe/Moscow' } },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '20',
@@ -173,7 +173,7 @@ SKIP: {
     }
 
     run_test(
-        { Type => 'day of year' },
+        { Type => 'day of year', Driver => $d },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '140',
@@ -181,7 +181,7 @@ SKIP: {
         },
     );
     run_test(
-        { Type => 'day of year', Timezone => { To => 'Europe/Moscow' } },
+        { Type => 'day of year', Driver => $d, Timezone => { To => 'Europe/Moscow' } },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '140',
@@ -190,7 +190,7 @@ SKIP: {
     );
 
     run_test(
-        { Type => 'month' },
+        { Type => 'month', Driver => $d },
         {
             '' => undef,
             '2011-05-20 19:53:23' => 5,
@@ -198,7 +198,7 @@ SKIP: {
     );
 
     run_test(
-        { Type => 'monthly' },
+        { Type => 'monthly', Driver => $d },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '2011-05',
@@ -207,7 +207,7 @@ SKIP: {
 
     foreach my $type ( 'year', 'annually' ) {
         run_test(
-            { Type => $type },
+            { Type => $type, Driver => $d },
             {
                 '' => undef,
                 '2011-05-20 19:53:23' => '2011',
@@ -216,7 +216,7 @@ SKIP: {
     }
 
     run_test(
-        { Type => 'week of year' },
+        { Type => 'week of year', Driver => $d },
         {
             '' => undef,
             '2011-05-20 19:53:23' => '20',
@@ -230,6 +230,10 @@ SKIP: {
 sub run_test {
     my $props = shift;
     my $expected = shift;
+
+    SKIP: {
+    skip "Sybase can't handle timezones", 1
+        if $props->{Timezone} && $props->{Driver} eq 'Sybase';
 
     my $users = TestApp::Users->new( $handle );
     $users->UnLimit;
@@ -245,6 +249,12 @@ sub run_test {
         $got{ $user->Expires || '' } = $user->__Value( $column );
     }
     foreach my $key ( keys %got ) {
+        # Some databases, like Sybase, output the date and time with milliseconds
+        if ( length( $key ) > 19 ) {
+            my $newkey = substr $key, 0, 19;
+            $got{$newkey} = delete $got{$key};
+            $key = $newkey;
+        }
         delete $got{ $key } unless exists $expected->{ $key };
 
         $got{ $key } =~ s/^0+(?!$)// if defined $got{ $key };
@@ -252,6 +262,7 @@ sub run_test {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     is_deeply( \%got, $expected, "correct ". $props->{'Type'} ." function" )
         or diag "wrong SQL: ". $users->BuildSelectQuery;
+    }
 }
 
 1;
@@ -302,6 +313,23 @@ sub cleanup_schema_oracle { [
     "DROP SEQUENCE Users_seq",
     "DROP TABLE Users",
 ] }
+
+sub schema_sybase {
+<<EOF;
+create table Users (
+id integer identity,
+Expires datetime null
+)
+EOF
+
+}
+
+sub cleanup_schema_sybase {
+<<EOF;
+drop table Users
+EOF
+
+}
 
 
 1;

@@ -383,6 +383,24 @@ sub cleanup_schema_oracle { [
     "DROP TABLE Users", 
 ] }
 
+sub schema_sybase {
+<<EOF;
+create table Users (
+id integer identity,
+Login varchar(18) not null,
+Name varchar(36) null,
+Phone varchar(18) null
+)
+EOF
+
+}
+
+sub cleanup_schema_sybase {
+<<EOF;
+drop table Users
+EOF
+
+}
 
 1;
 

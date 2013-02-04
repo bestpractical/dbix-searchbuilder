@@ -241,6 +241,7 @@ sub _DoSearch {
 	$item->LoadFromHash($row);
 	$self->AddRecord($item);
     }
+    $self->_Handle->ProcessPostFetch( $records, $QueryString );
     return $self->_RecordCount if $records->err;
 
     $self->{'must_redo_search'} = 0;
@@ -842,7 +843,17 @@ sub Limit {
         # we're doing an IS or IS NOT (null), don't quote the operator.
 
         if ( $args{'QUOTEVALUE'} && $args{'OPERATOR'} !~ /IS/i ) {
-            $args{'VALUE'} = $self->_Handle->dbh->quote( $args{'VALUE'} );
+            my $table;
+            if ( $args{'ALIAS'} ) {
+                ( $table = $args{'ALIAS'} ) =~ s/_\d+$//;
+            }
+            else {
+                $table = $args{'TABLE'};
+            }
+            my $data_type =
+                    $self->_Handle->FieldDataType( $table, $args{'FIELD'} );
+            $args{'VALUE'} =
+                    $self->_Handle->dbh->quote( $args{'VALUE'}, $data_type );
         }
     }
 

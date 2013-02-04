@@ -124,6 +124,24 @@ sub cleanup_schema_oracle { [
     "DROP TABLE Phones", 
 ] }
 
+sub schema_sybase { [
+    "create table Employees (
+id integer identity,
+Name varchar(36) null
+)",
+    "create table Phones (
+id integer identity,
+Employee integer not null,
+Phone varchar(18)
+)",
+] }
+
+sub cleanup_schema_sybase { [
+    "drop table Employees",
+    "drop table Phones",
+] }
+
+
 
 package TestApp::Employee;
 

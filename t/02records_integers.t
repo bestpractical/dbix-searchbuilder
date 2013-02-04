@@ -27,7 +27,8 @@ SKIP: {
     my $ret = init_schema( 'TestApp::Address', $handle );
     isa_ok($ret,'DBI::st', "Inserted the schema. got a statement handle back");
 
-    {
+    SKIP: {
+        skip "Sybase can't insert empty record", 5 if $d eq 'Sybase';
         my $rec = TestApp::Address->new($handle);
         isa_ok($rec, 'DBIx::SearchBuilder::Record');
         my $id = $rec->Create;
@@ -172,6 +173,24 @@ sub cleanup_schema_oracle { [
     "DROP SEQUENCE MyTable_seq",
     "DROP TABLE MyTable", 
 ] }
+
+sub schema_sybase {
+<<EOF;
+create table MyTable (
+id integer identity,
+Optional smallint null,
+Mandatory integer default 1 not null
+)
+EOF
+
+}
+
+sub cleanup_schema_sybase {
+<<EOF;
+drop table MyTable
+EOF
+
+}
 
 
 1;

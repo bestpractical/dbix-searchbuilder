@@ -232,6 +232,28 @@ sub cleanup_schema_oracle { [
     "DROP TABLE UsersToGroups", 
 ] }
 
+sub schema_sybase { [
+    "create table Users (
+id integer identity,
+Login varchar(36) null
+)",
+    "create table UsersToGroups (
+id integer identity,
+UserId integer,
+GroupId integer
+)",
+    "create table Groups (
+id integer identity,
+Name varchar(36) null
+)",
+] }
+
+sub cleanup_schema_sybase { [
+    "drop table Users",
+    "drop table UsersToGroups",
+    "drop table Groups",
+] }
+
 package TestApp::Record;
 
 use base $ENV{SB_TEST_CACHABLE}?

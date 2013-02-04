@@ -235,6 +235,24 @@ CREATE TEMPORARY TABLE Phones (
 } ]
 }
 
+sub schema_sybase { [
+    "create table Employees (
+id integer identity,
+Name varchar(36) null
+)",
+    "create table Phones (
+id integer identity,
+Employee integer not null,
+Phone varchar(18) null
+)",
+] }
+
+sub cleanup_schema_sybase { [
+    "drop table Employees",
+    "drop table Phones",
+] }
+
+
 package TestApp::Employee;
 
 use base $ENV{SB_TEST_CACHABLE}?
