@@ -30,6 +30,7 @@ requires:
   DBI: 0
   DBIx::DBSchema: 0
   Encode: 1.99
+  Scalar::Util: 0
   Want: 0
 resources:
   license: http://dev.perl.org/licenses/
