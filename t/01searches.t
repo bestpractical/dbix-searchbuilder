@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 130;
+use constant TESTS_PER_DRIVER => 144;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -384,6 +384,32 @@ SKIP: {
         isnt( my $id_alias = $users_obj->Column(FUNCTION => '?', FIELD => 'id'), 'id' );
         my $u = $users_obj->Next;
         is ( $u->_Value($id_alias), $u->id, "fetched with '?' function" );
+    }
+
+    $users_obj = TestApp::Users->new( $handle );
+    $users_obj->UnLimit;
+    {
+        is( $users_obj->Column(FIELD => 'id'), "id" );
+        is( my $id_alias = $users_obj->Column(FIELD => 'id', AS => 'foo'), "foo" );
+        my $u = $users_obj->Next;
+        is( $u->_Value($id_alias), $u->id, "fetched id with custom alias" );
+    }
+
+    $users_obj = TestApp::Users->new( $handle );
+    $users_obj->UnLimit;
+    {
+        is( $users_obj->Column(FUNCTION => "main.*", AS => undef), undef );
+        my $u = $users_obj->Next;
+        ok $u->{fetched}{"\L$_"}, "fetched field $_" for keys %{$u->_ClassAccessible};
+    }
+
+    $users_obj = TestApp::Users->new( $handle );
+    $users_obj->UnLimit;
+    {
+        is( my $id_alias = $users_obj->AdditionalColumn(FIELD => 'id', AS => 'foo'), "foo" );
+        my $u = $users_obj->Next;
+        is( $u->_Value($id_alias), $u->id, "fetched id with custom alias" );
+        ok $u->{fetched}{"\L$_"}, "fetched normal field $_" for keys %{$u->_ClassAccessible};
     }
 
 	cleanup_schema( 'TestApp', $handle );
