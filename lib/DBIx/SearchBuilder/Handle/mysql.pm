@@ -282,6 +282,17 @@ sub ConvertTimezoneFunction {
     return "CONVERT_TZ( $args{'Field'}, $args{'From'}, $args{'To'} )";
 }
 
+sub DateTimeIntervalFunction {
+    my $self = shift;
+    my %args = ( From => undef, To => undef, @_ );
+
+    my ($from, $to) = @args{'From', 'To'};
+    $_ = DBIx::SearchBuilder->CombineFunctionWithField(%$_)
+        for grep ref, $from, $to;
+
+    return "TIMESTAMPDIFF(SECOND, $from, $to)";
+}
+
 1;
 
 __END__

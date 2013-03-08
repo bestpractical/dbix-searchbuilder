@@ -209,6 +209,17 @@ sub ConvertTimezoneFunction {
     return $res;
 }
 
+sub DateTimeIntervalFunction {
+    my $self = shift;
+    my %args = ( From => undef, To => undef, @_ );
+
+    my ($from, $to) = @args{'From', 'To'};
+    $_ = DBIx::SearchBuilder->CombineFunctionWithField(%$_)
+        for grep ref, $from, $to;
+
+    return "strftime('%s',$to) - strftime('%s',$from)";
+}
+
 1;
 
 __END__
