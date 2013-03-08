@@ -44,6 +44,7 @@ t/02distinct_values.t
 t/02order_outer.t
 t/02records_cachable.t
 t/02records_datetime.t
+t/02records_dt_interval.t
 t/02records_integers.t
 t/02records_object.t
 t/02searches_joins.t
