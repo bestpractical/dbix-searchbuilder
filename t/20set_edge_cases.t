@@ -29,12 +29,12 @@ foreach my $d (@AvailableDrivers) {
             "Inserted the schema. got a statement handle back" );
 
         my $rec = TestApp::Address->new($handle);
-        my ($id) = $rec->Create( Name => 'foo', Number => 3 );
+        my ($id) = $rec->Create( Name => 'foo', Counter => 3 );
         ok( $id,             "Created record " . $id );
         ok( $rec->Load($id), "Loaded the record" );
 
         is( $rec->Name,   'foo', "name is foo" );
-        is( $rec->Number, 3,     "number is 3" );
+        is( $rec->Counter, 3,     "number is 3" );
 
         my ( $val, $msg ) = $rec->SetName('bar');
         ok( $val, $msg );
@@ -49,18 +49,18 @@ foreach my $d (@AvailableDrivers) {
         ok( $val, $msg );
         is( $rec->Name, '', "name is changed to ''" );
 
-        ( $val, $msg ) = $rec->SetNumber(42);
+        ( $val, $msg ) = $rec->SetCounter(42);
         ok( $val, $msg );
-        is( $rec->Number, 42, 'number is changed to 42' );
+        is( $rec->Counter, 42, 'number is changed to 42' );
 
-        ( $val, $msg ) = $rec->SetNumber(undef);
+        ( $val, $msg ) = $rec->SetCounter(undef);
         ok( !$val, $msg );
-        is( $msg, 'Illegal value for Number', 'error message' );
-        is( $rec->Number, 42, 'number is still 42' );
+        is( $msg, 'Illegal value for Counter', 'error message' );
+        is( $rec->Counter, 42, 'number is still 42' );
 
-        ( $val, $msg ) = $rec->SetNumber('');
+        ( $val, $msg ) = $rec->SetCounter('');
         ok( $val, $msg );
-        is( $rec->Number, 0, 'empty string implies 0 for integer field' );
+        is( $rec->Counter, 0, 'empty string implies 0 for integer field' );
 
         cleanup_schema( 'TestApp::Address', $handle );
     }
@@ -86,7 +86,7 @@ sub _ClassAccessible {
     {
         id     => { read => 1, type  => 'int(11)', },
         Name   => { read => 1, write => 1, type => 'varchar(14)', no_nulls => 1 },
-        Number => { read => 1, write => 1, type => 'int(8)', no_nulls => 1 },
+        Counter => { read => 1, write => 1, type => 'int(8)', no_nulls => 1 },
     };
 }
 
@@ -95,7 +95,7 @@ sub schema_mysql {
 CREATE TEMPORARY TABLE Address (
         id integer AUTO_INCREMENT,
         Name varchar(36) NOT NULL,
-        Number int(8) NOT NULL,
+        Counter int(8) NOT NULL,
   	PRIMARY KEY (id))
 EOF
 
@@ -106,7 +106,7 @@ sub schema_pg {
 CREATE TEMPORARY TABLE Address (
         id serial PRIMARY KEY,
         Name varchar(36) NOT NULL,
-        Number integer NOT NULL
+        Counter integer NOT NULL
 )
 EOF
 
@@ -118,7 +118,7 @@ sub schema_sqlite {
 CREATE TABLE Address (
         id  integer primary key,
         Name varchar(36) NOT NULL,
-        Number int(8) NOT NULL)
+        Counter int(8) NOT NULL)
 EOF
 
 }
@@ -129,7 +129,7 @@ sub schema_oracle {
         "CREATE TABLE Address (
         id integer CONSTRAINT Address_Key PRIMARY KEY,
         Name varchar(36) NOT NULL,
-        Number integer NOT NULL
+        Counter integer NOT NULL
         )",
     ];
 }
