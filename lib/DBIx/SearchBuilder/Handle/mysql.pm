@@ -69,9 +69,9 @@ sub SimpleUpdateFromSelect {
     return $sth unless $sth;
 
     my (@binds, @columns);
-    while ( my ($k, $v) = each %$values ) {
+    for my $k (sort keys %$values) {
         push @columns, $k;
-        push @binds, $v;
+        push @binds, $values->{$k};
     }
 
     my $update_query = "UPDATE $table SET "

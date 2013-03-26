@@ -7,7 +7,7 @@ use vars qw($AUTOLOAD);
 use Class::ReturnValue;
 use Encode qw();
 
-
+use DBIx::SearchBuilder::Util qw/ sorted_values /;
 
 =head1 NAME
 
@@ -667,7 +667,7 @@ Returns an array of the attributes of this class defined as "read" => 1 in this 
 sub ReadableAttributes {
     my $self = shift;
     my $ca = $self->_ClassAccessible();
-    my @readable = grep { $ca->{$_}->{'read'} or $ca->{$_}->{'record-read'} } keys %{$ca};
+    my @readable = grep { $ca->{$_}->{'read'} or $ca->{$_}->{'record-read'} } sort keys %{$ca};
     return (@readable);
 }
 
@@ -682,7 +682,7 @@ Returns an array of the attributes of this class defined as "write" => 1 in this
 sub WritableAttributes {
     my $self = shift;
     my $ca = $self->_ClassAccessible();
-    my @writable = grep { $ca->{$_}->{'write'} || $ca->{$_}->{'record-write'} } keys %{$ca};
+    my @writable = grep { $ca->{$_}->{'write'} || $ca->{$_}->{'record-write'} } sort keys %{$ca};
     return @writable;
 }
 
@@ -710,8 +710,8 @@ sub __Value {
     return undef if grep !defined, values %pk;
 
     my $query = "SELECT $field FROM ". $self->Table
-        ." WHERE ". join " AND ", map "$_ = ?", keys %pk;
-    my $sth = $self->_Handle->SimpleQuery( $query, values %pk ) or return undef;
+        ." WHERE ". join " AND ", map "$_ = ?", sort keys %pk;
+    my $sth = $self->_Handle->SimpleQuery( $query, sorted_values(%pk) ) or return undef;
     return $self->{'values'}{$field} = ($sth->fetchrow_array)[0];
 }
 
@@ -1089,7 +1089,7 @@ sub LoadByCols  {
     my $self = shift;
     my %hash  = (@_);
     my (@bind, @phrases);
-    foreach my $key (keys %hash) {  
+    foreach my $key (sort keys %hash) {
 	if (defined $hash{$key} &&  $hash{$key} ne '') {
         my $op;
         my $value;
@@ -1315,7 +1315,7 @@ sub __Delete {
     my @bind=();
     my %pkeys=$self->PrimaryKeys();
     my $where  = 'WHERE ';
-    foreach my $key (keys %pkeys) {
+    foreach my $key (sort keys %pkeys) {
        $where .= $key . "=?" . " AND ";
        push (@bind, $pkeys{$key});
     }

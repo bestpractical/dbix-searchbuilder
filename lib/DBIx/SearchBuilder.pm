@@ -9,6 +9,7 @@ our $VERSION = "1.63";
 use Clone qw();
 use Encode qw();
 use Scalar::Util qw(blessed);
+use DBIx::SearchBuilder::Util qw/ sorted_values /;
 
 =head1 NAME
 
@@ -1045,7 +1046,7 @@ sub _WhereClause {
     #Go through all restriction types. Build the where clause from the
     #Various subclauses.
     my $where_clause = '';
-    foreach my $subclause ( grep $_, values %{ $self->{'subclauses'} } ) {
+    foreach my $subclause ( grep $_, sorted_values($self->{'subclauses'}) ) {
         $where_clause .= " AND " if $where_clause;
         $where_clause .= $subclause;
     }
@@ -1063,7 +1064,7 @@ sub _CompileGenericRestrictions {
 
     my $result = '';
     #Go through all the restrictions of this type. Buld up the generic subclause
-    foreach my $restriction ( grep @$_, values %{ $self->{'restrictions'} } ) {
+    foreach my $restriction ( grep @$_, sorted_values($self->{'restrictions'}) ) {
         $result .= " AND " if $result;
         $result .= '(';
         foreach my $entry ( @$restriction ) {

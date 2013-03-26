@@ -9,6 +9,8 @@ use DBI;
 use Class::ReturnValue;
 use Encode qw();
 
+use DBIx::SearchBuilder::Util qw/ sorted_values /;
+
 use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH %FIELDS_IN_TABLE);
 
 
@@ -441,7 +443,7 @@ sub UpdateRecordValue {
 
   ## Constructs the where clause.
   my $where  = 'WHERE ';
-  foreach my $key (keys %{$args{'PrimaryKeys'}}) {
+  foreach my $key (sort keys %{$args{'PrimaryKeys'}}) {
      $where .= $key . "=?" . " AND ";
      push (@bind, $args{'PrimaryKeys'}{$key});
   }
@@ -494,9 +496,9 @@ sub SimpleUpdateFromSelect {
     my ($self, $table, $values, $query, @query_binds) = @_;
 
     my @columns; my @binds;
-    while ( my ($k, $v) = each %$values ) {
+    for my $k (sort keys %$values) {
         push @columns, $k;
-        push @binds, $v;
+        push @binds, $values->{$k};
     }
 
     my $full_query = "UPDATE $table SET ";
@@ -1043,7 +1045,7 @@ sub Join {
         push @{$args{SearchBuilder}{aliases}}, @{$collection->{aliases}};
 
         # Move over joins, as well
-        for my $join (keys %{$collection->{left_joins}}) {
+        for my $join (sort keys %{$collection->{left_joins}}) {
             my %alias = %{$collection->{left_joins}{$join}};
             $alias{depends_on} = $alias if $alias{depends_on} eq "main";
             $alias{criteria} = $self->_RenameRestriction(
@@ -1169,7 +1171,7 @@ sub _BuildJoins {
     while ( my @list =
         grep !$processed{ $_ }
             && (!$joins->{ $_ }{'depends_on'} || $processed{ $joins->{ $_ }{'depends_on'} }),
-        keys %$joins
+        sort keys %$joins
     ) {
         foreach my $join ( @list ) {
             $processed{ $join }++;
@@ -1183,7 +1185,7 @@ sub _BuildJoins {
                         $_->{'field'} .' '. $_->{'op'} .' '. $_->{'value'}:
                         $_
                 }
-                map { ('(', @$_, ')', $aggregator) } values %{ $meta->{'criteria'} };
+                map { ('(', @$_, ')', $aggregator) } sorted_values($meta->{'criteria'});
             pop @tmp;
             $join_clause .= join ' ', @tmp;
         }
@@ -1213,7 +1215,7 @@ sub OptimizeJoins {
     # finally we'll get ordered list with leafes in the beginning and top most nodes at
     # the end.
     while ( my @list = grep !$processed{ $_ }
-            && $processed{ $joins->{ $_ }{'depends_on'} }, keys %$joins )
+            && $processed{ $joins->{ $_ }{'depends_on'} }, sort keys %$joins )
     {
         unshift @ordered, @list;
         $processed{ $_ }++ foreach @list;
@@ -1253,19 +1255,19 @@ sub MayBeNull {
 
     # build full list of generic conditions
     my @conditions;
-    foreach ( grep @$_, values %{ $args{'SearchBuilder'}->{'restrictions'} } ) {
+    foreach ( grep @$_, sorted_values($args{'SearchBuilder'}->{'restrictions'}) ) {
         push @conditions, 'AND' if @conditions;
         push @conditions, '(', @$_, ')';
     }
 
     # find tables that depends on this alias and add their join conditions
-    foreach my $join ( values %{ $args{'SearchBuilder'}->{'left_joins'} } ) {
+    foreach my $join ( sorted_values($args{'SearchBuilder'}->{'left_joins'}) ) {
         # left joins on the left side so later we'll get 1 AND x expression
         # which equal to x, so we just skip it
         next if $join->{'type'} eq 'LEFT';
         next unless $join->{'depends_on'} eq $args{'ALIAS'};
 
-        my @tmp = map { ('(', @$_, ')', $join->{'entry_aggregator'}) } values %{ $join->{'criteria'} };
+        my @tmp = map { ('(', @$_, ')', $join->{'entry_aggregator'}) } sorted_values($join->{'criteria'});
         pop @tmp;
 
         @conditions = ('(', @conditions, ')', 'AND', '(', @tmp ,')');
