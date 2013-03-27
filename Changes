@@ -1,8 +1,11 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
-1.64
+1.63_01     Wed Mar 27 13:02:35 PDT 2013
 
 * IN and NOT IN operators in ->Limit method
+* Add an AdditionalColumn method to collections
+* Add an AS parameter to Column method in collections
+* Consistent query generation by sorting hash keys/values
 
 1.63 Fri Sep 14 2012 01:19:38 GMT+0400 (MSK)
 
