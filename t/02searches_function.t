@@ -41,7 +41,7 @@ diag "FUNCTION with ? in Limit" if $ENV{'TEST_VERBOSE'};
     my $users_obj = $clean_obj->Clone;
     $users_obj->Limit( FUNCTION => 'SUBSTR(?, 1, 1)', FIELD => 'Login', VALUE => 'I' );
     is( $users_obj->Count, 1, "only one value" );
-    is( $users_obj->First->Login, 'Ivan', "three users are members of the groups" );
+    is( $users_obj->First->Login, 'Ivan', "ivan is the only match" );
 }
 
 diag "make sure case insensitive works" if $ENV{'TEST_VERBOSE'}; 
@@ -49,7 +49,7 @@ diag "make sure case insensitive works" if $ENV{'TEST_VERBOSE'};
     my $users_obj = $clean_obj->Clone;
     $users_obj->Limit( FUNCTION => 'SUBSTR(?, 1, 1)', FIELD => 'Login', VALUE => 'i' );
     is( $users_obj->Count, 1, "only one value" );
-    is( $users_obj->First->Login, 'Ivan', "three users are members of the groups" );
+    is( $users_obj->First->Login, 'Ivan', "ivan is the only match" );
 }
 
 diag "FUNCTION without ?, but with () in Limit" if $ENV{'TEST_VERBOSE'};
@@ -57,7 +57,7 @@ diag "FUNCTION without ?, but with () in Limit" if $ENV{'TEST_VERBOSE'};
     my $users_obj = $clean_obj->Clone;
     $users_obj->Limit( FUNCTION => 'SUBSTR(main.Login, 1, 1)', FIELD => 'Login', VALUE => 'I' );
     is( $users_obj->Count, 1, "only one value" );
-    is( $users_obj->First->Login, 'Ivan', "three users are members of the groups" );
+    is( $users_obj->First->Login, 'Ivan', "ivan is the only match" );
 }
 
 diag "FUNCTION with ? in Column" if $ENV{'TEST_VERBOSE'};
