@@ -729,6 +729,11 @@ in the expression. )
 
 Column to be checked against.
 
+=item FUNCTION
+
+Function that should be checked against or applied to the FIELD before
+check. See L</CombineFunctionWithField> for rules.
+
 =item VALUE
 
 Should always be set and will always be quoted. 
@@ -812,9 +817,10 @@ sub Limit {
     my $self = shift;
     my %args = (
         TABLE           => $self->Table,
-        FIELD           => undef,
-        VALUE           => undef,
         ALIAS           => undef,
+        FIELD           => undef,
+        FUNCTION        => undef,
+        VALUE           => undef,
         QUOTEVALUE      => 1,
         ENTRYAGGREGATOR => undef,
         CASESENSITIVE   => undef,
@@ -827,18 +833,16 @@ sub Limit {
     unless ( $args{'ENTRYAGGREGATOR'} ) {
         if ( $args{'LEFTJOIN'} ) {
             $args{'ENTRYAGGREGATOR'} = 'AND';
-            } else {
-
+        } else {
             $args{'ENTRYAGGREGATOR'} = 'OR';
-            }
+        }
     }
 
 
     #since we're changing the search criteria, we need to redo the search
     $self->RedoSearch();
 
-    if ( $args{'FIELD'} ) {
-
+    if ( $args{'OPERATOR'} ) {
         #If it's a like, we supply the %s around the search term
         if ( $args{'OPERATOR'} =~ /LIKE/i ) {
             $args{'VALUE'} = "%" . $args{'VALUE'} . "%";
@@ -878,12 +882,17 @@ sub Limit {
         }
         $args{'OPERATOR'} =~ s/(?:MATCHES|ENDSWITH|STARTSWITH)/LIKE/i;
 
+        if ( $args{'OPERATOR'} =~ /IS/i ) {
+            $args{'VALUE'} = 'NULL';
+            $args{'QUOTEVALUE'} = 0;
+        }
+    }
+
+    if ( $args{'QUOTEVALUE'} ) {
         #if we're explicitly told not to to quote the value or
         # we're doing an IS or IS NOT (null), don't quote the operator.
 
-        if ( $args{'QUOTEVALUE'} && $args{'OPERATOR'} !~ /IS/i ) {
-            $args{'VALUE'} = $self->_Handle->dbh->quote( $args{'VALUE'} );
-        }
+        $args{'VALUE'} = $self->_Handle->dbh->quote( $args{'VALUE'} );
     }
 
     my $Alias = $self->_GenericRestriction(%args);
@@ -909,6 +918,7 @@ sub _GenericRestriction {
     my $self = shift;
     my %args = ( TABLE           => $self->Table,
                  FIELD           => undef,
+                 FUNCTION        => undef,
                  VALUE           => undef,
                  ALIAS           => undef,
                  LEFTJOIN        => undef,
@@ -929,7 +939,7 @@ sub _GenericRestriction {
         $args{'ALIAS'} = $args{'LEFTJOIN'};
     }
 
-    # {{{ if there's no alias set, we need to set it
+    # if there's no alias set, we need to set it
 
     unless ( $args{'ALIAS'} ) {
 
@@ -943,22 +953,16 @@ sub _GenericRestriction {
             $args{'ALIAS'} = 'main';
         }
 
-        # {{{ if we're joining, we need to work out the table alias
-
+        # if we're joining, we need to work out the table alias
         else {
             $args{'ALIAS'} = $self->NewAlias( $args{'TABLE'} );
         }
-
-        # }}}
     }
-
-    # }}}
 
     # Set this to the name of the field and the alias, unless we've been
     # handed a subclause name
 
-    my $QualifiedField = $args{'ALIAS'} . "." . $args{'FIELD'};
-    my $ClauseId = $args{'SUBCLAUSE'} || $QualifiedField;
+    my $ClauseId = $args{'SUBCLAUSE'} || ($args{'ALIAS'} . "." . $args{'FIELD'});
 
     # If we're trying to get a leftjoin restriction, lets set
     # $restriction to point htere. otherwise, lets construct normally
@@ -974,6 +978,8 @@ sub _GenericRestriction {
     else {
         $restriction = $self->{'restrictions'}{ $ClauseId } ||= [];
     }
+
+    my $QualifiedField = $self->CombineFunctionWithField( %args );
 
     # If it's a new value or we're overwriting this sort of restriction,
 
@@ -1164,7 +1170,8 @@ sub _OrderClause {
 
 =head2 GroupByCols ARRAY_OF_HASHES
 
-Each hash contains the keys ALIAS and FIELD. ALIAS defaults to 'main' if ignored.
+Each hash contains the keys FIELD, FUNCTION and ALIAS. Hash
+combined into SQL with L</CombineFunctionWithField>.
 
 =cut
 
@@ -1186,34 +1193,17 @@ sub _GroupClause {
     my $self = shift;
     return '' unless $self->{'group_by'};
 
-    my $row;
-    my $clause;
+    my $clause = '';
+    foreach my $row ( @{$self->{'group_by'}} ) {
+        my $part = $self->CombineFunctionWithField( %$row )
+            or next;
 
-    foreach $row ( @{$self->{'group_by'}} ) {
-        my %rowhash = ( ALIAS => 'main',
-			FIELD => undef,
-			%$row
-		      );
-        if ($rowhash{'FUNCTION'} ) {
-            $clause .= ($clause ? ", " : " ");
-            $clause .= $rowhash{'FUNCTION'};
-
-        }
-        elsif ( ($rowhash{'ALIAS'}) and
-             ($rowhash{'FIELD'}) ) {
-
-            $clause .= ($clause ? ", " : " ");
-            $clause .= $rowhash{'ALIAS'} . ".";
-            $clause .= $rowhash{'FIELD'};
-        }
+        $clause .= ', ' if $clause;
+        $clause .= $part;
     }
 
-    if ($clause) {
-	return " GROUP BY" . $clause . " ";
-    }
-    else {
-	return '';
-    }
+    return '' unless $clause;
+    return " GROUP BY $clause ";
 }
 
 =head2 NewAlias
@@ -1548,8 +1538,7 @@ arguments:
 
 =item FIELD
 
-Column name to fetch or apply function to.  This can be omitted if a
-FUNCTION is given which is not a function of a field.
+Column name to fetch or apply function to.
 
 =item ALIAS
 
@@ -1557,27 +1546,7 @@ Alias of a table the field is in; defaults to C<main>
 
 =item FUNCTION
 
-A SQL function that should be selected as the result.  If a FIELD is
-provided, then it is inserted into the function according to the
-following rules:
-
-=over 4
-
-=item *
-
-If the text of the function contains a '?' (question mark), then it is
-replaced with qualified FIELD.
-
-=item *
-
-If the text of the function has no '(' (opening parenthesis), then the
-qualified FIELD is appended in parentheses to the text.
-
-=item *
-
-Otherwise, the function is inserted verbatim, with no substitution.
-
-=back
+A SQL function that should be selected instead of FIELD or applied to it.
 
 =item AS
 
@@ -1587,6 +1556,9 @@ either the column's name (i.e. what is passed to FIELD) if it is in this table
 aliasing entirely.
 
 =back
+
+C<FIELD>, C<ALIAS> and C<FUNCTION> are combined according to
+L</CombineFunctionWithField>.
 
 If a FIELD is provided and it is in this table (ALIAS is 'main'), then
 the column named FIELD and can be accessed as usual by accessors:
@@ -1621,34 +1593,7 @@ sub Column {
 
     $args{'ALIAS'} ||= 'main';
 
-    my $name;
-    if ( $args{FIELD} && $args{FUNCTION} ) {
-        $name = $args{'ALIAS'} .'.'. $args{'FIELD'};
-
-        my $func = $args{FUNCTION};
-        if ( $func =~ /^DISTINCT\s*COUNT$/i ) {
-            $name = "COUNT(DISTINCT $name)";
-        }
-        # If we want to substitute 
-        elsif ($func =~ s/\?/$name/g) {
-            $name = $func;
-        }
-        # If we want to call a simple function on the column
-        elsif ($func !~ /\(/)  {
-            $name = "\U$func\E($name)";
-        } else {
-            $name = $func;
-        }
-    }
-    elsif ( $args{FUNCTION} ) {
-        $name = $args{FUNCTION};
-    }
-    elsif ( $args{FIELD} ) {
-        $name = $args{'ALIAS'} .'.'. $args{'FIELD'};
-    }
-    else {
-        $name = 'NULL';
-    }
+    my $name = $self->CombineFunctionWithField( %args ) || 'NULL';
 
     my $column = $args{'AS'};
 
@@ -1673,6 +1618,104 @@ sub Column {
     }
     push @{ $self->{columns} ||= [] }, defined($column) ? "$name AS \L$column" : $name;
     return $column;
+}
+
+=head2 CombineFunctionWithField
+
+Takes a hash with three optional arguments: FUNCTION, FIELD and ALIAS.
+
+Returns SQL with all three arguments combined according to the following
+rules.
+
+=over 4
+
+=item *
+
+FUNCTION or undef returned when FIELD is not provided
+
+=item *
+
+'main' ALIAS is used if not provided
+
+=item *
+
+ALIAS.FIELD returned when FUNCTION is not provided
+
+=item *
+
+NULL returned if FUNCTION is 'NULL'
+
+=item *
+
+If FUNCTION contains '?' (question marks) then they are replaced with
+ALIAS.FIELD and result returned.
+
+=item *
+
+If FUNCTION has no '(' (opening parenthesis) then ALIAS.FIELD is
+appended in parentheses and returned.
+
+=back
+
+Examples:
+
+    $obj->CombineFunctionWithField()
+     => undef
+
+    $obj->CombineFunctionWithField(FUNCTION => 'FOO')
+     => 'FOO'
+
+    $obj->CombineFunctionWithField(FIELD => 'foo')
+     => 'main.foo'
+
+    $obj->CombineFunctionWithField(ALIAS => 'bar', FIELD => 'foo')
+     => 'bar.foo'
+
+    $obj->CombineFunctionWithField(FUNCTION => 'FOO(?, ?)', FIELD => 'bar')
+     => 'FOO(main.bar, main.bar)'
+
+    $obj->CombineFunctionWithField(FUNCTION => 'FOO', ALIAS => 'bar', FIELD => 'baz')
+     => 'FOO(bar.baz)'
+
+    $obj->CombineFunctionWithField(FUNCTION => 'NULL', FIELD => 'bar')
+     => 'NULL'
+
+=cut
+
+
+
+sub CombineFunctionWithField {
+    my $self = shift;
+    my %args = (
+        FUNCTION => undef,
+        ALIAS    => undef,
+        FIELD    => undef,
+        @_
+    );
+
+    unless ( $args{'FIELD'} ) {
+        return $args{'FUNCTION'} || undef;
+    }
+
+    my $field = ($args{'ALIAS'} || 'main') .'.'. $args{'FIELD'};
+    return $field unless $args{'FUNCTION'};
+
+    my $func = $args{'FUNCTION'};
+    if ( $func =~ /^DISTINCT\s*COUNT$/i ) {
+        $func = "COUNT(DISTINCT $field)";
+    }
+
+    # If we want to substitute
+    elsif ( $func =~ s/\?/$field/g ) {
+        # no need to do anything, we already replaced
+    }
+
+    # If we want to call a simple function on the column
+    elsif ( $func !~ /\(/ && lc($func) ne 'null' )  {
+        $func = "\U$func\E($field)";
+    }
+
+    return $func;
 }
 
 

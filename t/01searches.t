@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 144;
+use constant TESTS_PER_DRIVER => 149;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -244,8 +244,36 @@ SKIP: {
 	TODO: {
         local $TODO = 'we leave order_by after clean slate, fixing this results in many RT failures';
         is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
-	    $users_obj = TestApp::Users->new( $handle );
     }
+
+    {
+	    $users_obj = TestApp::Users->new( $handle );
+        $users_obj->UnLimit;
+        $users_obj->GroupBy({FUNCTION => 'Login'});
+        $users_obj->OrderBy(FIELD => 'Login', ORDER => 'desc');
+        $users_obj->Column(FIELD => 'Login');
+        is( $users_obj->Count, $count_all, "group by / order by finds right amount");
+        $first_rec = $users_obj->First;
+        isa_ok( $first_rec, 'DBIx::SearchBuilder::Record', 'First returns record object' );
+        is( $first_rec->Login, 'obra', 'login is correct' );
+    }
+    {
+	    $users_obj = TestApp::Users->new( $handle );
+        $users_obj->UnLimit;
+        $users_obj->GroupBy({FUNCTION => 'SUBSTR(Login, 1, 1)', });
+        $users_obj->Column(FIELD => 'Login', FUNCTION => 'SUBSTR(Login, 1, 1)');
+        my @list = sort map $_->Login, @{ $users_obj->ItemsArrayRef };
+        is_deeply( \@list, [qw(a c g o)], 'correct values' );
+    }
+    {
+	    $users_obj = TestApp::Users->new( $handle );
+        $users_obj->UnLimit;
+        $users_obj->GroupBy({FUNCTION => 'SUBSTR(?, 1, 1)', FIELD => 'Login'});
+        $users_obj->Column(FIELD => 'Login', FUNCTION => 'SUBSTR(?, 1, 1)');
+        my @list = sort map $_->Login, @{ $users_obj->ItemsArrayRef };
+        is_deeply( \@list, [qw(a c g o)], 'correct values' );
+    }
+    $users_obj = TestApp::Users->new( $handle );
 
 # Let's play a little with ENTRYAGGREGATOR
     # EA defaults to OR for the same field
