@@ -47,6 +47,7 @@ t/02records_cachable.t
 t/02records_datetime.t
 t/02records_integers.t
 t/02records_object.t
+t/02searches_function.t
 t/02searches_joins.t
 t/03compatibility.t
 t/03cud_from_select.t
