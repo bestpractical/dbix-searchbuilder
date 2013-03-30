@@ -1575,44 +1575,56 @@ rules.
 
 =over 4
 
-=item * FUNCTION or undef returned when FIELD is not provided
+=item *
 
-=item * 'main' ALIAS is used if not provided
+FUNCTION or undef returned when FIELD is not provided
 
-=item * ALIAS.FIELD returned when FUNCTION is not provided
+=item *
 
-=item * NULL returned if FUNCTION is 'NULL'
+'main' ALIAS is used if not provided
 
-=item * If FUNCTION contains '?' (question marks) then they are
-replaced with ALIAS.FIELD and result returned.
+=item *
 
-=item * If FUNCTION has no '(' (opening parenthesis) then
-ALIAS.FIELD is appended in parentheses and returned.
+ALIAS.FIELD returned when FUNCTION is not provided
+
+=item *
+
+NULL returned if FUNCTION is 'NULL'
+
+=item *
+
+If FUNCTION contains '?' (question marks) then they are replaced with
+ALIAS.FIELD and result returned.
+
+=item *
+
+If FUNCTION has no '(' (opening parenthesis) then ALIAS.FIELD is
+appended in parentheses and returned.
 
 =back
 
 Examples:
 
-    ()
-    undef
+    $obj->CombineFunctionWithField()
+     => undef
 
-    (FUNCTION => 'FOO')
-    'FOO'
+    $obj->CombineFunctionWithField(FUNCTION => 'FOO')
+     => 'FOO'
 
-    (FIELD => 'foo')
-    'main.foo'
+    $obj->CombineFunctionWithField(FIELD => 'foo')
+     => 'main.foo'
 
-    (ALIAS => 'bar', FIELD => 'foo')
-    'bar.foo'
+    $obj->CombineFunctionWithField(ALIAS => 'bar', FIELD => 'foo')
+     => 'bar.foo'
 
-    (FUNCTION => 'FOO(?, ?)', FIELD => 'bar')
-    'FOO(main.bar, main.bar)'
+    $obj->CombineFunctionWithField(FUNCTION => 'FOO(?, ?)', FIELD => 'bar')
+     => 'FOO(main.bar, main.bar)'
 
-    (FUNCTION => 'FOO', FIELD => 'bar')
-    'FOO(main.bar)'
+    $obj->CombineFunctionWithField(FUNCTION => 'FOO', ALIAS => 'bar', FIELD => 'baz')
+     => 'FOO(bar.baz)'
 
-    (FUNCTION => 'NULL', FIELD => 'bar')
-    'NULL'
+    $obj->CombineFunctionWithField(FUNCTION => 'NULL', FIELD => 'bar')
+     => 'NULL'
 
 =cut
 
