@@ -49,6 +49,13 @@ SKIP: {
         my ($got) = $handle->dbh->selectrow_array("SELECT datetime(?,'localtime')", undef, $check);
         $skip_tz_tests = 1 if $got eq $check;
     }
+    elsif ($d eq 'mysql') {
+        my $check = '2013-04-01 16:00:00';
+        my ($got) = $handle->dbh->selectrow_array(
+            "SELECT CONVERT_TZ(?, ?, ?)", undef, $check, 'UTC', 'Europe/Moscow'
+        );
+        $skip_tz_tests = 1 if !$got || $got eq $check;
+    }
 
     foreach my $type ('date time', 'DateTime', 'date_time', 'Date-Time') {
         run_test(
