@@ -435,6 +435,13 @@ sub ConvertTimezoneFunction {
     return "FROM_TZ( CAST ($args{'Field'} AS TIMESTAMP), $args{'From'}) AT TIME ZONE $args{'To'}";
 }
 
+sub _DateTimeIntervalFunction {
+    my $self = shift;
+    my %args = ( From => undef, To => undef, @_ );
+
+    return "ROUND(( CAST( $args{'To'} AS DATE ) - CAST( $args{'From'} AS DATE ) ) * 86400)";
+}
+
 1;
 
 __END__

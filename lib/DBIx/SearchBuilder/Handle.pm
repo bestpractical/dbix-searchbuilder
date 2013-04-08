@@ -1595,6 +1595,27 @@ sub ConvertTimezoneFunction {
     return $args{'Field'};
 }
 
+=head2 DateTimeIntervalFunction
+
+Generates a function to calculate interval in seconds between two
+dates. Takes From and To arguments which can be either scalar or
+a hash. Hash is processed with L<DBIx::SearchBuilder/CombineFunctionWithField>.
+
+Arguments are not quoted or escaped in any way. It's caller's job.
+
+=cut
+
+sub DateTimeIntervalFunction {
+    my $self = shift;
+    my %args = ( From => undef, To => undef, @_ );
+
+    $_ = DBIx::SearchBuilder->CombineFunctionWithField(%$_)
+        for grep ref, @args{'From', 'To'};
+
+    return $self->_DateTimeIntervalFunction( %args );
+}
+
+sub _DateTimeIntervalFunction { return 'NULL' }
 
 =head2 DESTROY
 

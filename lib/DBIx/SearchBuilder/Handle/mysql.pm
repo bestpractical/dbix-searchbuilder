@@ -282,6 +282,13 @@ sub ConvertTimezoneFunction {
     return "CONVERT_TZ( $args{'Field'}, $args{'From'}, $args{'To'} )";
 }
 
+sub _DateTimeIntervalFunction {
+    my $self = shift;
+    my %args = ( From => undef, To => undef, @_ );
+
+    return "TIMESTAMPDIFF(SECOND, $args{'From'}, $args{'To'})";
+}
+
 1;
 
 __END__

@@ -325,6 +325,13 @@ sub ConvertTimezoneFunction {
     return $res;
 }
 
+sub _DateTimeIntervalFunction {
+    my $self = shift;
+    my %args = ( From => undef, To => undef, @_ );
+
+    return "EXTRACT(EPOCH FROM AGE($args{'To'}, $args{'From'}))";
+}
+
 1;
 
 __END__
