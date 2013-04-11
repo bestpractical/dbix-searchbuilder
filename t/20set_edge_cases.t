@@ -42,7 +42,7 @@ foreach my $d (@AvailableDrivers) {
 
         ( $val, $msg ) = $rec->SetName(undef);
         ok( !$val, $msg );
-        is( $msg, 'Illegal value for Name', 'error message' );
+        like( $msg, qr/Illegal value for non-nullable field Name/, 'error message' );
         is( $rec->Name, 'bar', 'name is still bar' );
 
         ( $val, $msg ) = $rec->SetName('');
@@ -55,7 +55,7 @@ foreach my $d (@AvailableDrivers) {
 
         ( $val, $msg ) = $rec->SetCounter(undef);
         ok( !$val, $msg );
-        is( $msg, 'Illegal value for Counter', 'error message' );
+        like( $msg, qr/Illegal value for non-nullable field Counter/, 'error message' );
         is( $rec->Counter, 42, 'number is still 42' );
 
         ( $val, $msg ) = $rec->SetCounter('');
