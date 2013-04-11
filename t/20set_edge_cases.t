@@ -45,9 +45,12 @@ foreach my $d (@AvailableDrivers) {
         like( $msg, qr/Illegal value for non-nullable field Name/, 'error message' );
         is( $rec->Name, 'bar', 'name is still bar' );
 
-        ( $val, $msg ) = $rec->SetName('');
-        ok( $val, $msg );
-        is( $rec->Name, '', "name is changed to ''" );
+        SKIP: {
+            skip 'Oracle treats the empty string as a NULL' => 2 if $d eq 'Oracle';
+            ( $val, $msg ) = $rec->SetName('');
+            ok( $val, $msg );
+            is( $rec->Name, '', "name is changed to ''" );
+        }
 
         ( $val, $msg ) = $rec->SetCounter(42);
         ok( $val, $msg );
