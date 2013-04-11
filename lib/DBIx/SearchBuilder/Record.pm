@@ -773,16 +773,8 @@ sub __Set {
     }
     my $column = lc $args{'Column'};
 
-    if ( defined $args{'Value'} ) {
-        if ( $args{'Value'} eq '' &&
-             ( $self->_Accessible( $args{'Column'}, 'is_numeric' )
-               || ($self->_Accessible( $args{'Column'}, 'type' ) || '') =~ /INT/i ) )
-        {
-            $args{'Value'} = 0;
-        }
-    }
-
-    unless ( defined $args{'Value'} ) {
+    # XXX: OLD behaviour, no_undefs_in_set will go away
+    if ( !defined $args{'Value'} && $self->{'no_undefs_in_set' } ) {
         $ret->as_array( 0, "No value passed to _Set" );
         $ret->as_error(
             errno        => 2,
@@ -791,8 +783,42 @@ sub __Set {
         );
         return ( $ret->return_value );
     }
-    elsif (    ( defined $self->__Value($column) )
-        and ( $args{'Value'} eq $self->__Value($column) ) )
+
+    if ( defined $args{'Value'} ) {
+        if ( $args{'Value'} eq '' &&
+             ( $self->_Accessible( $args{'Column'}, 'is_numeric' )
+               || ($self->_Accessible( $args{'Column'}, 'type' ) || '') =~ /INT/i ) )
+        {
+            $args{'Value'} = 0;
+        }
+    }
+    else {
+        if ( $self->_Accessible( $args{Column}, 'no_nulls' ) ) {
+            my $default = $self->_Accessible( $args{Column}, 'default' );
+
+            if ( defined $default ) {
+                $args{'Value'} = $default;
+            }
+            else {
+                $ret->as_array( 0, 'Illegal value for non-nullable field ' . $args{'Column'} . ": undef/null value provided and no default specified by class" );
+                $ret->as_error(
+                    errno        => 3,
+                    do_backtrace => 0,
+                    message      => "Illegal value for non-nullable field " . $args{'Column'} . ": undef/null value provided and no default specified by class"
+                );
+                return ( $ret->return_value );
+            }
+        }
+    }
+
+    my $current_value = $self->__Value($column);
+
+    if (
+        ( !defined $args{'Value'} && !defined $current_value )
+        || (   defined $args{'Value'}
+            && defined $current_value
+            && ( $args{'Value'} eq $current_value ) )
+      )
     {
         $ret->as_array( 0, "That is already the current value" );
         $ret->as_error(
@@ -844,8 +870,10 @@ sub __Set {
 
     my $val = $self->_Handle->UpdateRecordValue(%args);
     unless ($val) {
-        my $message = 
-            $args{'Column'} . " could not be set to " . $args{'Value'} . "." ;
+        my $message =
+            $args{'Column'}
+          . " could not be set to "
+          . ( defined $args{'Value'} ? $args{'Value'} : 'undef' ) . ".";
         $ret->as_array( 0, $message);
         $ret->as_error(
             errno        => 4,

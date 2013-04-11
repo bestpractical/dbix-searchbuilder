@@ -1,5 +1,13 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+TO BE RELEASED
+
+* _Set now can take undef as argument to mean default or NULL.
+  Still may result in error if default is not defined and no_nulls
+  is true for the column. If old behaviour is required set
+  $record->{'no_undefs_in_set'} to true value.
+
+
 1.63_01     Wed Mar 27 13:02:35 PDT 2013
 
 * IN and NOT IN operators in ->Limit method
