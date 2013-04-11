@@ -800,11 +800,11 @@ sub __Set {
                 $args{'Value'} = $default;
             }
             else {
-                $ret->as_array( 0, 'Illegal value for ' . $args{'Column'} );
+                $ret->as_array( 0, 'Illegal value for non-nullable field ' . $args{'Column'} . ": undef/null value provided and no default specified by class" );
                 $ret->as_error(
                     errno        => 3,
                     do_backtrace => 0,
-                    message      => "Illegal value for " . $args{'Column'}
+                    message      => "Illegal value for non-nullable field " . $args{'Column'} . ": undef/null value provided and no default specified by class"
                 );
                 return ( $ret->return_value );
             }
