@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 42;
+use constant TESTS_PER_DRIVER => 52;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -94,6 +94,27 @@ diag("init schema in transaction and commit") if $ENV{'TEST_VERBOSE'};
 	isa_ok($ret, 'DBI::st', "Inserted the schema. got a statement handle back");
     ok($handle->Commit, "commit successed");
     is($handle->TransactionDepth, 0, "transaction depth is 0");
+
+diag("nested txns with mixed escaping actions") if $ENV{'TEST_VERBOSE'};
+    ok($handle->BeginTransaction, "begin transaction");
+    ok($handle->BeginTransaction, "begin nested transaction");
+    ok($handle->Rollback, "rollback successed");
+    {
+        my $warn = 0;
+        local $SIG{__WARN__} = sub{ $_[0] =~ /Rollback and commit are mixed/? $warn++: warn @_ };
+        ok($handle->Commit, "commit successed");
+        is($warn, 1, "not forced rollback fires warning");
+    }
+
+    ok($handle->BeginTransaction, "begin transaction");
+    ok($handle->BeginTransaction, "begin nested transaction");
+    ok($handle->Commit, "rollback successed");
+    {
+        my $warn = 0;
+        local $SIG{__WARN__} = sub{ $_[0] =~ /Rollback and commit are mixed/? $warn++: warn @_ };
+        ok($handle->Rollback, "commit successed");
+        is($warn, 1, "not forced rollback fires warning");
+    }
 
 	cleanup_schema( 'TestApp::Address', $handle );
 }} # SKIP, foreach blocks

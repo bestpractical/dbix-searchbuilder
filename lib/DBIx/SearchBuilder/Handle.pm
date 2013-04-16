@@ -11,7 +11,7 @@ use Encode qw();
 
 use DBIx::SearchBuilder::Util qw/ sorted_values /;
 
-use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH %FIELDS_IN_TABLE);
+use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH %TRANSROLLBACK %FIELDS_IN_TABLE);
 
 
 =head1 NAME
@@ -841,15 +841,23 @@ sub EndTransaction {
     $depth = 0 if $args{'Force'};
 
     $self->TransactionDepth( $depth );
+
+    my $dbh = $self->dbh;
+    $TRANSROLLBACK{ $dbh }{ $action }++;
+    if ( $TRANSROLLBACK{ $dbh }{ $action eq 'commit'? 'rollback' : 'commit' } ) {
+        warn "Rollback and commit are mixed while escaping nested transaction";
+    }
     return 1 if $depth;
 
+    delete $TRANSROLLBACK{ $dbh };
+
     if ($action eq 'commit') {
-        return $self->dbh->commit;
+        return $dbh->commit;
     }
     else {
         DBIx::SearchBuilder::Record::Cachable->FlushCache
             if DBIx::SearchBuilder::Record::Cachable->can('FlushCache');
-        return $self->dbh->rollback;
+        return $dbh->rollback;
     }
 }
 
