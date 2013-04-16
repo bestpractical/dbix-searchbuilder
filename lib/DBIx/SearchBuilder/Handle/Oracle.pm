@@ -442,6 +442,10 @@ sub _DateTimeIntervalFunction {
     return "ROUND(( CAST( $args{'To'} AS DATE ) - CAST( $args{'From'} AS DATE ) ) * 86400)";
 }
 
+sub HasSupportForNullsOrder {
+    return 1;
+}
+
 1;
 
 __END__
