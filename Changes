@@ -1,12 +1,18 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
-TO BE RELEASED
+1.63_02 Wed Apr 17 18:47:31 MSK 2013
 
 * _Set now can take undef as argument to mean default or NULL.
   Still may result in error if default is not defined and no_nulls
   is true for the column. If old behaviour is required set
   $record->{'no_undefs_in_set'} to true value.
 
+* FUNCTION argument is now allowed in Limit. Code to combine
+  FUNCTION, ALIAS and FIELD was refactored and unified in one
+  place - CombineFunctionWithField method. Used in Column, GroupBy
+  and Limit. This change should be backwards compatible.
+
+* Handle->DateTimeIntervalFunction
 
 1.63_01     Wed Mar 27 13:02:35 PDT 2013
 

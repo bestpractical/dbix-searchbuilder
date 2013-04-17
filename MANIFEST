@@ -57,6 +57,7 @@ t/03transactions.t
 t/03versions.t
 t/10schema.t
 t/11schema_records.t
+t/20set_edge_cases.t
 t/pod.t
 t/testmodels.pl
 t/utils.pl
