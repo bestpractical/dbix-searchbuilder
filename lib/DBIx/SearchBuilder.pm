@@ -232,8 +232,9 @@ sub _DoSearch {
 
     my $QueryString = $self->BuildSelectQuery();
 
-    # If we're about to redo the search, we need an empty set of items
+    # If we're about to redo the search, we need an empty set of items and a reset iterator
     delete $self->{'items'};
+    $self->{'itemscount'} = 0;
 
     my $records = $self->_Handle->SimpleQuery($QueryString);
     return 0 unless $records;
