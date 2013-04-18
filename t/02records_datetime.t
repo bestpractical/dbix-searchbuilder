@@ -14,6 +14,7 @@ my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
 
 my $handle;
+my $skip_tz_tests;
 
 foreach my $d ( @AvailableDrivers ) {
 SKIP: {
@@ -41,6 +42,20 @@ SKIP: {
 
     is( $handle->ConvertTimezoneFunction( Field => '?' ), '?', 'no To argument' );
     is( $handle->ConvertTimezoneFunction( To => 'utc', Field => '?' ), '?', 'From and To equal' );
+
+    $skip_tz_tests = 0;
+    if ( $d eq 'SQLite' ) {
+        my $check = '2013-04-01 16:00:00';
+        my ($got) = $handle->dbh->selectrow_array("SELECT datetime(?,'localtime')", undef, $check);
+        $skip_tz_tests = 1 if $got eq $check;
+    }
+    elsif ($d eq 'mysql') {
+        my $check = '2013-04-01 16:00:00';
+        my ($got) = $handle->dbh->selectrow_array(
+            "SELECT CONVERT_TZ(?, ?, ?)", undef, $check, 'UTC', 'Europe/Moscow'
+        );
+        $skip_tz_tests = 1 if !$got || $got eq $check;
+    }
 
     foreach my $type ('date time', 'DateTime', 'date_time', 'Date-Time') {
         run_test(
@@ -231,27 +246,32 @@ sub run_test {
     my $props = shift;
     my $expected = shift;
 
-    my $users = TestApp::Users->new( $handle );
-    $users->UnLimit;
-    $users->Column( FIELD => 'Expires' );
-    my $column = $users->Column(
-        ALIAS => 'main',
-        FIELD => 'Expires',
-        FUNCTION => $users->_Handle->DateTimeFunction( %$props ),
-    );
+    SKIP: {
+        skip "skipping timezone tests", 1
+            if $props->{'Timezone'} && $skip_tz_tests;
 
-    my %got;
-    while ( my $user = $users->Next ) {
-        $got{ $user->Expires || '' } = $user->__Value( $column );
-    }
-    foreach my $key ( keys %got ) {
-        delete $got{ $key } unless exists $expected->{ $key };
+        my $users = TestApp::Users->new( $handle );
+        $users->UnLimit;
+        $users->Column( FIELD => 'Expires' );
+        my $column = $users->Column(
+            ALIAS => 'main',
+            FIELD => 'Expires',
+            FUNCTION => $users->_Handle->DateTimeFunction( %$props ),
+        );
 
-        $got{ $key } =~ s/^0+(?!$)// if defined $got{ $key };
+        my %got;
+        while ( my $user = $users->Next ) {
+            $got{ $user->Expires || '' } = $user->__Value( $column );
+        }
+        foreach my $key ( keys %got ) {
+            delete $got{ $key } unless exists $expected->{ $key };
+
+            $got{ $key } =~ s/^0+(?!$)// if defined $got{ $key };
+        }
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        is_deeply( \%got, $expected, "correct ". $props->{'Type'} ." function" )
+            or diag "wrong SQL: ". $users->BuildSelectQuery;
     }
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
-    is_deeply( \%got, $expected, "correct ". $props->{'Type'} ." function" )
-        or diag "wrong SQL: ". $users->BuildSelectQuery;
 }
 
 1;
