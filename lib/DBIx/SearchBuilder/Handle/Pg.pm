@@ -332,6 +332,10 @@ sub _DateTimeIntervalFunction {
     return "EXTRACT(EPOCH FROM AGE($args{'To'}, $args{'From'}))";
 }
 
+sub HasSupportForNullsOrder {
+    return 1;
+}
+
 1;
 
 __END__

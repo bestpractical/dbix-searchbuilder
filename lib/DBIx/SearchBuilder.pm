@@ -1132,6 +1132,8 @@ sub _OrderClause {
 
     return '' unless $self->{'order_by'};
 
+    my $nulls_order = $self->_Handle->NullsOrder;
+
     my $clause = '';
     foreach my $row ( @{$self->{'order_by'}} ) {
 
@@ -1142,9 +1144,11 @@ sub _OrderClause {
 		      );
         if ($rowhash{'ORDER'} && $rowhash{'ORDER'} =~ /^des/i) {
 	    $rowhash{'ORDER'} = "DESC";
+            $rowhash{'ORDER'} .= ' '. $nulls_order->{'DESC'} if $nulls_order;
         }
         else {
 	    $rowhash{'ORDER'} = "ASC";
+            $rowhash{'ORDER'} .= ' '. $nulls_order->{'ASC'} if $nulls_order;
         }
         $rowhash{'ALIAS'} = 'main' unless defined $rowhash{'ALIAS'};
 
