@@ -976,6 +976,7 @@ sub Join {
         FIELD2        => undef,
         ALIAS2        => undef,
         EXPRESSION    => undef,
+        DISTINCT      => 0,
         @_
     );
 
@@ -1078,6 +1079,12 @@ sub Join {
     my $criterion = $args{'EXPRESSION'} || $args{'ALIAS1'}.".".$args{'FIELD1'};
     $meta->{'criteria'}{'base_criterion'} =
         [ { field => "$alias.$args{'FIELD2'}", op => '=', value => $criterion } ];
+
+    if ( $args{'DISTINCT'} && !defined $args{'SearchBuilder'}{'joins_are_distinct'} ) {
+        $args{SearchBuilder}{joins_are_distinct} = 1;
+    } elsif ( !$args{'DISTINCT'} ) {
+        $args{SearchBuilder}{joins_are_distinct} = 0;
+    }
 
     return ($alias);
 }

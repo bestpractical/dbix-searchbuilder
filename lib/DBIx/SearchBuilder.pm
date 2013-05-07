@@ -136,7 +136,7 @@ sub CleanSlate {
     $self->{'first_row'}        = 0;
     $self->{'must_redo_search'} = 1;
     $self->{'show_rows'}        = 0;
-    $self->{'joins_are_distinct'} = 0;
+    $self->{'joins_are_distinct'} = undef;
     @{ $self->{'aliases'} } = ();
 
     delete $self->{$_} for qw(
