@@ -976,7 +976,6 @@ sub Join {
         FIELD2        => undef,
         ALIAS2        => undef,
         EXPRESSION    => undef,
-        DISTINCT      => 0,
         @_
     );
 
@@ -1025,6 +1024,9 @@ sub Join {
                 }
             }
 
+        } else {
+            # we found alias, so NewAlias should take care of distinctness
+            $args{'DISTINCT'} = 1 unless exists $args{'DISTINCT'};
         }
 
         unless ( $alias ) {

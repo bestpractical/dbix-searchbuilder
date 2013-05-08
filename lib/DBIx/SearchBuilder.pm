@@ -1208,7 +1208,17 @@ sub _GroupClause {
 
 =head2 NewAlias
 
-Takes the name of a table.
+Takes the name of a table and paramhash with TYPE and DISTINCT.
+
+Use TYPE equal to C<LEFT> to indicate that it's LEFT JOIN. Old
+style way to call (see below) is also supported, but should be
+B<avoided>:
+
+    $records->NewAlias('aTable', 'left');
+
+True DISTINCT value indicates that this join keeps result set
+distinct and DB side distinct is not required. See also L</Join>.
+
 Returns the string of a new Alias for that table, which can be used to Join tables
 or to Limit what gets found by a search.
 
@@ -1217,7 +1227,9 @@ or to Limit what gets found by a search.
 sub NewAlias {
     my $self  = shift;
     my $table = shift || die "Missing parameter";
-    my $type = shift;
+    my %args = @_%2? (TYPE => @_) : (@_);
+
+    my $type = $args{'TYPE'};
 
     my $alias = $self->_GetAlias($table);
 
@@ -1230,6 +1242,12 @@ sub NewAlias {
         $meta->{'depends_on'} = '';
     } else {
         die "Unsupported alias(join) type";
+    }
+
+    if ( $args{'DISTINCT'} && !defined $self->{'joins_are_distinct'} ) {
+        $self->{'joins_are_distinct'} = 1;
+    } elsif ( !$args{'DISTINCT'} ) {
+        $self->{'joins_are_distinct'} = 0;
     }
 
     return $alias;
@@ -1277,6 +1295,11 @@ ALIAS2/TABLE2 on an arbitrary expression.
 It is also possible to join to a pre-existing, already-limited
 L<DBIx::SearchBuilder> object, by passing it as COLLECTION2, instead
 of providing an ALIAS2 or TABLE2.
+
+By passing true value as DISTINCT argument join can be marked distinct. If
+all joins are distinct then whole query is distinct and SearchBuilder can
+avoid L</_DistinctQuery> call that can hurt performance of the query. See
+also L</NewAlias>.
 
 =cut
 
