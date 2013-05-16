@@ -538,9 +538,13 @@ sub GotoFirstItem {
 
 =head2 GotoItem
 
-Takes an integer, n.
-Sets the record counter to n. the next time you call Next,
-you'll get the nth item.
+Takes an integer N and sets the record iterator to N.  The first time L</Next>
+is called afterwards, it will return the Nth item found by the search.
+
+You should only call GotoItem after you've already fetched at least one result
+or otherwise forced the search query to run (such as via L</ItemsArrayRef>).
+If GotoItem is called before the search query is ever run, it will reset the
+item iterator and L</Next> will return the L</First> item.
 
 =cut
 
