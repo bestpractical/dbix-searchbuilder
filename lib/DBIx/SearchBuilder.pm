@@ -574,6 +574,7 @@ Returns the last item
 
 sub Last {
     my $self = shift;
+    $self->_DoSearch if $self->{'must_redo_search'};
     $self->GotoItem( ( $self->Count ) - 1 );
     return ( $self->Next );
 }
