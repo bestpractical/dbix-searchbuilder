@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 149;
+use constant TESTS_PER_DRIVER => 150;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -439,6 +439,12 @@ SKIP: {
         is( $u->_Value($id_alias), $u->id, "fetched id with custom alias" );
         ok $u->{fetched}{"\L$_"}, "fetched normal field $_" for keys %{$u->_ClassAccessible};
     }
+
+    # Last without running the search first
+    $users_obj = TestApp::Users->new( $handle );
+    $users_obj->UnLimit;
+    $users_obj->OrderBy( FIELD => "Login", ORDER => "ASC" );
+    is $users_obj->Last->Login, "obra", "Found last record correctly before search was run";
 
 	cleanup_schema( 'TestApp', $handle );
 }} # SKIP, foreach blocks
