@@ -6,7 +6,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 47;
+use constant TESTS_PER_DRIVER => 59;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -206,6 +206,91 @@ diag "LEFT JOIN optimization and OR clause" if $ENV{'TEST_VERBOSE'};
     $users_obj->_CloseParen('my_clause');
     ok( $users_obj->BuildSelectQuery =~ /LEFT JOIN/, 'LJ is not optimized away');
     is( $users_obj->Count, 4, "all users" );
+}
+
+diag "DISTINCT in Join" if $ENV{'TEST_VERBOSE'};
+{
+    $users_obj->CleanSlate;
+    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+    ok( !$users_obj->_isJoined, "new object isn't joined");
+    my $alias = $users_obj->Join(
+        FIELD1 => 'id',
+        TABLE2 => 'UsersToGroups',
+        FIELD2 => 'UserId',
+        DISTINCT => 1,
+    );
+    $users_obj->Limit(
+        ALIAS => $alias,
+        FIELD => 'GroupId',
+        VALUE => 1,
+    );
+    ok( $users_obj->BuildSelectQuery !~ /DISTINCT|GROUP\s+BY/i, 'no distinct in SQL');
+    is_deeply(
+        [ sort map $_->Login, @{$users_obj->ItemsArrayRef} ],
+        [ 'aurelia', 'ivan', 'john' ],
+        "members of dev group"
+    );
+}
+
+diag "DISTINCT in NewAlias" if $ENV{'TEST_VERBOSE'};
+{
+    $users_obj->CleanSlate;
+    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+    ok( !$users_obj->_isJoined, "new object isn't joined");
+    my $alias = $users_obj->NewAlias('UsersToGroups', DISTINCT => 1);
+    $users_obj->Join(
+        FIELD1 => 'id',
+        ALIAS2 => $alias,
+        FIELD2 => 'UserId',
+    );
+    $users_obj->Limit(
+        ALIAS => $alias,
+        FIELD => 'GroupId',
+        VALUE => 1,
+    );
+    ok( $users_obj->BuildSelectQuery !~ /DISTINCT|GROUP\s+BY/i, 'no distinct in SQL');
+    is_deeply(
+        [ sort map $_->Login, @{$users_obj->ItemsArrayRef} ],
+        [ 'aurelia', 'ivan', 'john' ],
+        "members of dev group"
+    );
+}
+
+diag "mixing DISTINCT" if $ENV{'TEST_VERBOSE'};
+{
+    $users_obj->CleanSlate;
+    is_deeply( $users_obj, $clean_obj, 'after CleanSlate looks like new object');
+    ok( !$users_obj->_isJoined, "new object isn't joined");
+    my $u2g_alias = $users_obj->Join(
+        FIELD1 => 'id',
+        TABLE2 => 'UsersToGroups',
+        FIELD2 => 'UserId',
+        DISTINCT => 0,
+    );
+    my $g_alias = $users_obj->Join(
+        ALIAS1 => $u2g_alias,
+        FIELD1 => 'GroupId',
+        TABLE2 => 'Groups',
+        FIELD2 => 'id',
+        DISTINCT => 1,
+    );
+
+    $users_obj->Limit(
+        ALIAS => $g_alias,
+        FIELD => 'Name',
+        VALUE => 'Developers',
+    );
+    $users_obj->Limit(
+        ALIAS => $g_alias,
+        FIELD => 'Name',
+        VALUE => 'Sales',
+    );
+    ok( $users_obj->BuildSelectQuery =~ /DISTINCT|GROUP\s+BY/i, 'distinct in SQL');
+    is_deeply(
+        [ sort map $_->Login, @{$users_obj->ItemsArrayRef} ],
+        [ 'aurelia', 'ivan', 'john' ],
+        "members of dev group"
+    );
 }
 
     cleanup_schema( 'TestApp', $handle );
