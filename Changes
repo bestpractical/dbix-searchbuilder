@@ -1,5 +1,20 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.63_03 Fri Jun 14 13:11:01 PDT 2013
+
+  Ruslan Zakirov:
+      * warn when rollback and commit are mixed
+      * Handle->NullsOrder
+      * skip timezone tests on SQLite when tzinfo is not there
+      * skip tests if mysql can not do timezones
+      * DISTINCT argument in Join method
+      * DISTINCT argument in Join and NewAlias
+
+  Thomas Sibley:
+      * Reset the iterator position whenever a search is run
+      * Return the correct record from ->Last instead of the first record
+      * Document the caveat of using GotoItem with a non-zero N
+
 1.63_02 Wed Apr 17 18:47:31 MSK 2013
 
 * _Set now can take undef as argument to mean default or NULL.
