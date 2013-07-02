@@ -329,7 +329,7 @@ sub _DateTimeIntervalFunction {
     my $self = shift;
     my %args = ( From => undef, To => undef, @_ );
 
-    return "EXTRACT(EPOCH FROM AGE($args{'To'}, $args{'From'}))";
+    return "(EXTRACT(EPOCH FROM $args{'To'}) - EXTRACT(EPOCH FROM $args{'From'}))";
 }
 
 sub HasSupportForNullsOrder {

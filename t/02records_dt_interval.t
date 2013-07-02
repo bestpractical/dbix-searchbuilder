@@ -8,7 +8,7 @@ use Test::More;
 BEGIN { require "t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 15;
+use constant TESTS_PER_DRIVER => 17;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -158,6 +158,7 @@ sub init_data {
     [ '2011-05-20 19:53:23', '2011-05-20 19:53:23', 0],
     [ '2011-05-20 19:53:23', '2011-05-21 20:54:24', 1*24*60*60+1*60*60+1*60+1],
     [ '2011-05-20 19:53:23', '2011-05-19 18:52:22', -(1*24*60*60+1*60*60+1*60+1)],
+    [ '2011-05-20 19:53:23', '2012-09-20 19:53:23', 42249600],
     );
 }
 
