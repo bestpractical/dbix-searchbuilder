@@ -1,5 +1,10 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.65    Wed Jul  3 16:40:48 PDT 2013
+
+  Ruslan Zakirov:
+      * Bug fix for DateTimeInterval extraction on Pg
+
 1.64    Mon Jul  1 10:20:43 PDT 2013
 
   No changes since 1.63_03.  Simply a non-dev release of everything since 1.63.
