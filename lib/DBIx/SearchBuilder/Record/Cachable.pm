@@ -281,7 +281,6 @@ For example, to cache records for up to 30 seconds, add the following method to 
 
 sub _CacheConfig {
     return {
-        'cache_p'       => 1,
         'cache_for_sec' => 5,
     };
 }
