@@ -19,7 +19,7 @@ use Want qw(howmany);
 
 =head1 DESCRIPTION
 
-This module provides a subclass of DBIx::SearchBuilder::Handle that 
+This module provides a subclass of DBIx::SearchBuilder::Handle that
 compensates for some of the idiosyncrasies of Postgres.
 
 =head1 METHODS
@@ -34,15 +34,15 @@ Forces the timezone to GMT
 it returns a database handle.
 
 =cut
-  
+
 sub Connect {
     my $self = shift;
-    
+
     my $rv = $self->SUPER::Connect(@_);
     $self->SimpleQuery("SET TIME ZONE 'GMT'");
     $self->SimpleQuery("SET DATESTYLE TO 'ISO'");
     $self->AutoCommit(1);
-    return ($rv); 
+    return ($rv);
 }
 
 =head2 BuildDSN
@@ -136,14 +136,14 @@ sub IdSequenceName {
         }
 
     }
-            my $ret = Class::ReturnValue->new();
-            $ret->as_error(
-                errno   => '-1',
-                message => "Found no sequence for $table",
-                do_backtrace => undef
-            );
-            return ( $ret->return_value );
 
+    my $ret = Class::ReturnValue->new();
+    $ret->as_error(
+        errno   => '-1',
+        message => "Found no sequence for $table",
+        do_backtrace => undef
+    );
+    return ( $ret->return_value );
 }
 
 
@@ -191,8 +191,7 @@ sub ApplyLimits {
         }
     }
 
-   $$statementref .= $limit_clause; 
-
+    $$statementref .= $limit_clause;
 }
 
 
@@ -213,7 +212,7 @@ sub _MakeClauseCaseInsensitive {
 
     # we don't need to downcase numeric values and dates
     if ($value =~ /^$DBIx::SearchBuilder::Handle::RE_CASE_INSENSITIVE_CHARS+$/o) {
-        	return ( $field, $operator, $value);
+        return ( $field, $operator, $value);
     }
 
     if ( $operator =~ /LIKE/i ) {
@@ -221,16 +220,15 @@ sub _MakeClauseCaseInsensitive {
         return ( $field, $operator, $value );
     }
     elsif ( $operator =~ /=/ ) {
-	if (howmany() >= 4) {
-        	return ( "LOWER($field)", $operator, $value, "LOWER(?)"); 
-	} 
-	# RT 3.0.x and earlier  don't know how to cope with a "LOWER" function 
-	# on the value. they only expect field, operator, value.
-	# 
-	else {
-		return ( "LOWER($field)", $operator, lc($value));
-
-	}
+        if (howmany() >= 4) {
+            return ( "LOWER($field)", $operator, $value, "LOWER(?)");
+        }
+        # RT 3.0.x and earlier  don't know how to cope with a "LOWER" function
+        # on the value. they only expect field, operator, value.
+        #
+        else {
+            return ( "LOWER($field)", $operator, lc($value));
+        }
     }
     else {
         $self->SUPER::_MakeClauseCaseInsensitive( $field, $operator, $value );

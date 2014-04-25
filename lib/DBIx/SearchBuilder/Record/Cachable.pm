@@ -46,7 +46,7 @@ sub _SetupCache {
 
 =head2 FlushCache
 
-This class method flushes the _global_ DBIx::SearchBuilder::Record::Cachable 
+This class method flushes the _global_ DBIx::SearchBuilder::Record::Cachable
 cache. All caches are immediately expired.
 
 =cut
@@ -267,9 +267,9 @@ sub _lookup_primary_RecordCache_key {
     return $self->_KeyCache->fetch($key) || $key;
 }
 
-=head2 _CacheConfig 
+=head2 _CacheConfig
 
-You can override this method to change the duration of the caching from the default of 5 seconds. 
+You can override this method to change the duration of the caching from the default of 5 seconds.
 
 For example, to cache records for up to 30 seconds, add the following method to your class:
 

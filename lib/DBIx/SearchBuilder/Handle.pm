@@ -28,12 +28,12 @@ DBIx::SearchBuilder::Handle - Perl extension which is a generic DBI handle
                     Host => 'hostname',
                     User => 'dbuser',
                     Password => 'dbpassword');
-  # now $handle isa DBIx::SearchBuilder::Handle::mysql                    
- 
+  # now $handle isa DBIx::SearchBuilder::Handle::mysql
+
 =head1 DESCRIPTION
 
 This class provides a wrapper for DBI handles that can also perform a number of additional functions.
- 
+
 =cut
 
 
@@ -62,15 +62,15 @@ sub new  {
 
 =head2 Connect PARAMHASH: Driver, Database, Host, User, Password, QuoteTableNames
 
-Takes a paramhash and connects to your DBI datasource. 
+Takes a paramhash and connects to your DBI datasource.
 
 You should _always_ set
 
-     DisconnectHandleOnDestroy => 1 
+     DisconnectHandleOnDestroy => 1
 
 unless you have a legacy app like RT2 or RT 3.0.{0,1,2} that depends on the broken behaviour.
 
-If you created the handle with 
+If you created the handle with
      DBIx::SearchBuilder::Handle->new
 and there is a DBIx::SearchBuilder::Handle::(Driver) subclass for the driver you have chosen,
 the handle will be automatically "upgraded" into that subclass.
@@ -143,7 +143,7 @@ of the standard driver-specific subclasses.
 
 sub _UpgradeHandle {
     my $self = shift;
-    
+
     my $driver = shift;
     my $class = 'DBIx::SearchBuilder::Handle::' . $driver;
     local $@;
@@ -157,7 +157,7 @@ sub _UpgradeHandle {
 
 =head2 BuildDSN PARAMHASH
 
-Takes a bunch of parameters:  
+Takes a bunch of parameters:
 
 Required: Driver, Database,
 Optional: Host, Port and RequireSSL
@@ -209,7 +209,7 @@ Turns on the Database Handle's RaiseError attribute.
 sub RaiseError {
     my $self = shift;
 
-    my $mode = 1; 
+    my $mode = 1;
     $mode = shift if (@_);
 
     $self->dbh->{RaiseError}=$mode;
@@ -227,7 +227,7 @@ Turns on the Database Handle's PrintError attribute.
 sub PrintError {
     my $self = shift;
 
-    my $mode = 1; 
+    my $mode = 1;
     $mode = shift if (@_);
 
     $self->dbh->{PrintError}=$mode;
@@ -270,7 +270,7 @@ sub _LogSQLStatement {
 
 =head2 ClearSQLStatementLog
 
-Clears out the SQL statement log. 
+Clears out the SQL statement log.
 
 
 =cut
@@ -278,12 +278,12 @@ Clears out the SQL statement log.
 sub ClearSQLStatementLog {
     my $self = shift;
     @{$self->{'StatementLog'}} = ();
-}   
+}
 
 
 =head2 SQLStatementLog
 
-Returns the current SQL statement log as an array of arrays. Each entry is a triple of 
+Returns the current SQL statement log as an array of arrays. Each entry is a triple of
 
 (Time,  Statement, Duration)
 
@@ -306,7 +306,7 @@ Turns on the Database Handle's AutoCommit attribute.
 sub AutoCommit {
     my $self = shift;
 
-    my $mode = 1; 
+    my $mode = 1;
     $mode = shift if (@_);
 
     $self->dbh->{AutoCommit}=$mode;
@@ -356,7 +356,7 @@ Return the current DBI handle. If we're handed a parameter, make the database ha
 
 sub dbh {
   my $self=shift;
-  
+
   #If we are setting the database handle, set it.
   if ( @_ ) {
       $DBIHandle{$self} = $PrevHandle = shift;
@@ -441,15 +441,15 @@ sub InsertFromSelect {
     return $rows == 0? '0E0' : $rows;
 }
 
-=head2 UpdateRecordValue 
+=head2 UpdateRecordValue
 
-Takes a hash with fields: Table, Column, Value PrimaryKeys, and 
-IsSQLFunction.  Table, and Column should be obvious, Value is where you 
-set the new value you want the column to have. The primary_keys field should 
-be the lvalue of DBIx::SearchBuilder::Record::PrimaryKeys().  Finally 
-IsSQLFunction is set when the Value is a SQL function.  For example, you 
-might have ('Value'=>'PASSWORD(string)'), by setting IsSQLFunction that 
-string will be inserted into the query directly rather then as a binding. 
+Takes a hash with fields: Table, Column, Value PrimaryKeys, and
+IsSQLFunction.  Table, and Column should be obvious, Value is where you
+set the new value you want the column to have. The primary_keys field should
+be the lvalue of DBIx::SearchBuilder::Record::PrimaryKeys().  Finally
+IsSQLFunction is set when the Value is a SQL function.  For example, you
+might have ('Value'=>'PASSWORD(string)'), by setting IsSQLFunction that
+string will be inserted into the query directly rather then as a binding.
 
 =cut
 
@@ -466,25 +466,25 @@ sub UpdateRecordValue {
     my $query = 'UPDATE ' . $args{'Table'} . ' ';
      $query .= 'SET '    . $args{'Column'} . '=';
 
-  ## Look and see if the field is being updated via a SQL function. 
-  if ($args{'IsSQLFunction'}) {
-     $query .= $args{'Value'} . ' ';
-  }
-  else {
-     $query .= '? ';
-     push (@bind, $args{'Value'});
-  }
+    ## Look and see if the field is being updated via a SQL function.
+    if ($args{'IsSQLFunction'}) {
+       $query .= $args{'Value'} . ' ';
+    }
+    else {
+       $query .= '? ';
+       push (@bind, $args{'Value'});
+    }
 
-  ## Constructs the where clause.
-  my $where  = 'WHERE ';
-  foreach my $key (sort keys %{$args{'PrimaryKeys'}}) {
-     $where .= $key . "=?" . " AND ";
-     push (@bind, $args{'PrimaryKeys'}{$key});
-  }
-     $where =~ s/AND\s$//;
-  
-  my $query_str = $query . $where;
-  return ($self->SimpleQuery($query_str, @bind));
+    ## Constructs the where clause.
+    my $where  = 'WHERE ';
+    foreach my $key (sort keys %{$args{'PrimaryKeys'}}) {
+       $where .= $key . "=?" . " AND ";
+       push (@bind, $args{'PrimaryKeys'}{$key});
+    }
+    $where =~ s/AND\s$//;
+
+    my $query_str = $query . $where;
+    return ($self->SimpleQuery($query_str, @bind));
 }
 
 
@@ -500,12 +500,12 @@ don\'t quote the NEW_VALUE
 sub UpdateTableValue  {
     my $self = shift;
 
-    ## This is just a wrapper to UpdateRecordValue().     
-    my %args = (); 
+    ## This is just a wrapper to UpdateRecordValue().
+    my %args = ();
     $args{'Table'}  = shift;
     $args{'Column'} = shift;
     $args{'Value'}  = shift;
-    $args{'PrimaryKeys'}   = shift; 
+    $args{'PrimaryKeys'}   = shift;
     $args{'IsSQLFunction'} = shift;
 
     return $self->UpdateRecordValue(%args)
@@ -658,19 +658,19 @@ If the select succeeds, returns the first row as an array.
 Otherwise, returns a Class::ResturnValue object with the failure loaded
 up.
 
-=cut 
+=cut
 
 sub FetchResult {
-  my $self = shift;
-  my $query = shift;
-  my @bind_values = @_;
-  my $sth = $self->SimpleQuery($query, @bind_values);
-  if ($sth) {
-    return ($sth->fetchrow);
-  }
-  else {
-   return($sth);
-  }
+    my $self = shift;
+    my $query = shift;
+    my @bind_values = @_;
+    my $sth = $self->SimpleQuery($query, @bind_values);
+    if ($sth) {
+        return ($sth->fetchrow);
+    }
+    else {
+        return($sth);
+    }
 }
 
 
@@ -704,14 +704,14 @@ sub KnowsBLOBs {
 
 =head2 BLOBParams FIELD_NAME FIELD_TYPE
 
-Returns a hash ref for the bind_param call to identify BLOB types used by 
-the current database for a particular column type.                 
+Returns a hash ref for the bind_param call to identify BLOB types used by
+the current database for a particular column type.
 
 =cut
 
 sub BLOBParams {
     my $self = shift;
-    # Don't assign to key 'value' as it is defined later. 
+    # Don't assign to key 'value' as it is defined later.
     return ( {} );
 }
 
@@ -1001,8 +1001,7 @@ sub ApplyLimits {
         $limit_clause .= $per_page;
     }
 
-   $$statementref .= $limit_clause; 
-
+    $$statementref .= $limit_clause;
 }
 
 
@@ -1011,8 +1010,8 @@ sub ApplyLimits {
 
 =head2 Join { Paramhash }
 
-Takes a paramhash of everything Searchbuildler::Record does 
-plus a parameter called 'SearchBuilder' that contains a ref 
+Takes a paramhash of everything Searchbuildler::Record does
+plus a parameter called 'SearchBuilder' that contains a ref
 to a SearchBuilder object'.
 
 This performs the join.
@@ -1223,7 +1222,7 @@ sub _NormalJoin {
     }
 }
 
-# this code is all hacky and evil. but people desperately want _something_ and I'm 
+# this code is all hacky and evil. but people desperately want _something_ and I'm
 # super tired. refactoring gratefully appreciated.
 
 sub _BuildJoins {
@@ -1348,7 +1347,7 @@ sub MayBeNull {
 
     # replace conditions with boolean result: 1 - allows nulls, 0 - not
     # all restrictions on that don't act on required alias allow nulls
-    # otherwise only IS NULL operator 
+    # otherwise only IS NULL operator
     foreach ( splice @conditions ) {
         unless ( ref $_ ) {
             push @conditions, $_;
@@ -1443,7 +1442,7 @@ sub MayBeNull {
     return 1;
 }
 
-=head2 DistinctQuery STATEMENTREF 
+=head2 DistinctQuery STATEMENTREF
 
 takes an incomplete SQL SELECT statement and massages it to return a DISTINCT result set.
 
@@ -1492,7 +1491,7 @@ sub DistinctQueryAndCount {
 
 
 
-=head2 DistinctCount STATEMENTREF 
+=head2 DistinctCount STATEMENTREF
 
 takes an incomplete SQL SELECT statement and massages it to return a DISTINCT result set.
 
@@ -1539,10 +1538,9 @@ Currently prints that message to STDERR
 =cut
 
 sub Log {
-	my $self = shift;
-	my $msg = shift;
-	warn $msg."\n";
-
+    my $self = shift;
+    my $msg = shift;
+    warn $msg."\n";
 }
 
 =head2 SimpleDateTimeFunctions
@@ -1935,9 +1933,9 @@ When we get rid of the Searchbuilder::Handle, we need to disconnect from the dat
 =cut
 
 sub DESTROY {
-  my $self = shift;
-  $self->Disconnect if $self->{'DisconnectHandleOnDestroy'};
-  delete $DBIHandle{$self};
+    my $self = shift;
+    $self->Disconnect if $self->{'DisconnectHandleOnDestroy'};
+    delete $DBIHandle{$self};
 }
 
 

@@ -16,7 +16,7 @@ use base qw(DBIx::SearchBuilder::Handle);
 
 =head1 DESCRIPTION
 
-This module provides a subclass of DBIx::SearchBuilder::Handle that 
+This module provides a subclass of DBIx::SearchBuilder::Handle that
 compensates for some of the idiosyncrasies of ODBC.
 
 =head1 METHODS

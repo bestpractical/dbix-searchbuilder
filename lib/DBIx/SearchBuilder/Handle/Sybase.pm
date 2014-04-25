@@ -16,7 +16,7 @@ use base qw(DBIx::SearchBuilder::Handle);
 
 =head1 DESCRIPTION
 
-This module provides a subclass of DBIx::SearchBuilder::Handle that 
+This module provides a subclass of DBIx::SearchBuilder::Handle that
 compensates for some of the idiosyncrasies of Sybase.
 
 =head1 METHODS
@@ -43,7 +43,7 @@ sub Insert {
     if ( !$sth ) {
         return ($sth);
     }
-    
+
     # Can't select identity column if we're inserting the id by hand.
     unless ($pairs{'id'}) {
         my @row = $self->FetchResult('SELECT @@identity');
@@ -71,14 +71,13 @@ sub DatabaseVersion {
     my $self = shift;
     my $v = $self->SUPER::DatabaseVersion();
 
-   $v =~ s/\-(.*)$//;
-   return ($v);
-
+    $v =~ s/\-(.*)$//;
+    return ($v);
 }
 
-=head2 CaseSensitive 
+=head2 CaseSensitive
 
-Returns undef, since Sybase's searches are not case sensitive by default 
+Returns undef, since Sybase's searches are not case sensitive by default
 
 =cut
 
