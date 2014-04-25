@@ -1,4 +1,3 @@
-# $Header: /home/jesse/DBIx-SearchBuilder/history/SearchBuilder/Handle.pm,v 1.21 2002/01/28 06:11:37 jesse Exp $
 package DBIx::SearchBuilder::Handle;
 
 use strict;

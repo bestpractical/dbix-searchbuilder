@@ -1,5 +1,3 @@
-# $Header:  $
-
 package DBIx::SearchBuilder::Handle::Informix;
 
 use strict;

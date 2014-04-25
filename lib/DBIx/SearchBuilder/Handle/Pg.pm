@@ -1,6 +1,3 @@
-#$Header: /home/jesse/DBIx-SearchBuilder/history/SearchBuilder/Handle/Pg.pm,v 1.8 2001/07/27 05:23:29 jesse Exp $
-# Copyright 1999-2001 Jesse Vincent <jesse@fsck.com>
-
 package DBIx::SearchBuilder::Handle::Pg;
 
 use strict;
@@ -366,6 +363,10 @@ sub HasSupportForNullsOrder {
 1;
 
 __END__
+
+=head1 AUTHOR
+
+Jesse Vincent, jesse@fsck.com
 
 =head1 SEE ALSO
 

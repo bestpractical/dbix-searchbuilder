@@ -1,5 +1,3 @@
-# $Header: /home/jesse/DBIx-SearchBuilder/history/SearchBuilder/Handle/Oracle.pm,v 1.14 2002/01/28 06:11:37 jesse Exp $
-
 package DBIx::SearchBuilder::Handle::Oracle;
 
 use strict;
