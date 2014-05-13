@@ -235,9 +235,15 @@ sub DistinctQuery {
     # It's hard to show with tests. Pg's optimizer can choose execution
     # plan not guaranting order
 
-    # So if we are ordering by something that is not in 'main', the we GROUP
-    # BY all columns and adjust the ORDER_BY accordingly
-    local $sb->{group_by} = [ map {+{FIELD => $_}} $self->Fields($table) ];
+    my $groups;
+    if ($self->DatabaseVersion =~ /^(\d+)\.(\d+)/ and ($1 > 9 or ($1 == 9 and $2 >= 1))) {
+        # Pg 9.1 supports "SELECT main.foo ... GROUP BY main.id" if id is the primary key
+        $groups = [ {FIELD => "id"} ];
+    } else {
+        # For earlier versions, we have to list out all of the columns
+        $groups = [ map {+{FIELD => $_}} $self->Fields($table) ];
+    }
+    local $sb->{group_by} = $groups;
     local $sb->{'order_by'} = [
         map {
             ($_->{'ALIAS'}||'') ne "main"
