@@ -4,7 +4,7 @@ package DBIx::SearchBuilder;
 use strict;
 use warnings;
 
-our $VERSION = "1.65";
+our $VERSION = "1.65_01";
 
 use Clone qw();
 use Encode qw();
@@ -1896,20 +1896,27 @@ is installed, using a temporary file as the database.  For example:
 
 =head1 AUTHOR
 
-Copyright (c) 2001-2006 Jesse Vincent, jesse@bestpractical.com.
+Best Practical Solutions, LLC E<lt>modules@bestpractical.comE<gt>
 
-All rights reserved.
+=head1 BUGS
 
-This library is free software; you can redistribute it
-and/or modify it under the same terms as Perl itself.
+All bugs should be reported via email to
 
+    L<bug-DBIx-SearchBuilder@rt.cpan.org|mailto:bug-DBIx-SearchBuilder@rt.cpan.org>
+
+or via the web at
+
+    L<rt.cpan.org|http://rt.cpan.org/Public/Dist/Display.html?Name=DBIx-SearchBuilder>.
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (C) 2001-2014, Best Practical Solutions LLC.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
 DBIx::SearchBuilder::Handle, DBIx::SearchBuilder::Record.
 
 =cut
-
-
-
-
