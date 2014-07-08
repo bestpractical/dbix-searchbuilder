@@ -1428,18 +1428,19 @@ sub DistinctCount {
 
 sub Fields {
     my $self  = shift;
-    my $table = shift;
+    my $table = lc shift;
 
-    unless ( keys %FIELDS_IN_TABLE ) {
-        my $sth = $self->dbh->column_info( undef, '', '%', '%' )
+    unless ( $FIELDS_IN_TABLE{$table} ) {
+        $FIELDS_IN_TABLE{ $table } = [];
+        my $sth = $self->dbh->column_info( undef, '', $table, '%' )
             or return ();
         my $info = $sth->fetchall_arrayref({});
         foreach my $e ( @$info ) {
-            push @{ $FIELDS_IN_TABLE{ lc $e->{'TABLE_NAME'} } ||= [] }, lc $e->{'COLUMN_NAME'};
+            push @{ $FIELDS_IN_TABLE{ $table } }, lc $e->{'COLUMN_NAME'};
         }
     }
 
-    return @{ $FIELDS_IN_TABLE{ lc $table } || [] };
+    return @{ $FIELDS_IN_TABLE{ $table } };
 }
 
 
