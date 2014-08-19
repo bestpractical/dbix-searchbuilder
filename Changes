@@ -1,5 +1,15 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.65_02
+ - Stop unilaterally disabling the "UTF8" flag before executing queries
+ - Make ->Fields case-sensitive in the column names it returns, as well
+   as in the table name it takes.
+
+1.65_01
+ - Make ->Fields only lookup information on the table requested, not all
+   fields, for performance.  It also is now case-sensitive in table name.
+ - Omit calls to ->Fields entirely for PostgreSQL 9.1 and above
+
 1.65 2013-07-03
  - Bug fix for DateTimeInterval extraction on Pg
 

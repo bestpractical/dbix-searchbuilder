@@ -34,4 +34,4 @@ requires:
   Want: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 1.65_01
+version: 1.65_02
