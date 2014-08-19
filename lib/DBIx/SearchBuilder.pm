@@ -1785,9 +1785,8 @@ sub AdditionalColumn {
 
 =head2 Fields TABLE
 
-Return a list of fields in TABLE, lowercased.
-
-TODO: Why are they lowercased?
+Return a list of fields in TABLE.  These fields are in the case
+presented by the database, which may be case-sensitive.
 
 =cut
 
@@ -1800,6 +1799,8 @@ sub Fields {
 
 Returns true if TABLE has field FIELD.
 Return false otherwise
+
+Note: Both TABLE and FIELD are case-sensitive (See: L</Fields>)
 
 =cut
 

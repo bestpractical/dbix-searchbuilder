@@ -1433,7 +1433,7 @@ sub Fields {
             or return ();
         my $info = $sth->fetchall_arrayref({});
         foreach my $e ( @$info ) {
-            push @{ $FIELDS_IN_TABLE{ $table } }, lc $e->{'COLUMN_NAME'};
+            push @{ $FIELDS_IN_TABLE{ $table } }, $e->{'COLUMN_NAME'};
         }
     }
 
