@@ -1,5 +1,8 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.66
+ - No changes since 1.65_02
+
 1.65_02
  - Stop unilaterally disabling the "UTF8" flag before executing queries
  - Make ->Fields case-sensitive in the column names it returns, as well
