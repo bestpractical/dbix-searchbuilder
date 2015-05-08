@@ -534,6 +534,16 @@ sub DeleteFromSelect {
     return $rows == 0? '0E0' : $rows;
 }
 
+=head2 Prepare QUERY_STRING
+
+=cut
+
+sub Prepare {
+    my $self        = shift;
+    my $QueryString = shift;
+    return $self->dbh->prepare($QueryString);
+}
+
 =head2 SimpleQuery QUERY_STRING, [ BIND_VALUE, ... ]
 
 Execute the SQL string specified in QUERY_STRING
@@ -546,7 +556,7 @@ sub SimpleQuery {
     my @bind_values;
     @bind_values = (@_) if (@_);
 
-    my $sth = $self->dbh->prepare($QueryString);
+    my $sth = $self->Prepare($QueryString);
     unless ($sth) {
         if ($DEBUG) {
             die "$self couldn't prepare the query '$QueryString'"

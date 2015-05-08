@@ -44,9 +44,11 @@ sub Connect  {
 	       @_);
   
     my $rv = $self->SUPER::Connect(%args);
-    
-    $self->dbh->{LongTruncOk}=1;
-    $self->dbh->{LongReadLen}=8000;
+
+    # We read LOBs up to 4G out of the database.  We read them in chunks
+    # of 16M (see Prepare, below).
+    $self->dbh->{LongTruncOk} = 1;
+    $self->dbh->{LongReadLen} = 4*1024*1024*1024;
 
     foreach my $setting (qw(DATE TIMESTAMP TIMESTAMP_TZ)) {
         $self->SimpleQuery(
@@ -100,6 +102,24 @@ sub BuildDSN {
     }
 
     return $self->{'dsn'} = $dsn;
+}
+
+=head2 Prepare QUERYSTRING
+
+Override the Prepare method to retrieve LOBs in chunks of 16M each.
+This allows us to retrieve the full size of large LOBs without impacting
+the database memory footprint, or running afoul of Oracle's memory
+contraints.
+
+=cut
+
+sub Prepare {
+    my $self        = shift;
+    my $QueryString = shift;
+    return $self->dbh->prepare(
+        $QueryString,
+        { ora_clbk_lob => 1, ora_piece_size => 16*1024*1024 }
+    );
 }
 
 
