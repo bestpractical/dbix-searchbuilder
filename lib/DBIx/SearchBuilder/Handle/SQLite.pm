@@ -128,6 +128,7 @@ takes an incomplete SQL SELECT statement and massages it to return a DISTINCT re
 sub DistinctCount {
     my $self = shift;
     my $statementref = shift;
+    my $sb = shift;
 
     $$statementref = "SELECT count(*) FROM (SELECT DISTINCT main.id FROM $$statementref )";
 }

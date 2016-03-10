@@ -482,7 +482,7 @@ sub BuildSelectCountQuery {
 
     # DISTINCT query only required for multi-table selects
     if ($self->_isJoined) {
-        $QueryString = $self->_Handle->DistinctCount(\$QueryString);
+        $QueryString = $self->_Handle->DistinctCount(\$QueryString, $self);
     } else {
         my $QueryHint = $self->QueryHint;
         $QueryHint = $QueryHint ? " /* $QueryHint */ " : " ";
