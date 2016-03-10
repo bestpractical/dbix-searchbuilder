@@ -293,6 +293,8 @@ sub DistinctQuery {
     my $sb = shift;
 
     my $table = $sb->Table;
+    my $hint = $sb->QueryHint;
+    $hint = $hint ? " /* $hint */ " : " ";
 
     if ($sb->_OrderClause =~ /(?<!main)\./) {
         # If we are ordering by something not in 'main', we need to GROUP
@@ -308,11 +310,11 @@ sub DistinctQuery {
         ];
         my $group = $sb->_GroupClause;
         my $order = $sb->_OrderClause;
-        $$statementref = "SELECT main.* FROM ( SELECT main.id, row_number() over( $order ) sortorder FROM $$statementref $group ) distinctquery, $table main WHERE (main.id = distinctquery.id) ORDER BY distinctquery.sortorder";
+        $$statementref = "SELECT" . $hint . "main.* FROM ( SELECT main.id, row_number() over( $order ) sortorder FROM $$statementref $group ) distinctquery, $table main WHERE (main.id = distinctquery.id) ORDER BY distinctquery.sortorder";
     } else {
         # Wrapp select query in a subselect as Oracle doesn't allow
         # DISTINCT against CLOB/BLOB column types.
-        $$statementref = "SELECT main.* FROM ( SELECT DISTINCT main.id FROM $$statementref ) distinctquery, $table main WHERE (main.id = distinctquery.id) ";
+        $$statementref = "SELECT" . $hint . " main.* FROM ( SELECT DISTINCT main.id FROM $$statementref ) distinctquery, $table main WHERE (main.id = distinctquery.id) ";
         $$statementref .= $sb->_GroupClause;
         $$statementref .= $sb->_OrderClause;
     }
