@@ -434,8 +434,7 @@ sub BuildSelectQuery {
     $QueryString .= $self->_WhereClause . " "
       if ( $self->_isLimited > 0 );
 
-    my $QueryHint = $self->QueryHint;
-    $QueryHint = $QueryHint ? " /* $QueryHint */ " : " ";
+    my $QueryHint = $self->QueryHintFormatted;
 
     # DISTINCT query only required for multi-table selects
     # when we have group by clause then the result set is distinct as
@@ -484,8 +483,7 @@ sub BuildSelectCountQuery {
     if ($self->_isJoined) {
         $QueryString = $self->_Handle->DistinctCount(\$QueryString, $self);
     } else {
-        my $QueryHint = $self->QueryHint;
-        $QueryHint = $QueryHint ? " /* $QueryHint */ " : " ";
+        my $QueryHint = $self->QueryHintFormatted;
 
         $QueryString = "SELECT" . $QueryHint . "count(main.id) FROM " . $QueryString;
     }
@@ -631,8 +629,7 @@ sub DistinctFieldValues {
     $query_string .= ' '. $self->_WhereClause
         if $self->_isLimited > 0;
 
-    my $query_hint = $self->QueryHint;
-    $query_hint = $query_hint ? " /* $query_hint */ " : " ";
+    my $query_hint = $self->QueryHintFormatted;
 
     my $column = 'main.'. $args{'Field'};
     $query_string = "SELECT" . $query_hint . "DISTINCT $column FROM $query_string";
@@ -1847,12 +1844,29 @@ If called with an argument, sets a query hint for this collection.
 
 Always returns the query hint.
 
+When the query hint is included in the SQL query, the C</* ... */> will be
+included for you. Here's an example query hint for Oracle:
+
+    $sb->QueryHint("+CURSOR_SHARING_EXACT");
+
 =cut
 
 sub QueryHint {
     my $self = shift;
     $self->{query_hint} = shift if (@_);
     return $self->{query_hint};
+}
+
+=head2 QueryHintFormatted
+
+Returns the query hint formatted appropriately for inclusion in SQL queries.
+
+=cut
+
+sub QueryHintFormatted {
+    my $self = shift;
+    my $QueryHint = $self->QueryHint;
+    return $QueryHint ? " /* $QueryHint */ " : " ";
 }
 
 =head1 DEPRECATED METHODS
