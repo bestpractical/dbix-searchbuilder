@@ -1,7 +1,7 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
-NEXT
- - Add ->QueryHint to collection API for Oracle
+1.67
+ - Add ->QueryHint and ->QueryHintFormatted to collection API for Oracle
 
 1.66
  - No changes since 1.65_02
