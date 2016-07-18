@@ -140,16 +140,17 @@ sub CleanSlate {
     @{ $self->{'aliases'} } = ();
 
     delete $self->{$_} for qw(
-	items
-	left_joins
-	raw_rows
-	count_all
-	subclauses
-	restrictions
-	_open_parens
-	_close_parens
-    group_by
-    columns
+        items
+        left_joins
+        raw_rows
+        count_all
+        subclauses
+        restrictions
+        _open_parens
+        _close_parens
+        group_by
+        columns
+        query_hint
     );
 
     #we have no limit statements. DoSearch won't work.
@@ -200,6 +201,7 @@ sub _ClonedAttributes
         order_by
         group_by
         columns
+        query_hint
     );
 }
 
@@ -432,12 +434,14 @@ sub BuildSelectQuery {
     $QueryString .= $self->_WhereClause . " "
       if ( $self->_isLimited > 0 );
 
+    my $QueryHint = $self->QueryHintFormatted;
+
     # DISTINCT query only required for multi-table selects
     # when we have group by clause then the result set is distinct as
     # it must contain only columns we group by or results of aggregate
     # functions which give one result per group, so we can skip DISTINCTing
     if ( my $clause = $self->_GroupClause ) {
-        $QueryString = "SELECT main.* FROM $QueryString";
+        $QueryString = "SELECT" . $QueryHint . "main.* FROM $QueryString";
         $QueryString .= $clause;
         $QueryString .= $self->_OrderClause;
     }
@@ -445,7 +449,7 @@ sub BuildSelectQuery {
         $self->_DistinctQuery(\$QueryString);
     }
     else {
-        $QueryString = "SELECT main.* FROM $QueryString";
+        $QueryString = "SELECT" . $QueryHint . "main.* FROM $QueryString";
         $QueryString .= $self->_OrderClause;
     }
 
@@ -477,9 +481,11 @@ sub BuildSelectCountQuery {
 
     # DISTINCT query only required for multi-table selects
     if ($self->_isJoined) {
-        $QueryString = $self->_Handle->DistinctCount(\$QueryString);
+        $QueryString = $self->_Handle->DistinctCount(\$QueryString, $self);
     } else {
-        $QueryString = "SELECT count(main.id) FROM " . $QueryString;
+        my $QueryHint = $self->QueryHintFormatted;
+
+        $QueryString = "SELECT" . $QueryHint . "count(main.id) FROM " . $QueryString;
     }
 
     return ($QueryString);
@@ -623,8 +629,10 @@ sub DistinctFieldValues {
     $query_string .= ' '. $self->_WhereClause
         if $self->_isLimited > 0;
 
+    my $query_hint = $self->QueryHintFormatted;
+
     my $column = 'main.'. $args{'Field'};
-    $query_string = 'SELECT DISTINCT '. $column .' FROM '. $query_string;
+    $query_string = "SELECT" . $query_hint . "DISTINCT $column FROM $query_string";
 
     if ( $args{'Order'} ) {
         $query_string .= ' ORDER BY '. $column
@@ -1828,6 +1836,37 @@ sub Table {
     my $self = shift;
     $self->{table} = shift if (@_);
     return $self->{table};
+}
+
+=head2 QueryHint [Hint]
+
+If called with an argument, sets a query hint for this collection.
+
+Always returns the query hint.
+
+When the query hint is included in the SQL query, the C</* ... */> will be
+included for you. Here's an example query hint for Oracle:
+
+    $sb->QueryHint("+CURSOR_SHARING_EXACT");
+
+=cut
+
+sub QueryHint {
+    my $self = shift;
+    $self->{query_hint} = shift if (@_);
+    return $self->{query_hint};
+}
+
+=head2 QueryHintFormatted
+
+Returns the query hint formatted appropriately for inclusion in SQL queries.
+
+=cut
+
+sub QueryHintFormatted {
+    my $self = shift;
+    my $QueryHint = $self->QueryHint;
+    return $QueryHint ? " /* $QueryHint */ " : " ";
 }
 
 =head1 DEPRECATED METHODS

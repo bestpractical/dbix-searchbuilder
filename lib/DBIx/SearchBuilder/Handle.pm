@@ -1398,8 +1398,11 @@ sub DistinctQuery {
     my $statementref = shift;
     my $sb = shift;
 
+    my $QueryHint = $sb->QueryHint;
+    $QueryHint = $QueryHint ? " /* $QueryHint */ " : " ";
+
     # Prepend select query for DBs which allow DISTINCT on all column types.
-    $$statementref = "SELECT DISTINCT main.* FROM $$statementref";
+    $$statementref = "SELECT" . $QueryHint . "DISTINCT main.* FROM $$statementref";
     $$statementref .= $sb->_GroupClause;
     $$statementref .= $sb->_OrderClause;
 }
@@ -1417,9 +1420,13 @@ takes an incomplete SQL SELECT statement and massages it to return a DISTINCT re
 sub DistinctCount {
     my $self = shift;
     my $statementref = shift;
+    my $sb = shift;
+
+    my $QueryHint = $sb->QueryHint;
+    $QueryHint = $QueryHint ? " /* $QueryHint */ " : " ";
 
     # Prepend select query for DBs which allow DISTINCT on all column types.
-    $$statementref = "SELECT COUNT(DISTINCT main.id) FROM $$statementref";
+    $$statementref = "SELECT" . $QueryHint . "COUNT(DISTINCT main.id) FROM $$statementref";
 
 }
 
