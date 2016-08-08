@@ -816,7 +816,7 @@ would be committed or rolled back.
 If there is no transaction in progress then method throw
 warning unless action is forced.
 
-Method returns true on success or false if error occured.
+Method returns true on success or false if an error occurred.
 
 =cut
 

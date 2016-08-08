@@ -106,7 +106,7 @@ sub IdSequenceName {
     my $table = shift;
 
     return $self->{'_sequences'}{$table} if (exists $self->{'_sequences'}{$table});
-    #Lets get the id of that row we just inserted
+    # Let's get the id of that row we just inserted
     my $seq;
     my $colinfosth = $self->dbh->column_info( undef, undef, lc($table), '%' );
     while ( my $foo = $colinfosth->fetchrow_hashref ) {
