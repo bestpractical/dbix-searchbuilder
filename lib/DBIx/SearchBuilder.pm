@@ -18,22 +18,22 @@ DBIx::SearchBuilder - Encapsulate SQL queries and rows in simple perl objects
 =head1 SYNOPSIS
 
   use DBIx::SearchBuilder;
-  
+
   package My::Things;
   use base qw/DBIx::SearchBuilder/;
-  
+
   sub _Init {
       my $self = shift;
       $self->Table('Things');
       return $self->SUPER::_Init(@_);
   }
-  
+
   sub NewItem {
       my $self = shift;
       # MyThing is a subclass of DBIx::SearchBuilder::Record
       return(MyThing->new);
   }
-  
+
   package main;
 
   use DBIx::SearchBuilder::Handle;
@@ -48,11 +48,14 @@ DBIx::SearchBuilder - Encapsulate SQL queries and rows in simple perl objects
       print $record->my_column_name();
   }
 
+  # show SELECT
+  my $QueryString = $self->BuildSelectQuery();
+
 =head1 DESCRIPTION
 
-This module provides an object-oriented mechanism for retrieving and updating data in a DBI-accesible database. 
+This module provides an object-oriented mechanism for retrieving and updating data in a DBI-accesible database.
 
-In order to use this module, you should create a subclass of C<DBIx::SearchBuilder> and a 
+In order to use this module, you should create a subclass of C<DBIx::SearchBuilder> and a
 subclass of C<DBIx::SearchBuilder::Record> for each table that you wish to access.  (See
 the documentation of C<DBIx::SearchBuilder::Record> for more information on subclassing it.)
 
@@ -100,7 +103,7 @@ sub new {
 
 =head2 _Init
 
-This method is called by C<new> with whatever arguments were passed to C<new>.  
+This method is called by C<new> with whatever arguments were passed to C<new>.
 By default, it takes a C<DBIx::SearchBuilder::Handle> object as a C<Handle>
 argument, although this is not necessary if your subclass overrides C<_Handle>.
 
@@ -175,7 +178,7 @@ sub Clone
     );
     $obj->{'must_redo_search'} = 1;
     $obj->{'itemscount'}       = 0;
-    
+
     $obj->{ $_ } = Clone::clone( $obj->{ $_ } )
         foreach grep exists $self->{ $_ }, $self->_ClonedAttributes;
     return $obj;
@@ -309,7 +312,7 @@ sub _DoCount {
 
 =head2 _ApplyLimits STATEMENTREF
 
-This routine takes a reference to a scalar containing an SQL statement. 
+This routine takes a reference to a scalar containing an SQL statement.
 It massages the statement to limit the returned rows to only C<< $self->RowsPerPage >>
 rows, skipping C<< $self->FirstRow >> rows.  (That is, if rows are numbered
 starting from 0, row number C<< $self->FirstRow >> will be the first row returned.)
@@ -330,7 +333,7 @@ sub _ApplyLimits {
 
 =head2 _DistinctQuery STATEMENTREF
 
-This routine takes a reference to a scalar containing an SQL statement. 
+This routine takes a reference to a scalar containing an SQL statement.
 It massages the statement to ensure a distinct result set is returned.
 
 =cut
@@ -358,7 +361,7 @@ sub _BuildJoins {
 }
 
 
-=head2 _isJoined 
+=head2 _isJoined
 
 Returns true if this SearchBuilder will be joining multiple tables together.
 
@@ -421,7 +424,10 @@ sub _isLimited {
 
 =head2 BuildSelectQuery
 
-Builds a query string for a "SELECT rows from Tables" statement for this SearchBuilder object
+Builds a query string for a "SELECT rows from Tables" statement for this SearchBuilder object. This may be handy for debugging.
+Returns the query as a string.
+
+    my $QueryString = $self->BuildSelectQuery();
 
 =cut
 
@@ -671,7 +677,7 @@ sub ItemsArrayRef {
 
 =head2 NewItem
 
-NewItem must be subclassed. It is used by DBIx::SearchBuilder to create record 
+NewItem must be subclassed. It is used by DBIx::SearchBuilder to create record
 objects for each row returned from the database.
 
 =cut
@@ -720,10 +726,10 @@ Limit takes a hash of parameters with the following keys:
 
 =over 4
 
-=item TABLE 
+=item TABLE
 
 Can be set to something different than this table if a join is
-wanted (that means we can't do recursive joins as for now).  
+wanted (that means we can't do recursive joins as for now).
 
 =item ALIAS
 
@@ -750,7 +756,7 @@ check. See L</CombineFunctionWithField> for rules.
 
 =item VALUE
 
-Should always be set and will always be quoted. 
+Should always be set and will always be quoted.
 
 =item OPERATOR
 
@@ -794,7 +800,7 @@ and first column is used.
 
 =back
 
-=item ENTRYAGGREGATOR 
+=item ENTRYAGGREGATOR
 
 Can be C<AND> or C<OR> (or anything else valid to aggregate two clauses in SQL).
 Special value is C<none> which means that no entry aggregator should be used.
@@ -984,7 +990,7 @@ sub _GenericRestriction {
     my $restriction;
     if ( $args{'LEFTJOIN'} ) {
         if ( $args{'ENTRYAGGREGATOR'} ) {
-            $self->{'left_joins'}{ $args{'LEFTJOIN'} }{'entry_aggregator'} = 
+            $self->{'left_joins'}{ $args{'LEFTJOIN'} }{'entry_aggregator'} =
                 $args{'ENTRYAGGREGATOR'};
         }
         $restriction = $self->{'left_joins'}{ $args{'LEFTJOIN'} }{'criteria'}{ $ClauseId } ||= [];
@@ -1105,7 +1111,7 @@ sub _CompileGenericRestrictions {
 
 Orders the returned results by ALIAS.FIELD ORDER.
 
-Takes a paramhash of ALIAS, FIELD and ORDER.  
+Takes a paramhash of ALIAS, FIELD and ORDER.
 ALIAS defaults to C<main>.
 FIELD has no default value.
 ORDER defaults to ASC(ending). DESC(ending) is also a valid value for OrderBy.
@@ -1293,11 +1299,11 @@ sub _GetAlias {
 
 =head2 Join
 
-Join instructs DBIx::SearchBuilder to join two tables.  
+Join instructs DBIx::SearchBuilder to join two tables.
 
-The standard form takes a param hash with keys ALIAS1, FIELD1, ALIAS2 and 
+The standard form takes a param hash with keys ALIAS1, FIELD1, ALIAS2 and
 FIELD2. ALIAS1 and ALIAS2 are column aliases obtained from $self->NewAlias or
-a $self->Limit. FIELD1 and FIELD2 are the fields in ALIAS1 and ALIAS2 that 
+a $self->Limit. FIELD1 and FIELD2 are the fields in ALIAS1 and ALIAS2 that
 should be linked, respectively.  For this type of join, this method
 has no return value.
 
@@ -1467,7 +1473,7 @@ Returns the number of records in the set.
 sub Count {
     my $self = shift;
 
-    # An unlimited search returns no tickets    
+    # An unlimited search returns no tickets
     return 0 unless ($self->_isLimited);
 
 
@@ -1509,7 +1515,7 @@ L</RowsPerPage> settings.
 # 22:27 [msg(Robrt)] (given that every time we try to explain it, we get it Wrong)
 # 22:27 [Robrt(500@outer.space)] Because Count can return a different number than actual NumberOfResults
 # 22:28 [msg(Robrt)] in what case?
-# 22:28 [Robrt(500@outer.space)] CountAll _always_ used the return value of _DoCount(), as opposed to Count which would return the cached number of 
+# 22:28 [Robrt(500@outer.space)] CountAll _always_ used the return value of _DoCount(), as opposed to Count which would return the cached number of
 #           results returned.
 # 22:28 [Robrt(500@outer.space)] IIRC, if you do a search with a Limit, then raw_rows will == Limit.
 # 22:31 [msg(Robrt)] ah.
@@ -1522,7 +1528,7 @@ L</RowsPerPage> settings.
 sub CountAll {
     my $self = shift;
 
-    # An unlimited search returns no tickets    
+    # An unlimited search returns no tickets
     return 0 unless ($self->_isLimited);
 
     # If we haven't actually got all objects loaded in memory, we
@@ -1535,7 +1541,7 @@ sub CountAll {
         #Report back the raw # of rows in the database
         return ( $self->{'count_all'} );
     }
-    
+
     # if we have paging enabled and have count_all then return it
     elsif ( $self->RowsPerPage ) {
         return ( $self->{'count_all'} );
