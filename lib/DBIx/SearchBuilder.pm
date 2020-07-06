@@ -4,7 +4,7 @@ package DBIx::SearchBuilder;
 use strict;
 use warnings;
 
-our $VERSION = "1.67";
+our $VERSION = "1.68";
 
 use Clone qw();
 use Encode qw();
