@@ -27,7 +27,8 @@ DBIx::SearchBuilder::Handle - Perl extension which is a generic DBI handle
                     Database => 'dbname',
                     Host => 'hostname',
                     User => 'dbuser',
-                    Password => 'dbpassword');
+                    Password => 'dbpassword',
+                    QuoteTableNames => 1 );
   # now $handle isa DBIx::SearchBuilder::Handle::mysql                    
  
 =head1 DESCRIPTION
@@ -50,13 +51,17 @@ sub new  {
     my $self  = {};
     bless ($self, $class);
 
+    # Enable quotes table names
+    my %args = ( QuoteTableNames => 0, @_ );
+    $self->{'QuoteTableNames'} = $args{QuoteTableNames};
+
     @{$self->{'StatementLog'}} = ();
     return $self;
 }
 
 
 
-=head2 Connect PARAMHASH: Driver, Database, Host, User, Password
+=head2 Connect PARAMHASH: Driver, Database, Host, User, Password, QuoteTableNames
 
 Takes a paramhash and connects to your DBI datasource. 
 
@@ -70,6 +75,9 @@ If you created the handle with
      DBIx::SearchBuilder::Handle->new
 and there is a DBIx::SearchBuilder::Handle::(Driver) subclass for the driver you have chosen,
 the handle will be automatically "upgraded" into that subclass.
+
+QuoteTableNames option will force all table names to be quoted if the driver subclass has a method
+for quoting implemented.
 
 =cut
 
@@ -85,6 +93,7 @@ sub Connect  {
         Password => undef,
         RequireSSL => undef,
         DisconnectHandleOnDestroy => undef,
+        QuoteTableNames => undef,
         @_
     );
 
@@ -95,6 +104,9 @@ sub Connect  {
     # Setting this actually breaks old RT versions in subtle ways.
     # So we need to explicitly call it
     $self->{'DisconnectHandleOnDestroy'} = $args{'DisconnectHandleOnDestroy'};
+
+    # Enable quotes table names
+    $self->{'QuoteTableNames'} = $args{QuoteTableNames} if (defined $args{QuoteTableNames});
 
     my $old_dsn = $self->DSN || '';
     my $new_dsn = $self->BuildDSN( %args );
@@ -390,6 +402,7 @@ sub InsertQueryString {
         push @bind, shift @pairs;
     }
 
+    $table = $self->QuoteName($table) if ($self->{'QuoteTableNames'});
     my $QueryString = "INSERT INTO $table";
     $QueryString .= " (". join(", ", @cols) .")";
     $QueryString .= " VALUES (". join(", ", @vals). ")";
@@ -415,6 +428,7 @@ sub InsertFromSelect {
     $columns = join ', ', @$columns
         if $columns;
 
+    $table = $self->QuoteName($table) if ($self->{'QuoteTableNames'});
     my $full_query = "INSERT INTO $table";
     $full_query .= " ($columns)" if $columns;
     $full_query .= ' '. $query;
@@ -446,6 +460,7 @@ sub UpdateRecordValue {
                  @_ );
 
     my @bind  = ();
+    $args{Table} = $self->QuoteName($args{Table}) if ($self->{'QuoteTableNames'});
     my $query = 'UPDATE ' . $args{'Table'} . ' ';
      $query .= 'SET '    . $args{'Column'} . '=';
 
@@ -518,6 +533,7 @@ sub SimpleUpdateFromSelect {
         push @binds, $values->{$k};
     }
 
+    $table = $self->QuoteName($table) if ($self->{'QuoteTableNames'});
     my $full_query = "UPDATE $table SET ";
     $full_query .= join ', ', map "$_ = ?", @columns;
     $full_query .= ' WHERE id IN ('. $query .')';
@@ -541,6 +557,7 @@ select query, eg:
 
 sub DeleteFromSelect {
     my ($self, $table, $query, @binds) = @_;
+    $table = $self->QuoteName($table) if ($self->{'QuoteTableNames'});
     my $sth = $self->SimpleQuery(
         "DELETE FROM $table WHERE id IN ($query)",
         @binds
@@ -751,6 +768,16 @@ Returns undef otherwise
 sub CaseSensitive {
     my $self = shift;
     return(1);
+}
+
+=head2 QuoteTableNames
+
+Returns 1 if table names will be quoted in queries, otherwise 0
+
+=cut
+
+sub QuoteTableNames  {
+    return shift->{'QuoteTableNames'}
 }
 
 
@@ -1192,8 +1219,9 @@ sub _BuildJoins {
     my $sb   = shift;
 
     $self->OptimizeJoins( SearchBuilder => $sb );
+    my $table = ($self->{'QuoteTableNames'}) ? $self->QuoteName($sb->Table) : $sb->Table;
 
-    my $join_clause = join " CROSS JOIN ", ($sb->Table ." main"), @{ $sb->{'aliases'} };
+    my $join_clause = join " CROSS JOIN ", ("$table main"), @{ $sb->{'aliases'} };
     my %processed = map { /^\S+\s+(\S+)$/; $1 => 1 } @{ $sb->{'aliases'} };
     $processed{'main'} = 1;
 
@@ -1735,6 +1763,21 @@ a column, for example C<ORDER BY Value ASC NULLS FIRST>.
 
 sub HasSupportForNullsOrder {
     return 0;
+}
+
+
+=head2 QuoteName
+
+Quote table or column name to avoid reserved word errors.
+
+Returns same value passed unless over-ridden in database-specific subclass.
+
+=cut
+
+# over-ride in subclass
+sub QuoteName {
+    my $self = shift;
+    return shift;
 }
 
 

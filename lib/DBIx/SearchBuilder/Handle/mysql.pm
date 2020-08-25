@@ -74,6 +74,7 @@ sub SimpleUpdateFromSelect {
         push @binds, $values->{$k};
     }
 
+    $table = $self->QuoteName($table) if ($self->{'QuoteTableNames'});
     my $update_query = "UPDATE $table SET "
         . join( ', ', map "$_ = ?", @columns )
         .' WHERE ID IN ';
@@ -92,6 +93,7 @@ sub DeleteFromSelect {
         $table, $query, @query_binds
     ) unless $query =~ /\b\Q$table\E\b/i;
 
+    $table = $self->QuoteName($table) if ($self->{'QuoteTableNames'});
     return $self->SimpleMassChangeFromSelect(
         "DELETE FROM $table WHERE id IN ", [],
         $query, @query_binds
@@ -206,6 +208,7 @@ sub Fields {
     my $table = shift;
 
     my $cache = \%DBIx::SearchBuilder::Handle::FIELDS_IN_TABLE;
+    $table = $self->QuoteName($table) if ($self->{'QuoteTableNames'});
     unless ( $cache->{ lc $table } ) {
         my $sth = $self->dbh->column_info( undef, undef, $table, '%' )
             or return ();
@@ -288,6 +291,20 @@ sub _DateTimeIntervalFunction {
 
     return "TIMESTAMPDIFF(SECOND, $args{'From'}, $args{'To'})";
 }
+
+
+=head2 QuoteName
+
+Quote table or column name to avoid reserved word errors.
+
+=cut
+
+# over-rides inherited method
+sub QuoteName {
+    my ($self, $name) = @_;
+    return sprintf('`%s`', $name);
+}
+
 
 1;
 

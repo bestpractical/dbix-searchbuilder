@@ -709,7 +709,7 @@ sub __Value {
     my %pk = $self->PrimaryKeys;
     return undef if grep !defined, values %pk;
 
-    my $query = "SELECT $field FROM ". $self->Table
+    my $query = "SELECT $field FROM ". $self->QuotedTableName
         ." WHERE ". join " AND ", map "$_ = ?", sort keys %pk;
     my $sth = $self->_Handle->SimpleQuery( $query, sorted_values(%pk) ) or return undef;
     return $self->{'values'}{$field} = ($sth->fetchrow_array)[0];
@@ -1147,8 +1147,8 @@ sub LoadByCols  {
 
 	}
     }
-    
-    my $QueryString = "SELECT  * FROM ".$self->Table." WHERE ". 
+
+    my $QueryString = "SELECT  * FROM ".$self->QuotedTableName." WHERE ".
     join(' AND ', @phrases) ;
     return ($self->_LoadFromSQL($QueryString, @bind));
 }
@@ -1349,7 +1349,7 @@ sub __Delete {
     }
 
     $where =~ s/AND\s$//;
-    my $QueryString = "DELETE FROM ". $self->Table . ' ' . $where;
+    my $QueryString = "DELETE FROM ". $self->QuotedTableName . ' ' . $where;
    my $return = $self->_Handle->SimpleQuery($QueryString, @bind);
 
     if (UNIVERSAL::isa($return, 'Class::ReturnValue')) {
@@ -1369,8 +1369,6 @@ Returns or sets the name of the current Table
 
 =cut
 
-
-
 sub Table {
     my $self = shift;
     if (@_) {
@@ -1379,7 +1377,19 @@ sub Table {
     return ($self->{'table'});
 }
 
+=head2 QuotedTableName
 
+Returns the name of current Table, including any quoting
+
+=cut
+
+sub QuotedTableName {
+    my $self = shift;
+    return $self->{'_quoted_table'} if (defined $self->{'_quoted_table'});
+    $self->{'_quoted_table'} = ( $self->_Handle->QuoteTableNames ) ?
+        $self->_Handle->QuoteName($self->Table) : $self->Table ;
+    return $self->{'_quoted_table'}
+}
 
 =head2 _Handle
 
