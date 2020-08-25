@@ -1251,6 +1251,7 @@ sub NewAlias {
 
     my $alias = $self->_GetAlias($table);
 
+    $table = $self->_Handle->QuoteName($table) if $self->_Handle->QuoteTableNames;
     unless ( $type ) {
         push @{ $self->{'aliases'} }, "$table $alias";
     } elsif ( lc $type eq 'left' ) {
