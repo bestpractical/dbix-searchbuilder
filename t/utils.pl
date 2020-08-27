@@ -110,6 +110,8 @@ sub connect_mysql
 	return $handle->Connect(
 		Driver => 'mysql',
 		Database => $ENV{'SB_TEST_MYSQL'},
+                Host => $ENV{'SB_TEST_MYSQL_HOST'},
+                Port => $ENV{'SB_TEST_MYSQL_PORT'},
 		User => $ENV{'SB_TEST_MYSQL_USER'} || 'root',
 		Password => $ENV{'SB_TEST_MYSQL_PASS'} || '',
 	);
