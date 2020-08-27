@@ -21,6 +21,7 @@ SKIP: {
 		skip "ENV is not defined for driver '$d'", TESTS_PER_DRIVER;
 	}
 
+	note("testing $d");
 	my $handle = get_handle( $d );
 	connect_handle( $handle );
 	isa_ok($handle->dbh, 'DBI::db');

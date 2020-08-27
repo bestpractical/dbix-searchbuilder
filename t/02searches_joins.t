@@ -19,7 +19,6 @@ SKIP: {
     unless( should_test( $d ) ) {
         skip "ENV is not defined for driver '$d'", TESTS_PER_DRIVER;
     }
-
     my $handle = get_handle( $d );
     connect_handle( $handle );
     isa_ok($handle->dbh, 'DBI::db');
@@ -296,7 +295,6 @@ diag "mixing DISTINCT" if $ENV{'TEST_VERBOSE'};
     cleanup_schema( 'TestApp', $handle );
 
 }} # SKIP, foreach blocks
-
 1;
 
 
@@ -336,7 +334,7 @@ CREATE TEMPORARY TABLE UsersToGroups (
     GroupId integer
 ) },
 q{
-CREATE TEMPORARY TABLE Groups (
+CREATE TEMPORARY TABLE `Groups` (
     id integer primary key AUTO_INCREMENT,
     Name varchar(36)
 ) },
