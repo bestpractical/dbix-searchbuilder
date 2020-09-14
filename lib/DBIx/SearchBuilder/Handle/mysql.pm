@@ -312,7 +312,10 @@ sub QuoteName {
 
 sub _RequireQuotedTables {
     my $self = shift;
-    if ( substr($self->DatabaseVersion, 0, 1) == 8 ) {
+    my $version = $self->DatabaseVersion;
+    # MariaDB version does not match mysql, and hasn't added new reserved words
+    return 0 if ($version =~ m/mariadb/i);
+    if ( substr($version, 0, 1) == 8 ) {
         return 1;
     }
     return 0;
