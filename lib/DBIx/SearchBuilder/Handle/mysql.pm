@@ -309,13 +309,27 @@ sub QuoteName {
     return sprintf('`%s`', $name);
 }
 
+sub _IsMariaDB {
+    my $self = shift;
+
+    # We override DatabaseVersion to chop off "-MariaDB-whatever", so
+    # call super here to get the original version
+    my $v = $self->SUPER::DatabaseVersion();
+
+    return ($v =~ /mariadb/i);
+}
 
 sub _RequireQuotedTables {
     my $self = shift;
-    my $version = $self->DatabaseVersion;
+
     # MariaDB version does not match mysql, and hasn't added new reserved words
-    return 0 if ($version =~ m/mariadb/i);
-    if ( substr($version, 0, 1) == 8 ) {
+    return 0 if $self->_IsMariaDB;
+
+    my $version = $self->DatabaseVersion;
+
+    # Get major version number by chopping off everything after the first "."
+    $version =~ s/\..*//;
+    if ( $version >= 8 ) {
         return 1;
     }
     return 0;
