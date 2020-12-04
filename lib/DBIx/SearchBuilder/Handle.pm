@@ -1046,7 +1046,7 @@ sub Join {
             if ( $old_alias =~ /^(.*?) (\Q$args{'ALIAS2'}\E)$/ ) {
                 $args{'TABLE2'} = $1;
                 $alias = $2;
-                $args{'TABLE2'} =~ s/`//g;
+                $args{'TABLE2'} = $self->DequoteName($args{'TABLE2'}) if ($self->QuoteTableNames);
             }
             else {
                 push @new_aliases, $old_alias;
@@ -1070,7 +1070,7 @@ sub Join {
                 if ( $old_alias =~ /^(.*?) ($args{'ALIAS2'})$/ ) {
                     $args{'TABLE2'} = $1;
                     $alias = $2;
-                    $args{'TABLE2'} =~ s/`//g;
+                    $args{'TABLE2'} = $self->DequoteName($args{'TABLE2'}) if ($self->QuoteTableNames);
                 }
                 else {
                     push @new_aliases, $old_alias;
@@ -1794,6 +1794,29 @@ sub QuoteName {
         return $self->dbh->quote_identifier($name);
     }
     warn "QuoteName called without a db handle";
+    return $name;
+}
+
+=head2 DequoteName
+
+Undo the effects of QuoteName by removing quoting.
+
+=cut
+
+sub DequoteName {
+    my ($self, $name) = @_;
+    if ($self->dbh) {
+        # 29 = SQL_IDENTIFIER_QUOTE_CHAR; see "perldoc DBI"
+        my $quote_char = $self->{dbh}->get_info( 29 );
+
+        if ($quote_char) {
+            if ($name =~ /^$quote_char(.*)$quote_char$/) {
+                return $1;
+            }
+        }
+        return $name;
+    }
+    warn "DequoteName called without a db handle";
     return $name;
 }
 

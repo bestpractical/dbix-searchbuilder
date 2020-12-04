@@ -309,6 +309,20 @@ sub QuoteName {
     return sprintf('`%s`', $name);
 }
 
+sub DequoteName {
+    my ($self, $name) = @_;
+
+    # If we have a handle, the base class can do it for us
+    if ($self->dbh) {
+        return $self->SUPER::DequoteName($name);
+    }
+
+    if ($name =~ /^`(.*)`$/) {
+        return $1;
+    }
+    return $name;
+}
+
 sub _IsMariaDB {
     my $self = shift;
 
