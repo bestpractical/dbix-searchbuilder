@@ -1,5 +1,7 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.69 2021-01-20
+
  - New option to quote tablenames in queries, enabled automatically for MySQL 8
  - Updated tests for new MySQL 8 reserved words and tablename quoting
 
