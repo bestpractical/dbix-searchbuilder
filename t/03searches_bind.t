@@ -1,7 +1,7 @@
 use strict;
 use Test::More;
 
-BEGIN { require "t/utils.pl" }
+BEGIN { require "./t/utils.pl" }
 our (@AvailableDrivers);
 
 use constant TESTS_PER_DRIVER => 39;
