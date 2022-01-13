@@ -663,7 +663,7 @@ sub DistinctFieldValues {
 
 =head2 ItemsArrayRef
 
-Return a refernece to an array containing all objects found by this search.
+Return a reference to an array containing all objects found by this search.
 
 =cut
 
