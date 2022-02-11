@@ -1184,7 +1184,7 @@ sub _OrderClause {
 	     $rowhash{'FIELD'} and
              $rowhash{'ORDER'} ) {
 
-	    if ( length $rowhash{'ALIAS'} && $rowhash{'FIELD'} =~ /^(\w+\()(.*\))$/ ) {
+	    if ( length $rowhash{'ALIAS'} && $rowhash{'FIELD'} =~ /^(.*\()(.*\))$/ ) {
 		# handle 'FUNCTION(FIELD)' formatted fields
 		$rowhash{'ALIAS'} = $1 . $rowhash{'ALIAS'};
 		$rowhash{'FIELD'} = $2;
