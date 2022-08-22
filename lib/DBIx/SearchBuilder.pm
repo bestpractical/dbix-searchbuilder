@@ -153,6 +153,7 @@ sub CleanSlate {
         query_hint
         _bind_values
         _prefer_bind
+        _combine_search_and_count
     );
 
     #we have no limit statements. DoSearch won't work.
@@ -234,19 +235,34 @@ it is called automatically the first time that you actually need results
 sub _DoSearch {
     my $self = shift;
 
+    if ( $self->{_combine_search_and_count} ) {
+        my ($count) = $self->_DoSearchAndCount;
+        return $count;
+    }
+
     my $QueryString = $self->BuildSelectQuery();
+    my $records     = $self->_Handle->SimpleQuery( $QueryString, @{ $self->{_bind_values} || [] } );
+    return $self->__DoSearch($records);
+}
+
+sub __DoSearch {
+    my $self    = shift;
+    my $records = shift;
 
     # If we're about to redo the search, we need an empty set of items and a reset iterator
     delete $self->{'items'};
     $self->{'itemscount'} = 0;
 
-    my $records = $self->_Handle->SimpleQuery( $QueryString, @{ $self->{_bind_values} || [] } );
     return 0 unless $records;
 
     while ( my $row = $records->fetchrow_hashref() ) {
-	my $item = $self->NewItem();
-	$item->LoadFromHash($row);
-	$self->AddRecord($item);
+        # search_builder_count_all is from combine search
+        if ( !$self->{count_all} && $row->{search_builder_count_all} ) {
+            $self->{count_all} = $row->{search_builder_count_all};
+        }
+        my $item = $self->NewItem();
+        $item->LoadFromHash($row);
+        $self->AddRecord($item);
     }
     return $self->_RecordCount if $records->err;
 
@@ -294,6 +310,11 @@ it is used by C<Count> and C<CountAll>.
 sub _DoCount {
     my $self = shift;
 
+    if ( $self->{_combine_search_and_count} ) {
+        (undef, my $count_all) = $self->_DoSearchAndCount;
+        return $count_all;
+    }
+
     my $QueryString = $self->BuildSelectCountQuery();
     my $records     = $self->_Handle->SimpleQuery( $QueryString, @{ $self->{_bind_values} || [] } );
     return 0 unless $records;
@@ -306,7 +327,23 @@ sub _DoCount {
     return ( $row[0] );
 }
 
+=head2 _DoSearchAndCount
 
+This internal private method actually executes the search and also counting on the database;
+
+=cut
+
+sub _DoSearchAndCount {
+    my $self = shift;
+
+    my $QueryString = $self->BuildSelectAndCountQuery();
+    my $records     = $self->_Handle->SimpleQuery( $QueryString, @{ $self->{_bind_values} || [] } );
+
+    $self->{count_all} = 0;
+    # __DoSearch updates count_all
+    my $count     = $self->__DoSearch($records);
+    return ( $count, $self->{count_all} );
+}
 
 =head2 _ApplyLimits STATEMENTREF
 
@@ -342,6 +379,21 @@ sub _DistinctQuery {
 
     # XXX - Postgres gets unhappy with distinct and OrderBy aliases
     $self->_Handle->DistinctQuery($statementref, $self)
+}
+
+=head2 _DistinctQueryAndCount STATEMENTREF
+
+This routine takes a reference to a scalar containing an SQL statement.
+It massages the statement to ensure a distinct result set and total number
+of potential records are returned.
+
+=cut
+
+sub _DistinctQueryAndCount {
+    my $self = shift;
+    my $statementref = shift;
+
+    $self->_Handle->DistinctQueryAndCount($statementref, $self);
 }
 
 =head2 _BuildJoins
@@ -504,7 +556,43 @@ sub BuildSelectCountQuery {
     return ($QueryString);
 }
 
+=head2 BuildSelectAndCountQuery PreferBind => 1|0
 
+Builds a query string that is a combination of BuildSelectQuery and
+BuildSelectCountQuery.
+
+=cut
+
+sub BuildSelectAndCountQuery {
+    my $self = shift;
+
+    # Generally it's BuildSelectQuery plus extra COUNT part.
+    my $QueryString = $self->_BuildJoins . " ";
+    $QueryString .= $self->_WhereClause . " "
+        if ( $self->_isLimited > 0 );
+
+    $self->_OptimizeQuery( \$QueryString, @_ );
+
+    my $QueryHint = $self->QueryHintFormatted;
+
+    if ( my $clause = $self->_GroupClause ) {
+        $QueryString
+            = "SELECT" . $QueryHint . "main.*, COUNT(main.id) OVER() AS search_builder_count_all FROM $QueryString";
+        $QueryString .= $clause;
+        $QueryString .= $self->_OrderClause;
+    }
+    elsif ( !$self->{'joins_are_distinct'} && $self->_isJoined ) {
+        $self->_DistinctQueryAndCount( \$QueryString );
+    }
+    else {
+        $QueryString
+            = "SELECT" . $QueryHint . "main.*, COUNT(main.id) OVER() AS search_builder_count_all FROM $QueryString";
+        $QueryString .= $self->_OrderClause;
+    }
+
+    $self->_ApplyLimits( \$QueryString );
+    return ($QueryString);
+}
 
 
 =head2 Next
@@ -710,7 +798,20 @@ sub RedoSearch {
     $self->{'must_redo_search'} = 1;
 }
 
+=head2 CombineSearchAndCount 1|0
 
+Tells DBIx::SearchBuilder if it shall search both records and the total count
+in a single query.
+
+=cut
+
+sub CombineSearchAndCount {
+    my $self = shift;
+    if ( @_ ) {
+        $self->{'_combine_search_and_count'} = shift;
+    }
+    return $self->{'_combine_search_and_count'};
+}
 
 
 =head2 UnLimit
