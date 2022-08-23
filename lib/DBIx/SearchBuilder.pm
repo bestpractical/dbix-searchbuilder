@@ -1474,7 +1474,9 @@ sub _ItemsCounter {
 
 =head2 Count
 
-Returns the number of records in the set.
+Returns the number of records in the set. When L</RowsPerPage> is set,
+returns number of records in the page only, otherwise the same as
+L</CountAll>.
 
 =cut
 
@@ -1484,23 +1486,17 @@ sub Count {
     # An unlimited search returns no tickets    
     return 0 unless ($self->_isLimited);
 
-
-    # If we haven't actually got all objects loaded in memory, we
-    # really just want to do a quick count from the database.
     if ( $self->{'must_redo_search'} ) {
-
-        # If we haven't already asked the database for the row count, do that
-        $self->_DoCount unless ( $self->{'count_all'} );
-
-        #Report back the raw # of rows in the database
-        return ( $self->{'count_all'} );
+        if ( $self->RowsPerPage ) {
+            $self->_DoSearch;
+        }
+        else {
+            # No RowsPerPage means Count == CountAll
+            return $self->CountAll;
+        }
     }
 
-    # If we have loaded everything from the DB we have an
-    # accurate count already.
-    else {
-        return $self->_RecordCount;
-    }
+    return $self->_RecordCount;
 }
 
 
