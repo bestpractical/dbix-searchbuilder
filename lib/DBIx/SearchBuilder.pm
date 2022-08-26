@@ -1244,8 +1244,12 @@ sub OrderByCols {
     my $self = shift;
     my @args = @_;
 
+    my $old_value = $self->_OrderClause;
     $self->{'order_by'} = \@args;
-    $self->RedoSearch();
+
+    if ( $self->_OrderClause ne $old_value ) {
+        $self->RedoSearch();
+    }
 }
 
 =head2 _OrderClause
@@ -1311,8 +1315,12 @@ sub GroupByCols {
     my $self = shift;
     my @args = @_;
 
+    my $old_value = $self->_GroupClause;
     $self->{'group_by'} = \@args;
-    $self->RedoSearch();
+
+    if ( $self->_GroupClause ne $old_value ) {
+        $self->RedoSearch();
+    }
 }
 
 =head2 _GroupClause
