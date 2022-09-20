@@ -1457,6 +1457,31 @@ sub DistinctQuery {
     $$statementref .= $sb->_OrderClause;
 }
 
+=head2 DistinctQueryAndCount STATEMENTREF
+
+takes an incomplete SQL SELECT statement and massages it to return a
+DISTINCT result set and the total count of potential records.
+
+=cut
+
+sub DistinctQueryAndCount {
+    my $self = shift;
+    my $statementref = shift;
+    my $sb = shift;
+
+    $self->DistinctQuery($statementref, $sb);
+
+    # Add the count part.
+    if ( $sb->_OrderClause !~ /(?<!main)\./ ) {
+        # Wrap it with another SELECT to get distinct count.
+        $$statementref
+            = 'SELECT main.*, COUNT(main.id) OVER() AS search_builder_count_all FROM (' . $$statementref . ') main';
+    }
+    else {
+        # if order by other tables, then DistinctQuery already has an outer SELECT, which we can reuse
+        $$statementref =~ s!(?= FROM)!, COUNT(main.id) OVER() AS search_builder_count_all!;
+    }
+}
 
 
 
