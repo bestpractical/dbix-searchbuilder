@@ -360,7 +360,7 @@ enforcing an ordering on the rows (with C<OrderByCols>, say).
 sub _ApplyLimits {
     my $self = shift;
     my $statementref = shift;
-    $self->_Handle->ApplyLimits($statementref, $self->RowsPerPage, $self->FirstRow);
+    $self->_Handle->ApplyLimits($statementref, $self->RowsPerPage, $self->FirstRow, $self);
     $$statementref =~ s/main\.\*/join(', ', @{$self->{columns}})/eg
 	    if $self->{columns} and @{$self->{columns}};
 }
@@ -1977,9 +1977,10 @@ sub _OptimizeQuery {
     undef $self->{_bind_values};
     if ( $args{PreferBind} ) {
         ( $$query, my @bind_values ) = $self->_Handle->_ExtractBindValues($$query);
-        if (@bind_values) {
-            $self->{_bind_values} = \@bind_values;
-        }
+
+        # Set _bind_values even if no values are extracted, as we use it in
+        # ApplyLimits to determine if bind is enabled.
+        $self->{_bind_values} = \@bind_values;
     }
 }
 

@@ -247,6 +247,7 @@ sub ApplyLimits {
     my $statementref = shift;
     my $per_page = shift;
     my $first = shift;
+    my $sb = shift;
 
     # Transform an SQL query from:
     #
@@ -275,7 +276,12 @@ sub ApplyLimits {
         # Oracle orders from 1 not zero
         $first++; 
         # Make current query a sub select
-        $$statementref = "SELECT * FROM ( SELECT limitquery.*,rownum limitrownum FROM ( $$statementref ) limitquery WHERE rownum <= " . ($first + $per_page - 1) . " ) WHERE limitrownum >= " . $first;
+        my $last = $first + $per_page - 1;
+        if ( $sb->{_bind_values} ) {
+            push @{ $sb->{_bind_values} }, $last, $first;
+            $first = $last = '?';
+        }
+        $$statementref = "SELECT * FROM ( SELECT limitquery.*,rownum limitrownum FROM ( $$statementref ) limitquery WHERE rownum <= " . $last . " ) WHERE limitrownum >= " . $first;
     }
 }
 

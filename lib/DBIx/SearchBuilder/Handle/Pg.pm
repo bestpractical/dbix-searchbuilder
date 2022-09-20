@@ -172,11 +172,19 @@ sub ApplyLimits {
     my $statementref = shift;
     my $per_page = shift;
     my $first = shift;
+    my $sb = shift;
 
     my $limit_clause = '';
 
     if ( $per_page) {
         $limit_clause = " LIMIT ";
+
+        if ( $sb->{_bind_values} ) {
+            push @{ $sb->{_bind_values} }, $per_page, $first || ();
+            $first    = '?' if $first;
+            $per_page = '?';
+        }
+
         $limit_clause .= $per_page;
         if ( $first && $first != 0 ) {
             $limit_clause .= " OFFSET $first";
