@@ -73,7 +73,7 @@ SKIP: {
         $users_obj->GotoPage(1);
         is( $users_obj->First->Login, "Baggins' Frodo", "Baggins' Frodo on the second page" );
         is( $users_obj->Count, 1, "1 value on the second page" );
-        ok( $users_obj->BuildSelectQuery =~ /LIMIT\s*\?,\s*\?|rownum\s*<=\s*\?.*limitrownum\s*>=\s*\?/i,
+        ok( $users_obj->BuildSelectQuery =~ /LIMIT\s*\?,\s*\?|LIMIT\s*\? OFFSET|rownum\s*<=\s*\?.*limitrownum\s*>=\s*\?/i,
             'found placeholders in limit in select query' );
 
         $users_obj->CleanSlate;
