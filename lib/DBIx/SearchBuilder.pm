@@ -808,7 +808,13 @@ in a single query.
 sub CombineSearchAndCount {
     my $self = shift;
     if ( @_ ) {
-        $self->{'_combine_search_and_count'} = shift;
+        if ( $self->_Handle->HasSupportForCombineSearchAndCount ) {
+            $self->{'_combine_search_and_count'} = shift;
+        }
+        else {
+            warn "Current database version " . $self->_Handle->DatabaseVersion . " does not support CombineSearchAndCount. Consider upgrading to a newer version with support for windowing functions.";
+            return undef;
+        }
     }
     return $self->{'_combine_search_and_count'};
 }

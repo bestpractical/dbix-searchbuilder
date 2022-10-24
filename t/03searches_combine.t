@@ -24,6 +24,11 @@ SKIP: {
 
         my $handle = get_handle($d);
         connect_handle($handle);
+
+        if ( !$handle->HasSupportForCombineSearchAndCount ) {
+            skip "Database version doesn't support CombineSearchAndCount", TESTS_PER_DRIVER;
+        }
+
         isa_ok( $handle->dbh, 'DBI::db' );
 
         my $ret = init_schema( 'TestApp', $handle );
