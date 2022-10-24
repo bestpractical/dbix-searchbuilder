@@ -811,6 +811,9 @@ sub __Set {
         }
     }
 
+    # First, we truncate the value, if we need to.
+    $args{'Value'} = $self->TruncateValue( $args{'Column'}, $args{'Value'} );
+
     my $current_value = $self->__Value($column);
 
     if (
@@ -828,15 +831,6 @@ sub __Set {
         );
         return ( $ret->return_value );
     }
-
-
-
-    # First, we truncate the value, if we need to.
-    #
-    
-
-    $args{'Value'} = $self->TruncateValue ( $args{'Column'}, $args{'Value'});
-
 
     my $method = "Validate" . $args{'Column'};
     unless ( $self->$method( $args{'Value'} ) ) {
