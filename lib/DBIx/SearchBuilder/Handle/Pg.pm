@@ -186,7 +186,7 @@ sub ApplyLimits {
         }
 
         $limit_clause .= $per_page;
-        if ( $first && $first != 0 ) {
+        if ( $first ) {
             $limit_clause .= " OFFSET $first";
         }
     }
