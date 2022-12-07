@@ -355,6 +355,24 @@ sub _RequireQuotedTables {
     return 0;
 }
 
+=head2 HasSupportForCombineSearchAndCount
+
+MariaDB 10.2+ and MySQL 8+ support this.
+
+=cut
+
+sub HasSupportForCombineSearchAndCount {
+    my $self = shift;
+    my ($version) = $self->DatabaseVersion =~ /^(\d+\.\d+)/;
+
+    if ( $self->_IsMariaDB ) {
+        return $version >= 10.2 ? 1 : 0;
+    }
+    else {
+        return $version >= 8 ? 1 : 0;
+    }
+}
+
 1;
 
 __END__

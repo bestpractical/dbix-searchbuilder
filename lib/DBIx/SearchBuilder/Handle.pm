@@ -1802,6 +1802,16 @@ sub HasSupportForNullsOrder {
     return 0;
 }
 
+=head2 HasSupportForCombineSearchAndCount
+
+Returns true value if DB supports to combine search and count in single
+query.
+
+=cut
+
+sub HasSupportForCombineSearchAndCount {
+    return 1;
+}
 
 =head2 QuoteName
 
