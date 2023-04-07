@@ -806,6 +806,7 @@ in a single query.
 
 =cut
 
+my $unsupported_combine_search_and_count_logged;
 sub CombineSearchAndCount {
     my $self = shift;
     if ( @_ ) {
@@ -813,7 +814,8 @@ sub CombineSearchAndCount {
             $self->{'_combine_search_and_count'} = shift;
         }
         else {
-            warn "Current database version " . $self->_Handle->DatabaseVersion . " does not support CombineSearchAndCount. Consider upgrading to a newer version with support for windowing functions.";
+            warn "Current database version " . $self->_Handle->DatabaseVersion . " does not support CombineSearchAndCount. Consider upgrading to a newer version with support for windowing functions." unless $unsupported_combine_search_and_count_logged;
+            $unsupported_combine_search_and_count_logged ||= 1;
             return undef;
         }
     }
