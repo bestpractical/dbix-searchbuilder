@@ -2,6 +2,7 @@ package DBIx::SearchBuilder::Handle::mysql;
 
 use strict;
 use warnings;
+use version;
 
 use base qw(DBIx::SearchBuilder::Handle);
 
@@ -364,10 +365,10 @@ sub HasSupportForCombineSearchAndCount {
     my ($version) = $self->DatabaseVersion =~ /^(\d+\.\d+)/;
 
     if ( $self->_IsMariaDB ) {
-        return $version >= 10.2 ? 1 : 0;
+        return (version->parse('v'.$version) >= version->parse('v10.2')) ? 1 : 0;
     }
     else {
-        return $version >= 8 ? 1 : 0;
+        return (version->parse('v'.$version) >= version->parse('v8')) ? 1 : 0;
     }
 }
 
