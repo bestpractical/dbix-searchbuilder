@@ -1940,16 +1940,3 @@ sub DESTROY {
 
 
 1;
-__END__
-
-
-=head1 AUTHOR
-
-Jesse Vincent, jesse@fsck.com
-
-=head1 SEE ALSO
-
-perl(1), L<DBIx::SearchBuilder>
-
-=cut
-

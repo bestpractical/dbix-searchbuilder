@@ -2062,6 +2062,32 @@ is installed, using a temporary file as the database.  For example:
 
 Best Practical Solutions, LLC E<lt>modules@bestpractical.comE<gt>
 
+=head1 CONTRIBUTORS
+
+=over
+
+=item Ansgar Burchardt <ANSGAR@cpan.org>
+
+=item Audrey Tang <audreyt@audreyt.org>
+
+=item Ivan Kohler <ivan-rt@420.am>
+
+=item Martin King <Martin.King@arm.com>
+
+=item Mathieu Arnold <mat@mat.cc>
+
+=item Matt Knopp <mhat@netlag.com>
+
+=item Matthew Simon Cavalletto <simonm@cavalletto.org>
+
+=item Nick Morrott <knowledgejunkie@gmail.com>
+
+=item Oliver Tappe <oliver@akso.de>
+
+=item Simon Cozens <simon@cpan.org>
+
+=back
+
 =head1 BUGS
 
 All bugs should be reported via email to

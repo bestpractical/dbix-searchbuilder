@@ -590,6 +590,18 @@ TESTING
 AUTHOR
     Best Practical Solutions, LLC <modules@bestpractical.com>
 
+CONTRIBUTORS
+    Ansgar Burchardt <ANSGAR@cpan.org>
+    Audrey Tang <audreyt@audreyt.org>
+    Ivan Kohler <ivan-rt@420.am>
+    Martin King <Martin.King@arm.com>
+    Mathieu Arnold <mat@mat.cc>
+    Matt Knopp <mhat@netlag.com>
+    Matthew Simon Cavalletto <simonm@cavalletto.org>
+    Nick Morrott <knowledgejunkie@gmail.com>
+    Oliver Tappe <oliver@akso.de>
+    Simon Cozens <simon@cpan.org>
+
 BUGS
     All bugs should be reported via email to
 
