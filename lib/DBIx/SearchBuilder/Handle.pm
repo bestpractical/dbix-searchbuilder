@@ -333,7 +333,7 @@ sub Disconnect  {
     # interacting with a disconnected handle, here we unset
     # dbh to inform other code that there is no connection any more.
     # See also https://github.com/perl5-dbi/DBD-mysql/issues/306
-    my ($version) = $self->{'database_version'} =~ /^(\d+\.\d+)/;
+    my ($version) = ( $self->DatabaseVersion // '' ) =~ /^(\d+\.\d+)/;
     if (   $self->isa('DBIx::SearchBuilder::Handle::mysql')
         && $self->{'database_version'} =~ /mariadb/i
         && version->parse('v'.$version) > version->parse('v10.2') )
