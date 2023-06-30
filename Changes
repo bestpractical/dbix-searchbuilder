@@ -1,5 +1,8 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.77 2023-06-30
+ - Change how DistinctQueryAndCount builds query to fix sorting
+
 1.76 2023-04-20
  - Call DatabaseVersion instead to make sure we already retrieved the version
    (this is to fix a possible uninitialized warning on disconnect)
