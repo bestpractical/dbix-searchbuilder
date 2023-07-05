@@ -3,7 +3,7 @@ abstract: 'Encapsulate SQL queries and rows in simple perl objects'
 author:
   - 'Best Practical Solutions, LLC <modules@bestpractical.com>'
 build_requires:
-  DBD::SQLite: 0
+  DBD::SQLite: 1.6
   ExtUtils::MakeMaker: 6.59
   File::Temp: 0
   Test::More: 0.52
