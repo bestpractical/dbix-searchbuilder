@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "./t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 315;
+use constant TESTS_PER_DRIVER => 363;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -117,7 +117,7 @@ diag "test ordering objects by object's fields with limit by tags" if $ENV{TEST_
 foreach my $direction ( qw(ASC DESC) ) {
 foreach my $field ('Name', 'id') {
 foreach my $combine_search_and_count ( 0, 1 ) {
-foreach my $per_page (0, 5) {
+foreach my $per_page (0, 5, 30) {
 foreach my $page (0, 2) {
     my $objs = TestApp::Objects->new($handle);
     $objs->CombineSearchAndCount($combine_search_and_count);
