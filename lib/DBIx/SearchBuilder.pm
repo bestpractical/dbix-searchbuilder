@@ -1983,7 +1983,10 @@ Returns the query hint formatted appropriately for inclusion in SQL queries.
 sub QueryHintFormatted {
     my $self = shift;
     my $QueryHint = $self->QueryHint;
-    return $QueryHint ? " /* $QueryHint */ " : " ";
+
+    # As it turns out, we can't have a space between the opening /*
+    # and the query hint, otherwise Oracle treats this as a comment.
+    return $QueryHint ? " /*$QueryHint */ " : " ";
 }
 
 
