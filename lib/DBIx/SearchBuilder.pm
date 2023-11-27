@@ -1957,7 +1957,9 @@ sub Table {
 
 =head2 QueryHint [Hint]
 
-If called with an argument, sets a query hint for this collection.
+If called with an argument, sets a query hint for this collection. Call
+this method before performing additional operations on a collection,
+such as C<Count()>, C<Next()>, etc.
 
 Always returns the query hint.
 
