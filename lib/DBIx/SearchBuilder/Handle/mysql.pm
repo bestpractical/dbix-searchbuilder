@@ -372,4 +372,10 @@ sub HasSupportForCombineSearchAndCount {
     }
 }
 
+sub CastAsDecimal {
+    my $self  = shift;
+    my $field = shift or return;
+    return "($field+0)";
+}
+
 1;
