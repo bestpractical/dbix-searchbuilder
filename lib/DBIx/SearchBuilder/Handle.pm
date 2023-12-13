@@ -1948,5 +1948,18 @@ sub DESTROY {
     delete $DBIHandle{$self};
 }
 
+=head2 CastAsDecimal FIELD
+
+Cast the given field as decimal.
+
+E.g. on Pg, it's C<CAST(Content AS DECIMAL)>.
+
+=cut
+
+sub CastAsDecimal {
+    my $self  = shift;
+    my $field = shift or return;
+    return "CAST($field AS DECIMAL)";
+}
 
 1;
