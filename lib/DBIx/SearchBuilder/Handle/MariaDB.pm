@@ -53,6 +53,41 @@ sub Insert  {
     return( $self->{'id'}); #Add Succeded. return the id
 }
 
+=head2 KnowsBLOBs
+
+Returns 1 if the current database supports inserts of BLOBs automatically.
+Returns undef if the current database must be informed of BLOBs for inserts.
+
+=cut
+
+sub KnowsBLOBs {
+    my $self = shift;
+    return(undef);
+}
+
+=head2 BLOBParams FIELD_NAME FIELD_TYPE
+
+Returns a hash ref for the bind_param call to identify BLOB types used by
+the current database for a particular column type.
+
+=cut
+
+sub BLOBParams {
+    my $self = shift;
+    my $field = shift;
+    my $type = shift;
+
+    if ( $type =~ /^(blob|longblob)$/i ) {
+        # Don't assign to key 'value' as it is defined later.
+        return ( { TYPE => 'SQL_BLOB', } );
+    }
+    else {
+        # Normal handling for these, so no hashref
+        return;
+    }
+}
+
+
 =head2 SimpleUpdateFromSelect
 
 Customization of L<DBIx::SearchBuilder::Handle/SimpleUpdateFromSelect>.
