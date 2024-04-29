@@ -693,6 +693,13 @@ sub WritableAttributes {
 Takes a field name and returns that field's value. Subclasses should never
 override __Value.
 
+This method doesn't do any extra work to modify or normalize the encoding of
+the field's value. Different databases and database drivers have different ways
+of handling encoding on returned values. For example, L<DBD::Oracle> automatically
+marks values as UTF-8 if C<NLS_NCHAR> is set to C<AL32UTF8>. Review the documentation
+for the database driver you are using and test to make sure you handle special
+characters in returned content.
+
 =cut
 
 
