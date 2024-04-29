@@ -862,8 +862,12 @@ sub __Set {
         my $key = $args{'Column'};
         if ( ( $ca->{$key}->{'type'} // '' ) =~ /^(text|longtext|clob|longblob|blob|lob)$/i ) {
             my $bhash = $self->_Handle->BLOBParams( $key, $ca->{$key}->{'type'} );
-            $bhash->{'value'} = $args{'Value'};
-            $args{'Value'} = $bhash;
+            if ( ref($bhash) eq 'HASH'
+                && ( ( defined $args{'Value'} && length $args{'Value'} ) || $self->_Handle->HasSupportForEmptyString ) )
+            {
+                $bhash->{'value'} = $args{'Value'};
+                $args{'Value'} = $bhash;
+            }
         }
     }
 
@@ -1312,7 +1316,9 @@ sub Create {
             next unless $type && $type =~ /^(text|longtext|clob|blob|lob|longblob)$/i;
 
             my $bhash = $self->_Handle->BLOBParams( $key, $type );
-            if ( ref($bhash) eq 'HASH' ) {
+            if ( ref($bhash) eq 'HASH'
+                && ( ( defined $attribs{$key} && length $attribs{$key} ) || $self->_Handle->HasSupportForEmptyString ) )
+            {
                 $bhash->{'value'} = $attribs{$key};
                 $attribs{$key} = $bhash;
             }
