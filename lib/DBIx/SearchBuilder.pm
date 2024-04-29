@@ -2127,6 +2127,6 @@ it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-DBIx::SearchBuilder::Handle, DBIx::SearchBuilder::Record.
+L<DBIx::SearchBuilder::Handle>, L<DBIx::SearchBuilder::Record>.
 
 =cut
