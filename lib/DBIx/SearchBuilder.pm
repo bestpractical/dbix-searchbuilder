@@ -46,6 +46,11 @@ DBIx::SearchBuilder - Encapsulate SQL queries and rows in simple perl objects
   $sb->Limit( FIELD => "column_1", VALUE => "matchstring" );
 
   while ( my $record = $sb->Next ) {
+
+      # SearchBuilder returns the vanilla value fetched from database drivers. Note
+      # that different drivers handle the encoding differently. Check your
+      # driver's documentation to get more details.
+
       print $record->my_column_name();
   }
 
