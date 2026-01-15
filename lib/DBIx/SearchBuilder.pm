@@ -2005,7 +2005,7 @@ sub _OptimizeQuery {
 
     undef $self->{_bind_values};
     if ( $args{PreferBind} ) {
-        ( $$query, my @bind_values ) = $self->_Handle->_ExtractBindValues($$query);
+        my @bind_values = $self->_Handle->_ExtractBindValues($query);
 
         # Set _bind_values even if no values are extracted, as we use it in
         # ApplyLimits to determine if bind is enabled.
