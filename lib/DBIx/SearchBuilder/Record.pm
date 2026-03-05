@@ -579,7 +579,7 @@ sub _ClassAccessibleFromSchema {
     my $self = shift;
 
     my $accessible = {};
-    foreach my $key ($self->_PrimaryKeys) {
+    foreach my $key (@{$self->_PrimaryKeys}) {
         $accessible->{$key} = { 'read' => 1 };
     };
 
