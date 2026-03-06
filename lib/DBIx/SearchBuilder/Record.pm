@@ -710,7 +710,6 @@ sub __Value {
     $field = $self->_Accessible($field, "column") || $field;
 
     return $self->{'values'}{$field} if $self->{'fetched'}{$field};
-    $self->{'fetched'}{$field} = 1;
 
     my %pk = $self->PrimaryKeys;
     return undef if grep !defined, values %pk;
@@ -718,6 +717,8 @@ sub __Value {
     my $query = "SELECT $field FROM ". $self->QuotedTableName
         ." WHERE ". join " AND ", map "$_ = ?", sort keys %pk;
     my $sth = $self->_Handle->SimpleQuery( $query, sorted_values(%pk) ) or return undef;
+
+    $self->{'fetched'}{$field} = 1;
     return $self->{'values'}{$field} = ($sth->fetchrow_array)[0];
 }
 
