@@ -54,9 +54,13 @@ DBIx::SearchBuilder - Encapsulate SQL queries and rows in simple perl objects
       print $record->my_column_name();
   }
 
+  # Show the generated SELECT query, possibly for debugging
+  my $QueryString = $sb->BuildSelectQuery();
+  print "Select query is: $QueryString";
+
 =head1 DESCRIPTION
 
-This module provides an object-oriented mechanism for retrieving and updating data in a DBI-accesible database.
+This module provides an object-oriented mechanism for retrieving and updating data in a DBI-accessible database.
 
 In order to use this module, you should create a subclass of C<DBIx::SearchBuilder> and a
 subclass of C<DBIx::SearchBuilder::Record> for each table that you wish to access.  (See
@@ -557,7 +561,11 @@ sub SelectAllColumns {
 
 =head2 BuildSelectQuery PreferBind => 1|0
 
-Builds a query string for a "SELECT rows from Tables" statement for this SearchBuilder object
+Builds a query string for a "SELECT rows from Tables" statement for this
+SearchBuilder object. Used internally and can also be handy for debugging.
+Returns the query as a string.
+
+    my $QueryString = $self->BuildSelectQuery();
 
 If C<PreferBind> is true, the generated query will use bind variables where
 possible. If C<PreferBind> is not passed, it defaults to package variable
