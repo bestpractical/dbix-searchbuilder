@@ -1,5 +1,10 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.83 2026-xx-xx
+ - Document use of BuildSelectQuery for debugging. Inspired by @maettu
+   in PR 4 on github. Thanks!
+ - Add repository link to META. Pointed out by @szabgab. Thanks!
+
 1.82 2024-04-29
 
  - Format reference to other docs as links
