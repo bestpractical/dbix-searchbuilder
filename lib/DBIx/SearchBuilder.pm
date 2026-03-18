@@ -159,6 +159,8 @@ sub CleanSlate {
         _bind_values
         _prefer_bind
         _combine_search_and_count
+        _columns_for_query
+        _select_all_columns
     );
 
     #we have no limit statements. DoSearch won't work.
@@ -378,8 +380,9 @@ sub _ApplyLimits {
     my $self = shift;
     my $statementref = shift;
     $self->_Handle->ApplyLimits($statementref, $self->RowsPerPage, $self->FirstRow, $self);
-    $$statementref =~ s/main\.\*/join(', ', @{$self->{columns}})/eg
-        if $self->{columns} and @{$self->{columns}};
+
+    my $cols = $self->_ColumnsForQuery;
+    $$statementref =~ s/main\.\*/$cols/g unless $cols eq 'main.*';
 }
 
 
@@ -487,6 +490,70 @@ sub _isLimited {
 
 
 
+
+=head2 _ColumnsForQuery
+
+Returns the column selection string for use in SELECT statements.
+
+If explicit columns have been added via L</Column>, those are returned as-is.
+If C<_select_all_columns> is set on the object, returns C<main.*>. Otherwise
+introspects the record class's C<_ClassAccessible> metadata and excludes
+columns marked as C<lazy_load>, C<foreign-collection>, or C<record-read>.
+Falls back to C<main.*> if no metadata is available.
+
+=cut
+
+sub _ColumnsForQuery {
+    my $self = shift;
+
+    # Explicit column list from Column() calls takes priority; not cached
+    # since Column() may be called incrementally.
+    return join( ', ', @{ $self->{columns} } )
+        if $self->{columns} and @{ $self->{columns} };
+
+    # _select_all_columns bypasses lazy_load filtering.
+    return 'main.*' if $self->{_select_all_columns};
+
+    return $self->{_columns_for_query} if defined $self->{_columns_for_query};
+
+    my $ca = $self->NewItem->_ClassAccessible;
+    unless ( $ca && %$ca ) {
+        return ( $self->{_columns_for_query} = 'main.*' );
+    }
+
+    my @cols = sort grep {
+               !$ca->{$_}{'foreign-collection'}
+            && !$ca->{$_}{'record-read'}
+            && !$ca->{$_}{'lazy_load'}
+    } keys %$ca;
+
+    unless (@cols) {
+        return ( $self->{_columns_for_query} = 'main.*' );
+    }
+
+    # Always include primary key columns so lazy-fetch can work later
+    my %in_cols = map { $_ => 1 } @cols;
+    push @cols, grep { !$in_cols{$_} } @{ $self->NewItem->_PrimaryKeys };
+
+    return ( $self->{_columns_for_query} = join( ', ', map { "main.$_" } @cols ) );
+}
+
+=head2 SelectAllColumns 1|0
+
+When set to true, disables C<lazy_load> column filtering and always selects
+all columns from the database. When set to false, restores the default
+behaviour of excluding C<lazy_load> columns.
+
+=cut
+
+sub SelectAllColumns {
+    my $self = shift;
+    if (@_) {
+        $self->{_select_all_columns} = shift;
+        delete $self->{_columns_for_query};
+    }
+    return $self->{_select_all_columns};
+}
 
 =head2 BuildSelectQuery PreferBind => 1|0
 
