@@ -7,7 +7,7 @@ use Test::More;
 BEGIN { require "./t/utils.pl" }
 our (@AvailableDrivers);
 
-use constant TESTS_PER_DRIVER => 52;
+use constant TESTS_PER_DRIVER => 78;
 
 my $total = scalar(@AvailableDrivers) * TESTS_PER_DRIVER;
 plan tests => $total;
@@ -115,6 +115,49 @@ diag("nested txns with mixed escaping actions") if $ENV{'TEST_VERBOSE'};
         ok($handle->Rollback, "commit successed");
         is($warn, 1, "not forced rollback fires warning");
     }
+
+    diag("a real statement error inside a transaction poisons it") if $ENV{'TEST_VERBOSE'};
+    ok( $handle->BeginTransaction,                                                          "begin transaction" );
+    ok( $handle->SimpleQuery( "INSERT INTO Address (id, Name) VALUES (?, ?)", 1, 'first' ), "first insert runs" );
+    {
+        local $SIG{__WARN__} = sub { };    # silence the expected failure warning
+        ok( !$handle->SimpleQuery( "INSERT INTO Address (id, Name) VALUES (?, ?)", 1, 'dup' ),
+            "a duplicate primary key fails at execute" );
+    }
+    ok( $handle->TransactionAborted,                    "any statement error inside a transaction poisons it" );
+    ok( !$handle->SimpleQuery("SELECT * FROM Address"), "further queries short-circuit while poisoned" );
+    ok( !$handle->Commit,                               "Commit on the poisoned transaction returns false" );
+    ok( !$handle->TransactionAborted,                   "cleared after the commit rolled it back" );
+
+    diag("a prepare-time error inside a transaction poisons it too") if $ENV{'TEST_VERBOSE'};
+    ok( $handle->BeginTransaction, "begin transaction" );
+    {
+        local $SIG{__WARN__} = sub { };    # silence the expected failure warning
+        ok( !$handle->SimpleQuery("SELECT * FROM no_such_table"), "a query against a missing table fails at prepare" );
+    }
+    ok( $handle->TransactionAborted,                    "a prepare error inside a transaction poisons it" );
+    ok( !$handle->SimpleQuery("SELECT * FROM Address"), "further queries short-circuit while poisoned" );
+    ok( !$handle->Commit,                               "Commit on the poisoned transaction returns false" );
+    ok( !$handle->TransactionAborted,                   "cleared after the commit rolled it back" );
+
+    diag("a poisoned transaction short-circuits and reports via TransactionAborted") if $ENV{'TEST_VERBOSE'};
+    ok( $handle->BeginTransaction,                     "begin transaction" );
+    ok( !$handle->TransactionAborted,                  "not aborted on a fresh transaction" );
+    ok( $handle->SimpleQuery("SELECT * FROM Address"), "query runs before the transaction is aborted" );
+    $DBIx::SearchBuilder::Handle::TRANSABORT{ $handle->dbh } = 1;    # simulate a deadlock/abort
+    ok( $handle->TransactionAborted,                    "aborted once marked" );
+    ok( !$handle->SimpleQuery("SELECT * FROM Address"), "further queries short-circuit while aborted" );
+    ok( $handle->Rollback,                              "rollback" );
+    ok( !$handle->TransactionAborted,                   "cleared once the transaction ends" );
+
+    diag("committing an aborted transaction rolls back and returns false") if $ENV{'TEST_VERBOSE'};
+    ok( $handle->BeginTransaction, "begin transaction" );
+    $DBIx::SearchBuilder::Handle::TRANSABORT{ $handle->dbh } = 1;    # simulate a deadlock/abort
+    ok( !$handle->Commit,                              "Commit on an aborted transaction returns false" );
+    ok( !$handle->TransactionAborted,                  "cleared after the commit rolled it back" );
+    ok( $handle->BeginTransaction,                     "begin a fresh transaction" );
+    ok( $handle->SimpleQuery("SELECT * FROM Address"), "queries work again after the rollback" );
+    ok( $handle->Rollback,                             "rollback" );
 
 	cleanup_schema( 'TestApp::Address', $handle );
 }} # SKIP, foreach blocks
