@@ -12,7 +12,7 @@ use version;
 
 use DBIx::SearchBuilder::Util qw/ sorted_values /;
 
-use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH %TRANSROLLBACK %FIELDS_IN_TABLE);
+use vars qw(@ISA %DBIHandle $PrevHandle $DEBUG %TRANSDEPTH %TRANSROLLBACK %TRANSABORT %FIELDS_IN_TABLE);
 
 
 =head1 NAME
@@ -583,6 +583,19 @@ sub SimpleQuery {
     my @bind_values;
     @bind_values = (@_) if (@_);
 
+    # A poisoned transaction can't be committed, so skip every later statement
+    # without hitting the database. Check the flag before TransactionDepth, which
+    # pings the server.
+    if ( $TRANSABORT{ $self->dbh } && $self->TransactionDepth ) {
+        my $ret = Class::ReturnValue->new();
+        $ret->as_error(
+            errno        => '-1',
+            message      => "Transaction aborted by an earlier database error; skipped query '$QueryString'",
+            do_backtrace => undef,
+        );
+        return ( $ret->return_value );
+    }
+
     my $sth = $self->dbh->prepare($QueryString);
     unless ($sth) {
         if ($DEBUG) {
@@ -590,6 +603,8 @@ sub SimpleQuery {
               . $self->dbh->errstr . "\n";
         }
         else {
+            $TRANSABORT{ $self->dbh } = 1 if $self->TransactionDepth;
+
             warn "$self couldn't prepare the query '$QueryString'"
               . $self->dbh->errstr . "\n";
             my $ret = Class::ReturnValue->new();
@@ -645,6 +660,10 @@ sub SimpleQuery {
 
         }
         else {
+            # Any error inside a transaction poisons it; mark it for the
+            # short-circuit above and for TransactionAborted.
+            $TRANSABORT{ $self->dbh } = 1 if $self->TransactionDepth;
+
             cluck "$self couldn't execute the query '$QueryString'";
 
             my $ret = Class::ReturnValue->new();
@@ -860,6 +879,7 @@ sub BeginTransaction {
     $self->TransactionDepth(++$depth);
     return 1 if $depth > 1;
 
+    delete $TRANSABORT{ $self->dbh };    # a fresh transaction starts clean
     return $self->dbh->begin_work;
 }
 
@@ -908,9 +928,18 @@ sub EndTransaction {
     delete $TRANSROLLBACK{ $dbh };
 
     if ($action eq 'commit') {
+        # A poisoned transaction can't be committed; roll back and return false
+        # so a discarded transaction isn't mistaken for a committed one.
+        if ( delete $TRANSABORT{ $dbh } ) {
+            DBIx::SearchBuilder::Record::Cachable->FlushCache
+                if DBIx::SearchBuilder::Record::Cachable->can('FlushCache');
+            warn "Couldn't roll back aborted transaction: " . $dbh->errstr unless $dbh->rollback;
+            return 0;
+        }
         return $dbh->commit;
     }
     else {
+        delete $TRANSABORT{ $dbh };
         DBIx::SearchBuilder::Record::Cachable->FlushCache
             if DBIx::SearchBuilder::Record::Cachable->can('FlushCache');
         return $dbh->rollback;
@@ -984,6 +1013,20 @@ sub TransactionDepth {
     return $TRANSDEPTH{ $dbh } || 0;
 }
 
+=head3 TransactionAborted
+
+Returns true if the current transaction has been aborted by an earlier statement
+error (detected in L</SimpleQuery>). Any statement failure inside a transaction
+leaves it un-committable. Applications can check this before committing so an
+aborted transaction is not mistaken for a successful one. Cleared when the
+transaction begins or ends.
+
+=cut
+
+sub TransactionAborted {
+    my $self = shift;
+    return $TRANSABORT{ $self->dbh } ? 1 : 0;
+}
 
 =head2 ApplyLimits STATEMENTREF ROWS_PER_PAGE FIRST_ROW
 
