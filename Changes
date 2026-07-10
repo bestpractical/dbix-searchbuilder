@@ -1,5 +1,10 @@
 Revision history for Perl extension DBIx::SearchBuilder.
 
+1.86 2026-07-10
+ - Treat any statement error inside a transaction as leaving it un-committable:
+   short-circuit further statements and roll back at commit instead of
+   reporting a false success.
+
 1.85 2026-04-14
  - Use state hashref to support Perl < 5.28. Pointed out by @erempel. Thanks!
 
